@@ -1,6 +1,9 @@
 <resources>
     <string name="app_name">Life4Pollinators</string>
 
+    <!-- SignIn -->
+    <string name="signInWithGoogle">Sign in with Google</string>
+
     <!-- BottomNavBar Titles -->
     <string name="home">Home</string>
     <string name="profile">Profile</string>

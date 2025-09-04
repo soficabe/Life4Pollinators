@@ -30,13 +30,13 @@ fun BottomNavBar(
             icon = { Icon(Icons.Outlined.Visibility, contentDescription = "Sightings") },
             label = { Text("Sightings") },
             selected = false,
-            onClick = { /*TODO*/ }
+            onClick = { navController.navigate(L4PRoute.SignIn) }
         )
         NavigationBarItem(
             icon = { Icon(Icons.Outlined.AddCircle, contentDescription = "Add Sighting") },
             label = { Text("Add Sighting") },
             selected = false,
-            onClick = { /*TODO*/ }
+            onClick = { navController.navigate(L4PRoute.SignUp) }
         )
         NavigationBarItem(
             icon = { Icon(Icons.Outlined.Person, contentDescription = "User Profile") },
