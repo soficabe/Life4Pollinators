@@ -42,7 +42,7 @@ fun BottomNavBar(
             icon = { Icon(Icons.Outlined.Person, contentDescription = "User Profile") },
             label = { Text("User Profile") },
             selected = selectedTab == NavBarTab.Profile,
-            onClick = { navController.navigate(L4PRoute.Settings) }
+            onClick = { navController.navigate(L4PRoute.Profile) }
         )
     }
 }
