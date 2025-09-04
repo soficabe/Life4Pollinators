@@ -16,7 +16,7 @@ import com.example.life4pollinators.ui.navigation.L4PRoute
 
 @Composable
 fun BottomNavBar(
-    selectedTab: NavBarTab,
+    selectedTab: NavBarTab = NavBarTab.None,
     navController: NavHostController
 ) {
     NavigationBar {

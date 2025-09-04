@@ -5,4 +5,8 @@
     <!-- BottomNavBar Titles -->
     <string name="home">Home</string>
     <string name="profile">Profilo</string>
+
+    <!-- Settings -->
+    <string name="changeTheme">Cambia tema</string>
+    <string name="logout">Esci</string>
 </resources>

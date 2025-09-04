@@ -4,4 +4,8 @@
     <!-- BottomNavBar Titles -->
     <string name="home">Home</string>
     <string name="profile">Profile</string>
+    
+    <!-- Settings -->
+    <string name="changeTheme">Change theme</string>
+    <string name="logout">Logout</string>
 </resources>

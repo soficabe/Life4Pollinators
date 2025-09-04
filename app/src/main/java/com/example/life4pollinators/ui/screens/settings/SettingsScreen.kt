@@ -1,11 +1,162 @@
 package com.example.life4pollinators.ui.screens.settings
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.filled.WbSunny
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.example.life4pollinators.R
+import com.example.life4pollinators.ui.composables.AppBar
+import com.example.life4pollinators.ui.composables.BottomNavBar
+import com.example.life4pollinators.ui.navigation.L4PRoute
+import androidx.compose.material.ripple.rememberRipple
+import androidx.compose.runtime.remember
 
 @Composable
-fun SettingsScreen(
+fun SettingsScreen (
     navController: NavHostController
-){
+) {
+    val scrollState = rememberScrollState()
 
+    //cambio tema (scuro, chiaro, default)
+    var showThemeDialog by rememberSaveable { mutableStateOf(false) }
+    //var selectedTheme by remember { mutableStateOf(state.theme) }
+    //val themeOptions = Theme.entries
+
+    Scaffold (
+        topBar = { AppBar(navController) },
+        bottomBar = { BottomNavBar(navController = navController) }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(horizontal = 24.dp, vertical = 24.dp)
+                .verticalScroll(scrollState)
+        ) {
+
+            HorizontalDivider()
+            SettingsClickable(stringResource(R.string.changeTheme), Icons.Filled.WbSunny, onClick = {showThemeDialog = true})
+
+            HorizontalDivider()
+
+            //if (state.isAuthenticated) {
+            SettingsClickable(
+                stringResource(R.string.logout),
+                Icons.AutoMirrored.Filled.Logout,
+                Color.Red,
+                onClick = {
+                    //actions.logout()
+
+                    navController.navigate(L4PRoute.Home) {
+                        popUpTo(navController.graph.id) {
+                            inclusive = true
+                        }
+                    }
+                })
+            //}
+
+        }
+
+        /*
+        if(showThemeDialog) {
+            ThemeRadioOptionsDialog(
+                title = stringResource(R.string.chooseTheme),
+                options = themeOptions,
+                selectedOption = selectedTheme,
+                onOptionSelected = {
+                    selectedTheme = it
+                    showThemeDialog = false
+                    actions.changeTheme(it)
+                },
+                onDismiss = { showThemeDialog = false }
+            )
+        }
+         */
+    }
 }
+
+@Composable
+fun SettingsClickable(title: String, icon: ImageVector, color: Color = MaterialTheme.colorScheme.onSurface, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(
+                indication = rememberRipple(),
+                interactionSource = remember { MutableInteractionSource() },
+                onClick = onClick
+            )
+            .padding(horizontal = 4.dp, vertical = 16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(imageVector = icon, contentDescription = title, tint = color,
+            modifier = Modifier
+                .size(32.dp)
+                .background(color = MaterialTheme.colorScheme.surfaceVariant, shape = RoundedCornerShape(10.dp))
+                .padding(5.dp))
+        Spacer(Modifier.width(16.dp))
+        Text(title, color = color, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
+    }
+}
+
+/*
+@Composable
+fun ThemeRadioOptionsDialog(
+    title: String,
+    options: List<Theme>,
+    selectedOption: Theme,
+    onOptionSelected: (Theme) -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(onDismissRequest = onDismiss, title = { Text(text = title) }, text = {
+        Column {
+            options.forEach { option ->
+                Row(verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp)
+                        .clickable { onOptionSelected(option) }) {
+                    RadioButton(
+                        selected = option == selectedOption,
+                        onClick = { onOptionSelected(option) })
+                    Text(text = stringResource(id = option.themeName))
+                }
+            }
+        }
+    }, confirmButton = {
+        TextButton(onClick = onDismiss) {
+            Text(stringResource(R.string.closeButton))
+        }
+    })
+}
+ */
