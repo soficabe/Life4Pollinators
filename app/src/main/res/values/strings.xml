@@ -10,5 +10,10 @@
     
     <!-- Settings -->
     <string name="changeTheme">Change theme</string>
+    <string name="chooseTheme">Choose theme</string>
+    <string name="closeButton">Close</string>
     <string name="logout">Logout</string>
+    <string name="light">Light</string>
+    <string name="dark">Dark</string>
+    <string name="system">System</string>
 </resources>

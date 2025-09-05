@@ -63,4 +63,14 @@ dependencies {
     //dipendenze per la navigation
     implementation(libs.androidx.navigation.compose)
     implementation(libs.ktor.serialization.kotlinx.json)
+
+    //dipendenze per creare viewmodel
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+
+    //dipendenza per datastore
+    implementation(libs.androidx.datastore.preferences)
+
+    //dipendenza per dependency-injection con koin
+    implementation(libs.koin.androidx.compose)
 }

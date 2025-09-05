@@ -9,6 +9,8 @@ import com.example.life4pollinators.ui.screens.editProfile.EditProfileScreen
 import com.example.life4pollinators.ui.screens.home.HomeScreen
 import com.example.life4pollinators.ui.screens.profile.ProfileScreen
 import com.example.life4pollinators.ui.screens.settings.SettingsScreen
+import com.example.life4pollinators.ui.screens.settings.SettingsState
+import com.example.life4pollinators.ui.screens.settings.SettingsViewModel
 import com.example.life4pollinators.ui.screens.signIn.SignInScreen
 import com.example.life4pollinators.ui.screens.signUp.SignUpScreen
 import kotlinx.serialization.Serializable
@@ -44,8 +46,10 @@ sealed interface L4PRoute {
  */
 @Composable
 fun L4PNavGraph(
+    modifier: Modifier = Modifier,
     navController: NavHostController,
-    modifier: Modifier = Modifier
+    settingsViewModel: SettingsViewModel,
+    settingsState: SettingsState
 ){
     //Composable utilizzato per l'implementazione vera e propria del grafico di navigazione
     NavHost(
@@ -66,7 +70,7 @@ fun L4PNavGraph(
         }
 
         composable<L4PRoute.Settings> {
-            SettingsScreen(navController)
+            SettingsScreen(navController, settingsState, settingsViewModel.actions)
         }
 
         composable<L4PRoute.Profile> {

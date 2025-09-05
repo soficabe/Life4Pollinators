@@ -40,18 +40,24 @@ import com.example.life4pollinators.ui.composables.AppBar
 import com.example.life4pollinators.ui.composables.BottomNavBar
 import com.example.life4pollinators.ui.navigation.L4PRoute
 import androidx.compose.material.ripple.rememberRipple
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.remember
+import com.example.life4pollinators.data.models.Theme
 
 @Composable
 fun SettingsScreen (
-    navController: NavHostController
+    navController: NavHostController,
+    state: SettingsState,
+    actions: SettingsActions
 ) {
     val scrollState = rememberScrollState()
 
     //cambio tema (scuro, chiaro, default)
     var showThemeDialog by rememberSaveable { mutableStateOf(false) }
-    //var selectedTheme by remember { mutableStateOf(state.theme) }
-    //val themeOptions = Theme.entries
+    var selectedTheme by remember { mutableStateOf(state.theme) }
+    val themeOptions = Theme.entries
 
     Scaffold (
         topBar = { AppBar(navController) },
@@ -66,7 +72,11 @@ fun SettingsScreen (
         ) {
 
             HorizontalDivider()
-            SettingsClickable(stringResource(R.string.changeTheme), Icons.Filled.WbSunny, onClick = {showThemeDialog = true})
+            SettingsClickable(
+                stringResource(R.string.changeTheme),
+                Icons.Filled.WbSunny,
+                onClick = {showThemeDialog = true}
+            )
 
             HorizontalDivider()
 
@@ -88,7 +98,6 @@ fun SettingsScreen (
 
         }
 
-        /*
         if(showThemeDialog) {
             ThemeRadioOptionsDialog(
                 title = stringResource(R.string.chooseTheme),
@@ -102,12 +111,16 @@ fun SettingsScreen (
                 onDismiss = { showThemeDialog = false }
             )
         }
-         */
     }
 }
 
 @Composable
-fun SettingsClickable(title: String, icon: ImageVector, color: Color = MaterialTheme.colorScheme.onSurface, onClick: () -> Unit) {
+fun SettingsClickable(
+    title: String,
+    icon: ImageVector,
+    color: Color = MaterialTheme.colorScheme.onSurface,
+    onClick: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -129,7 +142,6 @@ fun SettingsClickable(title: String, icon: ImageVector, color: Color = MaterialT
     }
 }
 
-/*
 @Composable
 fun ThemeRadioOptionsDialog(
     title: String,
@@ -138,25 +150,36 @@ fun ThemeRadioOptionsDialog(
     onOptionSelected: (Theme) -> Unit,
     onDismiss: () -> Unit
 ) {
-    AlertDialog(onDismissRequest = onDismiss, title = { Text(text = title) }, text = {
-        Column {
-            options.forEach { option ->
-                Row(verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp)
-                        .clickable { onOptionSelected(option) }) {
-                    RadioButton(
-                        selected = option == selectedOption,
-                        onClick = { onOptionSelected(option) })
-                    Text(text = stringResource(id = option.themeName))
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(text = title) },
+        text = {
+            Column {
+                options.forEach { option ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)
+                            .clickable(
+                                indication = null, // oppure rememberRipple()
+                                interactionSource = remember { MutableInteractionSource() },
+                                onClick = { onOptionSelected(option) }
+                            )
+                    ) {
+                        RadioButton(
+                            selected = option == selectedOption,
+                            onClick = { onOptionSelected(option) }
+                        )
+                        Text(text = stringResource(id = option.themeName))
+                    }
                 }
             }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.closeButton))
+            }
         }
-    }, confirmButton = {
-        TextButton(onClick = onDismiss) {
-            Text(stringResource(R.string.closeButton))
-        }
-    })
+    )
 }
- */

@@ -11,5 +11,10 @@
 
     <!-- Settings -->
     <string name="changeTheme">Cambia tema</string>
+    <string name="chooseTheme">Scegli tema</string>
+    <string name="closeButton">Chiudi</string>
     <string name="logout">Esci</string>
+    <string name="light">Chiaro</string>
+    <string name="dark">Scuro</string>
+    <string name="system">Sistema</string>
 </resources>
