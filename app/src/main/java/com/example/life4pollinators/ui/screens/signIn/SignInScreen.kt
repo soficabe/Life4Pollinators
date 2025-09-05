@@ -39,6 +39,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.life4pollinators.R
@@ -61,9 +62,9 @@ fun SignInScreen(
                 .verticalScroll(scrollState),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(Modifier.height(48.dp))
+            Spacer(Modifier.height(80.dp))
             Image(
-                painter = painterResource(id = R.drawable.ic_google),
+                painter = painterResource(id = R.drawable.logo_l4p_no_bg),
                 contentDescription = "Logo App",
                 modifier = Modifier.size(70.dp)
             )
@@ -125,7 +126,10 @@ fun SignInScreen(
                         onClick = { navController.navigate(L4PRoute.SignUp) },
                         modifier = Modifier.align(Alignment.CenterHorizontally)
                     ) {
-                        Text("Don’t have an account? Sign Up")
+                        Text(
+                            text = "Don’t have an account? Sign Up",
+                            textDecoration = TextDecoration.Underline
+                        )
                     }
                 }
             }
@@ -150,7 +154,10 @@ fun SignInScreen(
                 onClick = { navController.navigate(L4PRoute.Home) },
                 modifier = Modifier.padding(top = 8.dp)
             ) {
-                Text("Continue without logging in")
+                Text(
+                    text = "Continue without logging in",
+                    textDecoration = TextDecoration.Underline
+                )
             }
         }
     }

@@ -22,6 +22,7 @@ import com.example.life4pollinators.ui.composables.AppBar
 import com.example.life4pollinators.ui.composables.BottomNavBar
 import com.example.life4pollinators.ui.composables.ProfileStatCard
 import com.example.life4pollinators.ui.composables.RankingBadge
+import com.example.life4pollinators.ui.navigation.L4PRoute
 
 @Composable
 fun ProfileScreen(
@@ -149,7 +150,7 @@ fun ProfileScreen(
 
             // Edit button migliorato
             FilledTonalButton(
-                onClick = { /*TODO*/ },
+                onClick = { navController.navigate(L4PRoute.EditProfile) },
                 shape = RoundedCornerShape(20.dp),
                 modifier = Modifier
                     .padding(horizontal = 40.dp)

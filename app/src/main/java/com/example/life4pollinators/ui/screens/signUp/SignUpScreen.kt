@@ -33,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.life4pollinators.R
@@ -56,9 +57,9 @@ fun SignUpScreen(
                 .verticalScroll(scrollState),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(Modifier.height(48.dp))
+            Spacer(Modifier.height(80.dp))
             Image(
-                painter = painterResource(id = R.drawable.ic_google),
+                painter = painterResource(id = R.drawable.logo_l4p_no_bg),
                 contentDescription = "Logo App",
                 modifier = Modifier.size(70.dp)
             )
@@ -81,9 +82,18 @@ fun SignUpScreen(
                         .padding(20.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
+
+                    OutlinedTextField(
+                        value = ""/*state.username*/,
+                        onValueChange = {} /*actions::setUsername*/,
+                        label = { Text("Username") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+
                     OutlinedTextField(
                         value = ""/*state.firstName*/,
-                        onValueChange = {} /*actions::*/,
+                        onValueChange = {} /*actions::setFirstName*/,
                         label = { Text("First Name") },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true
@@ -149,19 +159,25 @@ fun SignUpScreen(
                 }
             }
 
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(8.dp))
 
             TextButton(
                 onClick = { navController.navigate(L4PRoute.SignIn) }
             ) {
-                Text("Have an account? Sign In")
+                Text(
+                    text = "Have an account? Sign In",
+                    textDecoration = TextDecoration.Underline
+                )
             }
 
             TextButton(
                 onClick = { navController.navigate(L4PRoute.Home) },
-                modifier = Modifier.padding(top = 8.dp)
+                modifier = Modifier.padding(top = 2.dp)
             ) {
-                Text("Continue without logging in")
+                Text(
+                    text ="Continue without logging in",
+                    textDecoration = TextDecoration.Underline
+                )
             }
         }
     }
