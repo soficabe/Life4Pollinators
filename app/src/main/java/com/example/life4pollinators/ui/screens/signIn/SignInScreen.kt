@@ -34,7 +34,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -47,8 +46,8 @@ import com.example.life4pollinators.ui.navigation.L4PRoute
 
 @Composable
 fun SignInScreen(
-    //state: LoginState,
-    //actions: LoginActions,
+    state: SignInState,
+    actions: SignInActions,
     navController: NavHostController
 ) {
     val scrollState = rememberScrollState()
@@ -62,19 +61,19 @@ fun SignInScreen(
                 .verticalScroll(scrollState),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(Modifier.height(80.dp))
+            Spacer(Modifier.height(56.dp))
             Image(
                 painter = painterResource(id = R.drawable.logo_l4p_no_bg),
                 contentDescription = "Logo App",
                 modifier = Modifier.size(70.dp)
             )
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(12.dp))
 
             Text(
                 text = "Sign In to continue",
                 style = MaterialTheme.typography.headlineSmall
             )
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(12.dp))
 
             // Card che racchiude i campi
             Surface(
@@ -85,20 +84,20 @@ fun SignInScreen(
                 Column(
                     Modifier
                         .fillMaxWidth()
-                        .padding(20.dp),
+                        .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     OutlinedTextField(
-                        value = ""/*state.email*/,
-                        onValueChange = {/*TODO*/} /*actions::setEmail*/,
+                        value = state.email,
+                        onValueChange = actions::setEmail,
                         label = { Text("Email") },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true
                     )
 
                     OutlinedTextField(
-                        value = ""/*state.password*/,
-                        onValueChange = {/*TODO*/}/*actions::setPassword*/,
+                        value = state.psw,
+                        onValueChange = actions::setPsw,
                         label = { Text("Password") },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
@@ -114,7 +113,7 @@ fun SignInScreen(
                     )
 
                     Button(
-                        onClick = { /*actions.login()*/ },
+                        onClick = { /*actions.signIn()*/ },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp)
                         //enabled = !state.isLoggingIn
@@ -148,7 +147,7 @@ fun SignInScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            GoogleSignInButton(onClick = { /*actions.loginWithGoogle()*/ })
+            GoogleSignInButton(onClick = { /*actions.signInWithGoogle()*/ })
 
             TextButton(
                 onClick = { navController.navigate(L4PRoute.Home) },
@@ -186,7 +185,7 @@ fun GoogleSignInButton(onClick: () -> Unit) {
 
         Text(
             text = stringResource(R.string.signInWithGoogle),
-            color = Color.DarkGray,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(vertical = 4.dp)
         )
     }

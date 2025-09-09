@@ -48,9 +48,9 @@ import com.example.life4pollinators.data.models.Theme
 
 @Composable
 fun SettingsScreen (
-    navController: NavHostController,
     state: SettingsState,
-    actions: SettingsActions
+    actions: SettingsActions,
+    navController: NavHostController
 ) {
     val scrollState = rememberScrollState()
 

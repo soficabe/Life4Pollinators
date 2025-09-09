@@ -41,8 +41,8 @@ import com.example.life4pollinators.ui.navigation.L4PRoute
 
 @Composable
 fun SignUpScreen(
-    //state: RegisterState,
-    //actions: RegisterActions,
+    state: SignUpState,
+    actions: SignUpActions,
     navController: NavHostController
 ) {
     val scrollState = rememberScrollState()
@@ -57,19 +57,19 @@ fun SignUpScreen(
                 .verticalScroll(scrollState),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(Modifier.height(80.dp))
+            Spacer(Modifier.height(56.dp))
             Image(
                 painter = painterResource(id = R.drawable.logo_l4p_no_bg),
                 contentDescription = "Logo App",
                 modifier = Modifier.size(70.dp)
             )
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(12.dp))
 
             Text(
                 text = "Create your account",
                 style = MaterialTheme.typography.headlineSmall
             )
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(12.dp))
 
             Surface(
                 modifier = Modifier.fillMaxWidth(),
@@ -79,45 +79,45 @@ fun SignUpScreen(
                 Column(
                     Modifier
                         .fillMaxWidth()
-                        .padding(20.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
 
                     OutlinedTextField(
-                        value = ""/*state.username*/,
-                        onValueChange = {} /*actions::setUsername*/,
+                        value = state.username,
+                        onValueChange = actions::setUsername,
                         label = { Text("Username") },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true
                     )
 
                     OutlinedTextField(
-                        value = ""/*state.firstName*/,
-                        onValueChange = {} /*actions::setFirstName*/,
+                        value = state.firstName,
+                        onValueChange = actions::setFirstName,
                         label = { Text("First Name") },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true
                     )
 
                     OutlinedTextField(
-                        value = ""/*state.lastName*/,
-                        onValueChange = {} /*actions::setLastName*/,
+                        value = state.lastName,
+                        onValueChange = actions::setLastName,
                         label = { Text("Last Name") },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true
                     )
 
                     OutlinedTextField(
-                        value = ""/*state.email*/,
-                        onValueChange = {} /*actions::setEmail*/,
+                        value = state.email,
+                        onValueChange = actions::setEmail,
                         label = { Text("Email") },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true
                     )
 
                     OutlinedTextField(
-                        value = ""/*state.password*/,
-                        onValueChange = {} /*actions::setPassword*/,
+                        value = state.psw,
+                        onValueChange = actions::setPsw,
                         label = { Text("Password") },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
@@ -133,8 +133,8 @@ fun SignUpScreen(
                     )
 
                     OutlinedTextField(
-                        value = "" /*state.confirmPassword*/,
-                        onValueChange = {} /*actions::setConfirmPassword*/,
+                        value = state.confirmPsw,
+                        onValueChange = actions::setConfirmPsw,
                         label = { Text("Confirm Password") },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
@@ -150,7 +150,7 @@ fun SignUpScreen(
                     )
 
                     Button(
-                        onClick = { /*actions.register()*/ },
+                        onClick = { /*actions.signUp()*/ },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp)
                     ) {
@@ -171,8 +171,7 @@ fun SignUpScreen(
             }
 
             TextButton(
-                onClick = { navController.navigate(L4PRoute.Home) },
-                modifier = Modifier.padding(top = 2.dp)
+                onClick = { navController.navigate(L4PRoute.Home) }
             ) {
                 Text(
                     text ="Continue without logging in",

@@ -58,13 +58,14 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
-    implementation(libs.androidx.material.icons.extended) //dipendenza per la libreria di icone material estese
+    //dipendenza per libreria icone material estese
+    implementation(libs.androidx.material.icons.extended)
 
-    //dipendenze per la navigation
+    //dipendenze per navigation
     implementation(libs.androidx.navigation.compose)
     implementation(libs.ktor.serialization.kotlinx.json)
 
-    //dipendenze per creare viewmodel
+    //dipendenze per viewmodel
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
 

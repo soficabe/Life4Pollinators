@@ -1,7 +1,9 @@
 package com.example.life4pollinators.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -12,8 +14,11 @@ import com.example.life4pollinators.ui.screens.settings.SettingsScreen
 import com.example.life4pollinators.ui.screens.settings.SettingsState
 import com.example.life4pollinators.ui.screens.settings.SettingsViewModel
 import com.example.life4pollinators.ui.screens.signIn.SignInScreen
+import com.example.life4pollinators.ui.screens.signIn.SignInViewModel
 import com.example.life4pollinators.ui.screens.signUp.SignUpScreen
+import com.example.life4pollinators.ui.screens.signUp.SignUpViewModel
 import kotlinx.serialization.Serializable
+import org.koin.androidx.compose.koinViewModel
 
 /**
  * Per avere una navigation type-safe identifichiamo ogni schermata
@@ -58,11 +63,15 @@ fun L4PNavGraph(
         modifier = modifier
     ){
         composable<L4PRoute.SignUp> {
-            SignUpScreen(navController)
+            val signUpVM = koinViewModel<SignUpViewModel>()
+            val signUpState by signUpVM.state.collectAsStateWithLifecycle()
+            SignUpScreen(signUpState, signUpVM.actions, navController)
         }
 
         composable<L4PRoute.SignIn> {
-            SignInScreen(navController)
+            val signInVM = koinViewModel<SignInViewModel>()
+            val signInState by signInVM.state.collectAsStateWithLifecycle()
+            SignInScreen(signInState, signInVM.actions, navController)
         }
 
         composable<L4PRoute.Home> {
@@ -70,7 +79,7 @@ fun L4PNavGraph(
         }
 
         composable<L4PRoute.Settings> {
-            SettingsScreen(navController, settingsState, settingsViewModel.actions)
+            SettingsScreen(settingsState, settingsViewModel.actions, navController)
         }
 
         composable<L4PRoute.Profile> {

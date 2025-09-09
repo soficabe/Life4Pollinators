@@ -30,7 +30,6 @@ class SettingsViewModel(
 
     val actions = object : SettingsActions {
         override fun changeTheme(theme: Theme) =
-            viewModelScope.launch { settingsRepository.setTheme(theme)
-        }
+            viewModelScope.launch { settingsRepository.setTheme(theme) }
     }
 }
