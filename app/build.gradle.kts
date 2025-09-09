@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -9,14 +11,27 @@ android {
     namespace = "com.example.life4pollinators"
     compileSdk = 35
 
+    val localProperties = Properties()
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        localProperties.load(localPropertiesFile.inputStream())
+    }
+
+    val key = localProperties.getProperty("SUPABASE_ANON_KEY") ?: ""
+    val url = localProperties.getProperty("SUPABASE_URL") ?: ""
+
     defaultConfig {
         applicationId = "com.example.life4pollinators"
         minSdk = 26
+        //noinspection OldTargetApi
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String","SUPABASE_ANON_KEY","\"$key\"")
+        buildConfigField("String","SUPABASE_URL","\"$url\"")
     }
 
     buildTypes {
@@ -37,6 +52,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -74,4 +90,12 @@ dependencies {
 
     //dipendenza per dependency-injection con koin
     implementation(libs.koin.androidx.compose)
+
+    //dipendenze per supabase
+    implementation(platform(libs.bom))
+    implementation(libs.postgrest.kt)
+    implementation(libs.auth.kt)
+    implementation(libs.compose.auth)
+    implementation(libs.storage.kt)
+    implementation(libs.ktor.client.android)
 }
