@@ -39,7 +39,6 @@ import com.example.life4pollinators.R
 import com.example.life4pollinators.ui.composables.AppBar
 import com.example.life4pollinators.ui.composables.BottomNavBar
 import com.example.life4pollinators.ui.navigation.L4PRoute
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.TextButton
@@ -125,8 +124,8 @@ fun SettingsClickable(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(
-                indication = rememberRipple(),
                 interactionSource = remember { MutableInteractionSource() },
+                indication = null,
                 onClick = onClick
             )
             .padding(horizontal = 4.dp, vertical = 16.dp),
@@ -162,7 +161,7 @@ fun ThemeRadioOptionsDialog(
                             .fillMaxWidth()
                             .padding(vertical = 4.dp)
                             .clickable(
-                                indication = null, // oppure rememberRipple()
+                                indication = null,
                                 interactionSource = remember { MutableInteractionSource() },
                                 onClick = { onOptionSelected(option) }
                             )

@@ -9,13 +9,13 @@ data class User(
     val id: String,
 
     @SerialName("username")
-    val username: String? = null,
+    val username: String,
 
     @SerialName("first_name")
-    val firstName: String? = null,
+    val firstName: String,
 
     @SerialName("last_name")
-    val lastName: String? = null,
+    val lastName: String,
 
     @SerialName("email")
     val email: String,

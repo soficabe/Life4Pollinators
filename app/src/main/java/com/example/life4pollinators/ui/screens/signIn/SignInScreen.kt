@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -35,7 +34,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
@@ -43,7 +41,11 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.life4pollinators.R
 import com.example.life4pollinators.ui.navigation.L4PRoute
+import io.github.jan.supabase.auth.providers.Google
+import io.github.jan.supabase.compose.auth.ui.ProviderButtonContent
+import io.github.jan.supabase.compose.auth.ui.annotations.AuthUiExperimental
 
+@OptIn(AuthUiExperimental::class)
 @Composable
 fun SignInScreen(
     state: SignInState,
@@ -147,7 +149,11 @@ fun SignInScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            GoogleSignInButton(onClick = { /*actions.signInWithGoogle()*/ })
+            //Google SignIn Button (library compose-auth-ui)
+            OutlinedButton(
+                onClick = { /*actions.signInWithGoogle()*/ },
+                content = { ProviderButtonContent(provider = Google) }
+            )
 
             TextButton(
                 onClick = { navController.navigate(L4PRoute.Home) },
@@ -159,34 +165,5 @@ fun SignInScreen(
                 )
             }
         }
-    }
-}
-
-/**
- * Componente riutilizzabile per il bottone di login con Google.
- *
- * @param onClick callback invocato quando l'utente preme il bottone
- */
-@Composable
-fun GoogleSignInButton(onClick: () -> Unit) {
-    OutlinedButton(
-        onClick = onClick,
-        shape = RoundedCornerShape(10.dp),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        // Icona Google
-        Image(
-            painter = painterResource(R.drawable.ic_google),
-            contentDescription = null,
-            modifier = Modifier.size(24.dp)
-        )
-
-        Spacer(modifier = Modifier.width(10.dp))
-
-        Text(
-            text = stringResource(R.string.signInWithGoogle),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(vertical = 4.dp)
-        )
     }
 }

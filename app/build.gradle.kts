@@ -96,6 +96,7 @@ dependencies {
     implementation(libs.postgrest.kt)
     implementation(libs.auth.kt)
     implementation(libs.compose.auth)
+    implementation(libs.compose.auth.ui)
     implementation(libs.storage.kt)
     implementation(libs.ktor.client.android)
 }
