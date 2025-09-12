@@ -5,6 +5,30 @@
     <!-- SignIn -->
     <string name="signInWithGoogle">Accedi con Google</string>
 
+    <!-- Signup Screen -->
+    <string name="create_account_title">Crea il tuo account</string>
+    <string name="username">Username</string>
+    <string name="first_name">Nome</string>
+    <string name="last_name">Cognome</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="confirm_password">Password di conferma</string>
+    <string name="sign_up_button">Registrati</string>
+    <string name="have_account_sign_in">Hai un account? Accedi</string>
+    <string name="continue_without_login">Continua senza accedere</string>
+
+    <!-- SignUp Error Messages -->
+    <string name="requiredFields_error">Sono richiesti tutti i campi</string>
+    <string name="passwordNotMatch_error">Le password non corrispondono</string>
+    <string name="weakPassword">La password deve essere lunga almeno 6 caratteri</string>
+    <string name="userExisting_error">Un user con questa email esiste già</string>
+    <string name="username_already_exists">Questo username è già utilizzato</string>
+    <string name="email_already_exists">Questa email è già registrata</string>
+    <string name="email_invalid_format">Digita un indirizzo email valido</string>
+    <string name="generic_signup_error">Registrazione fallita. Riprova.</string>
+    <string name="errorString">Si è verificato un errore</string>
+    <string name="network_error">Errore di connessione</string>
+
     <!-- BottomNavBar Titles -->
     <string name="home">Home</string>
     <string name="profile">Profilo</string>

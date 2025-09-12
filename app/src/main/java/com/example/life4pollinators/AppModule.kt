@@ -2,6 +2,7 @@ package com.example.life4pollinators
 
 import android.content.Context
 import androidx.datastore.preferences.preferencesDataStore
+import com.example.life4pollinators.data.repositories.AuthRepository
 import com.example.life4pollinators.data.repositories.SettingsRepository
 import com.example.life4pollinators.ui.screens.settings.SettingsViewModel
 import com.example.life4pollinators.ui.screens.signIn.SignInViewModel
@@ -26,7 +27,7 @@ val appModule = module {
     single { get<Context>().dataStore }
 
     single {
-        val supabase = createSupabaseClient(
+        createSupabaseClient(
             supabaseUrl = BuildConfig.SUPABASE_URL,
             supabaseKey = BuildConfig.SUPABASE_ANON_KEY
         ) {
@@ -47,10 +48,11 @@ val appModule = module {
     single { get<SupabaseClient>().composeAuth }
 
     //Repositories
+    single { AuthRepository(get(), get()) }
     single { SettingsRepository(get()) }
 
     //ViewModels
     viewModel { SettingsViewModel(get()) }
-    viewModel { SignUpViewModel() }
+    viewModel { SignUpViewModel(get()) }
     viewModel { SignInViewModel() }
 }

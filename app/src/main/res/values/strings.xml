@@ -4,6 +4,30 @@
     <!-- SignIn -->
     <string name="signInWithGoogle">Sign in with Google</string>
 
+    <!-- Signup Screen -->
+    <string name="create_account_title">Create your account</string>
+    <string name="username">Username</string>
+    <string name="first_name">First Name</string>
+    <string name="last_name">Last Name</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="sign_up_button">Sign Up</string>
+    <string name="have_account_sign_in">Have an account? Sign In</string>
+    <string name="continue_without_login">Continue without logging in</string>
+
+    <!-- SignUp Error Messages -->
+    <string name="requiredFields_error">All fields are required</string>
+    <string name="passwordNotMatch_error">Passwords do not match</string>
+    <string name="weakPassword">Password must be at least 6 characters long</string>
+    <string name="userExisting_error">A user with this email already exists</string>
+    <string name="username_already_exists">This username is already taken</string>
+    <string name="email_already_exists">This email is already registered</string>
+    <string name="email_invalid_format">Please enter a valid email address</string>
+    <string name="generic_signup_error">Registration failed. Please try again.</string>
+    <string name="errorString">An error occurred</string>
+    <string name="network_error">Network error</string>
+
     <!-- BottomNavBar Titles -->
     <string name="home">Home</string>
     <string name="profile">Profile</string>
