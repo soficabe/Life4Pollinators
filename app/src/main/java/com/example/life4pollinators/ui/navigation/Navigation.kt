@@ -17,8 +17,10 @@ import com.example.life4pollinators.ui.screens.signIn.SignInScreen
 import com.example.life4pollinators.ui.screens.signIn.SignInViewModel
 import com.example.life4pollinators.ui.screens.signUp.SignUpScreen
 import com.example.life4pollinators.ui.screens.signUp.SignUpViewModel
+import io.github.jan.supabase.SupabaseClient
 import kotlinx.serialization.Serializable
 import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.koinInject
 
 /**
  * Per avere una navigation type-safe identifichiamo ogni schermata
@@ -56,6 +58,8 @@ fun L4PNavGraph(
     settingsViewModel: SettingsViewModel,
     settingsState: SettingsState
 ){
+    val supabaseClient: SupabaseClient = koinInject()
+
     //Composable utilizzato per l'implementazione vera e propria del grafico di navigazione
     NavHost(
         navController = navController,
@@ -71,7 +75,7 @@ fun L4PNavGraph(
         composable<L4PRoute.SignIn> {
             val signInVM = koinViewModel<SignInViewModel>()
             val signInState by signInVM.state.collectAsStateWithLifecycle()
-            SignInScreen(signInState, signInVM.actions, navController)
+            SignInScreen(signInState, signInVM.actions, navController, supabaseClient)
         }
 
         composable<L4PRoute.Home> {

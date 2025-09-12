@@ -19,6 +19,7 @@ android {
 
     val key = localProperties.getProperty("SUPABASE_ANON_KEY") ?: ""
     val url = localProperties.getProperty("SUPABASE_URL") ?: ""
+    val googleClientId = localProperties.getProperty("GOOGLE_CLIENT_ID") ?: ""
 
     defaultConfig {
         applicationId = "com.example.life4pollinators"
@@ -32,6 +33,7 @@ android {
 
         buildConfigField("String","SUPABASE_ANON_KEY","\"$key\"")
         buildConfigField("String","SUPABASE_URL","\"$url\"")
+        buildConfigField("String", "GOOGLE_CLIENT_ID", "\"$googleClientId\"")
     }
 
     buildTypes {
@@ -99,4 +101,9 @@ dependencies {
     implementation(libs.compose.auth.ui)
     implementation(libs.storage.kt)
     implementation(libs.ktor.client.android)
+
+    //dipendenze per google signin
+    implementation (libs.play.services.auth)
+    implementation (libs.androidx.credentials)
+    implementation(libs.googleid)
 }

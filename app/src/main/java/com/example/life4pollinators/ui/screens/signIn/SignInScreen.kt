@@ -1,36 +1,16 @@
 package com.example.life4pollinators.ui.screens.signIn
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
-import androidx.compose.material3.Button
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -41,7 +21,11 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.life4pollinators.R
 import com.example.life4pollinators.ui.navigation.L4PRoute
+import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.providers.Google
+import io.github.jan.supabase.compose.auth.composable.NativeSignInResult
+import io.github.jan.supabase.compose.auth.composable.rememberSignInWithGoogle
+import io.github.jan.supabase.compose.auth.composeAuth
 import io.github.jan.supabase.compose.auth.ui.ProviderButtonContent
 import io.github.jan.supabase.compose.auth.ui.annotations.AuthUiExperimental
 
@@ -50,10 +34,41 @@ import io.github.jan.supabase.compose.auth.ui.annotations.AuthUiExperimental
 fun SignInScreen(
     state: SignInState,
     actions: SignInActions,
-    navController: NavHostController
+    navController: NavHostController,
+    supabaseClient: SupabaseClient
 ) {
     val scrollState = rememberScrollState()
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    var snackbarMessage by remember { mutableStateOf<String?>(null) }
+
+    val googleAuthState = supabaseClient.composeAuth.rememberSignInWithGoogle(
+        onResult = { result ->
+            when (result) {
+                is NativeSignInResult.Success -> {
+                    navController.navigate(L4PRoute.Home) {
+                        popUpTo(L4PRoute.SignIn) { inclusive = true }
+                    }
+                }
+                is NativeSignInResult.ClosedByUser -> {
+                    snackbarMessage = "Login annullato"
+                }
+                is NativeSignInResult.Error -> {
+                    snackbarMessage = result.message
+                }
+                is NativeSignInResult.NetworkError -> {
+                    snackbarMessage = "Errore di rete"
+                }
+            }
+        }
+    )
+
+    LaunchedEffect(snackbarMessage) {
+        snackbarMessage?.let {
+            snackbarHostState.showSnackbar(it)
+            snackbarMessage = null
+        }
+    }
 
     Surface(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -118,7 +133,6 @@ fun SignInScreen(
                         onClick = { /*actions.signIn()*/ },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp)
-                        //enabled = !state.isLoggingIn
                     ) {
                         Text("Sign In")
                     }
@@ -149,9 +163,9 @@ fun SignInScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            //Google SignIn Button (library compose-auth-ui)
+            // Google SignIn Button (library compose-auth-ui)
             OutlinedButton(
-                onClick = { /*actions.signInWithGoogle()*/ },
+                onClick = { googleAuthState.startFlow() },
                 content = { ProviderButtonContent(provider = Google) }
             )
 
@@ -164,6 +178,8 @@ fun SignInScreen(
                     textDecoration = TextDecoration.Underline
                 )
             }
+
+            SnackbarHost(hostState = snackbarHostState)
         }
     }
 }

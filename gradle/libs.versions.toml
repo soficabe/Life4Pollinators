@@ -1,5 +1,6 @@
 [versions]
 agp = "8.7.3"
+credentials = "1.5.0"
 datastorePreferences = "1.1.7"
 koinAndroidxCompose = "4.0.3"
 kotlin = "2.0.0"
@@ -14,11 +15,14 @@ activityCompose = "1.10.1"
 composeBom = "2024.04.01"
 lifecycleViewmodelCompose = "2.9.3"
 navigationCompose = "2.9.3"
+playServicesAuth = "21.4.0"
 supabase = "3.1.4"
 ktorClientAndroid = "3.2.2"
+googleid = "1.1.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-credentials = { module = "androidx.credentials:credentials", version.ref = "credentials" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
 androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycleRuntimeCompose" }
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleViewmodelCompose" }
@@ -40,12 +44,14 @@ androidx-material3 = { group = "androidx.compose.material3", name = "material3" 
 koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koinAndroidxCompose" }
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktorSerializationKotlinxJson" }
 auth-kt = { module = "io.github.jan-tennert.supabase:auth-kt", version.ref = "supabase" }
+play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuth" }
 postgrest-kt = { module = "io.github.jan-tennert.supabase:postgrest-kt", version.ref = "supabase" }
 bom ={ module = "io.github.jan-tennert.supabase:bom", version.ref = "supabase" }
 compose-auth = { module = "io.github.jan-tennert.supabase:compose-auth", version.ref = "supabase" }
 compose-auth-ui = { module = "io.github.jan-tennert.supabase:compose-auth-ui", version.ref = "supabase" }
 storage-kt = { module = "io.github.jan-tennert.supabase:storage-kt", version.ref = "supabase" }
 ktor-client-android = { module = "io.ktor:ktor-client-android", version.ref = "ktorClientAndroid" }
+googleid = { module = "com.google.android.libraries.identity.googleid:googleid", version.ref = "googleid" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

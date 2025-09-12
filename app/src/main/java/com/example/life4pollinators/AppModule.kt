@@ -13,6 +13,7 @@ import io.github.jan.supabase.auth.FlowType
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.compose.auth.ComposeAuth
 import io.github.jan.supabase.compose.auth.composeAuth
+import io.github.jan.supabase.compose.auth.googleNativeLogin
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.postgrest.postgrest
@@ -36,16 +37,18 @@ val appModule = module {
                 scheme = "app"
                 host = "supabase.com"
             }
+            install(ComposeAuth) {
+                googleNativeLogin(BuildConfig.GOOGLE_CLIENT_ID)
+            }
             install(Postgrest)
             install(Storage)
-            install(ComposeAuth)
         }
     }
 
     single { get<SupabaseClient>().auth }
+    single { get<SupabaseClient>().composeAuth }
     single { get<SupabaseClient>().postgrest }
     single { get<SupabaseClient>().storage }
-    single { get<SupabaseClient>().composeAuth }
 
     //Repositories
     single { AuthRepository(get(), get()) }
