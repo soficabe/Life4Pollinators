@@ -57,5 +57,5 @@ val appModule = module {
     //ViewModels
     viewModel { SettingsViewModel(get()) }
     viewModel { SignUpViewModel(get()) }
-    viewModel { SignInViewModel() }
+    viewModel { SignInViewModel(get()) }
 }

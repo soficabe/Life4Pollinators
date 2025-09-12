@@ -17,10 +17,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.life4pollinators.R
+import com.example.life4pollinators.data.repositories.SignInResult
 import com.example.life4pollinators.ui.navigation.L4PRoute
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.providers.Google
@@ -45,6 +47,27 @@ fun SignInScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     var snackbarMessage by remember { mutableStateOf<String?>(null) }
 
+    // Gestisce navigazione post-signIn
+    LaunchedEffect(state.signInResult) {
+        when (state.signInResult) {
+            null -> {
+                // Stato iniziale - nessuna azione richiesta
+            }
+            SignInResult.Loading -> {
+                // Loading gestito tramite UI
+            }
+            SignInResult.Success -> {
+                // Navigazione alla home con rimozione dello stack di signIn
+                navController.navigate(L4PRoute.Home) {
+                    popUpTo(L4PRoute.SignIn) { inclusive = true }
+                }
+            }
+            is SignInResult.Error -> {
+                // Errori gestiti tramite errorMessage nella UI
+            }
+        }
+    }
+
     val googleAuthState = supabaseClient.composeAuth.rememberSignInWithGoogle(
         onResult = { result ->
             when (result) {
@@ -54,13 +77,13 @@ fun SignInScreen(
                     }
                 }
                 is NativeSignInResult.ClosedByUser -> {
-                    snackbarMessage = R.string.login_cancelled.toString()
+                    snackbarMessage = "Login cancelled by user"
                 }
                 is NativeSignInResult.Error -> {
                     snackbarMessage = result.message
                 }
                 is NativeSignInResult.NetworkError -> {
-                    snackbarMessage = R.string.network_error.toString()
+                    snackbarMessage = "Network error. Please check your connection."
                 }
             }
         }
@@ -82,17 +105,20 @@ fun SignInScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(Modifier.height(56.dp))
+
             Image(
                 painter = painterResource(id = R.drawable.logo_l4p_no_bg),
                 contentDescription = "Logo App",
                 modifier = Modifier.size(70.dp)
             )
+
             Spacer(Modifier.height(12.dp))
 
             Text(
-                text = "Sign In to continue",
+                text = stringResource(R.string.sign_in_title),
                 style = MaterialTheme.typography.headlineSmall
             )
+
             Spacer(Modifier.height(12.dp))
 
             // Card che racchiude i campi
@@ -107,45 +133,86 @@ fun SignInScreen(
                         .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
+                    // Campo Email
                     OutlinedTextField(
                         value = state.email,
-                        onValueChange = actions::setEmail,
-                        label = { Text("Email") },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true
-                    )
-
-                    OutlinedTextField(
-                        value = state.psw,
-                        onValueChange = actions::setPsw,
-                        label = { Text("Password") },
+                        onValueChange = {
+                            actions.setEmail(it)
+                            actions.clearError()
+                        },
+                        label = { Text(stringResource(R.string.email)) },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
-                        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        isError = state.signInResult is SignInResult.Error.InvalidEmail ||
+                                state.signInResult is SignInResult.Error.InvalidCredentials
+                    )
+
+                    // Campo Password
+                    OutlinedTextField(
+                        value = state.psw,
+                        onValueChange = {
+                            actions.setPsw(it)
+                            actions.clearError()
+                        },
+                        label = { Text(stringResource(R.string.password)) },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        visualTransformation = if (passwordVisible)
+                            VisualTransformation.None
+                        else
+                            PasswordVisualTransformation(),
                         trailingIcon = {
                             IconButton(onClick = { passwordVisible = !passwordVisible }) {
                                 Icon(
-                                    imageVector = if (passwordVisible) Icons.Outlined.Visibility else Icons.Outlined.VisibilityOff,
+                                    imageVector = if (passwordVisible)
+                                        Icons.Outlined.Visibility
+                                    else
+                                        Icons.Outlined.VisibilityOff,
                                     contentDescription = if (passwordVisible) "Hide password" else "Show password"
                                 )
                             }
-                        }
+                        },
+                        isError = state.signInResult is SignInResult.Error.InvalidCredentials ||
+                                state.signInResult is SignInResult.Error.RequiredFields
                     )
 
-                    Button(
-                        onClick = { /*actions.signIn()*/ },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Text("Sign In")
+                    // Messaggio di errore
+                    if (state.errorMessage != null) {
+                        Text(
+                            text = state.errorMessage,
+                            color = MaterialTheme.colorScheme.error,
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp)
+                        )
                     }
 
+                    // Bottone Sign In
+                    Button(
+                        onClick = { actions.signIn() },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        enabled = !state.isLoading
+                    ) {
+                        if (state.isLoading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(16.dp),
+                                strokeWidth = 2.dp
+                            )
+                        } else {
+                            Text(stringResource(R.string.sign_in_button))
+                        }
+                    }
+
+                    // Link per navigare al signup
                     TextButton(
                         onClick = { navController.navigate(L4PRoute.SignUp) },
                         modifier = Modifier.align(Alignment.CenterHorizontally)
                     ) {
                         Text(
-                            text = "Don’t have an account? Sign Up",
+                            text = stringResource(R.string.dont_have_account),
                             textDecoration = TextDecoration.Underline
                         )
                     }
@@ -160,7 +227,7 @@ fun SignInScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 HorizontalDivider(modifier = Modifier.weight(1f))
-                Text("Or", modifier = Modifier.padding(horizontal = 8.dp))
+                Text(stringResource(R.string.or), modifier = Modifier.padding(horizontal = 8.dp))
                 HorizontalDivider(modifier = Modifier.weight(1f))
             }
 
@@ -172,12 +239,13 @@ fun SignInScreen(
                 content = { ProviderButtonContent(provider = Google) }
             )
 
+            // Opzione per continuare senza login
             TextButton(
                 onClick = { navController.navigate(L4PRoute.Home) },
                 modifier = Modifier.padding(top = 8.dp)
             ) {
                 Text(
-                    text = "Continue without logging in",
+                    text = stringResource(R.string.continue_without_login),
                     textDecoration = TextDecoration.Underline
                 )
             }

@@ -28,6 +28,12 @@
     <string name="errorString">An error occurred</string>
     <string name="network_error">Network error</string>
 
+    <!-- SignIn Screen -->
+    <string name="sign_in_title">Sign In to continue</string>
+    <string name="sign_in_button">Sign In</string>
+    <string name="dont_have_account">Don\'t have an account? Sign Up</string>
+    <string name="or">Or</string>
+
     <!-- SignIn Error Messages -->
     <string name="login_cancelled">Login cancelled</string>
 

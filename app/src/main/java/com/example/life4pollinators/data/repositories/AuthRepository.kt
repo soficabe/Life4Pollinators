@@ -13,10 +13,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 
-
-/**
- * Risultati possibili del signUp
- */
 /**
  * Risultati possibili della registrazione
  */
@@ -38,25 +34,41 @@ sealed interface SignUpResult {
 }
 
 /**
+ * Risultati possibili del login
+ */
+sealed interface SignInResult {
+    data object Loading : SignInResult
+    data object Success : SignInResult
+
+    sealed interface Error : SignInResult {
+        data object InvalidCredentials : Error
+        data object RequiredFields : Error // Aggiunto per validazione campi
+        data object InvalidEmail : Error // Aggiunto per consistenza
+        data object NetworkError : Error
+        data class UnknownError(val exception: Throwable) : Error
+    }
+}
+
+/**
  * Repository per gestire autenticazione (con trigger automatico per tabella user)
  */
-class AuthRepository (
+class AuthRepository(
     private val supabase: SupabaseClient,
     private val auth: Auth
 ) {
-    //Utente attualmente autenticato
+    // Utente attualmente autenticato
     val user: UserInfo?
         get() = (auth.sessionStatus.value as? SessionStatus.Authenticated)?.session?.user
 
-    //Stato delle sessione corrente
+    // Stato delle sessione corrente
     val sessionStatus: StateFlow<SessionStatus> = auth.sessionStatus
 
-    //Recupera le informazioni dell'utente dalla sessione corrente.
+    // Recupera le informazioni dell'utente dalla sessione corrente.
     suspend fun getUser(): UserInfo {
         return auth.retrieveUserForCurrentSession(true)
     }
 
-    //Verifica se un username è già presente nel database.
+    // Verifica se un username è già presente nel database.
     private suspend fun isUsernameExists(username: String): Boolean {
         return try {
             val result = supabase.from("user")
@@ -74,11 +86,11 @@ class AuthRepository (
         }
     }
 
-    //Verifica se un'email è già presente nel database pubblico.
+    // Verifica se un'email è già presente nel database pubblico.
     private suspend fun isEmailExists(email: String): Boolean {
         return try {
             val result = supabase.from("user")
-                .select(columns = Columns.list("email")){
+                .select(columns = Columns.list("email")) {
                     filter {
                         eq("email", email)
                     }
@@ -92,7 +104,7 @@ class AuthRepository (
         }
     }
 
-    //Valida i dati di registrazione.
+    // Valida i dati di registrazione.
     private suspend fun validateSignUpData(
         username: String,
         firstName: String,
@@ -103,7 +115,8 @@ class AuthRepository (
     ): SignUpResult.Error? {
         // Controllo campi obbligatori
         if (username.isBlank() || firstName.isBlank() || lastName.isBlank() ||
-            email.isBlank() || password.isBlank()) {
+            email.isBlank() || password.isBlank()
+        ) {
             return SignUpResult.Error.RequiredFields
         }
 
@@ -135,7 +148,22 @@ class AuthRepository (
         return null // Validazione superata
     }
 
-    //Registra un nuovo utente con email/password.
+    // Valida i dati di login
+    private fun validateSignInData(email: String, password: String): SignInResult.Error? {
+        // Controllo campi obbligatori
+        if (email.isBlank() || password.isBlank()) {
+            return SignInResult.Error.RequiredFields
+        }
+
+        // Controllo formato email base
+        if (!email.contains("@") || !email.contains(".")) {
+            return SignInResult.Error.InvalidEmail
+        }
+
+        return null // Validazione superata
+    }
+
+    // Registra un nuovo utente con email/password.
     suspend fun signUp(
         username: String,
         firstName: String,
@@ -188,4 +216,40 @@ class AuthRepository (
         }
     }
 
+    /**
+     * Autentica un utente esistente con email/password.
+     */
+    suspend fun signIn(email: String, password: String): SignInResult {
+        return try {
+            // Validazione locale prima della chiamata di rete
+            val validationError = validateSignInData(email, password)
+            if (validationError != null) {
+                return validationError
+            }
+
+            auth.signInWith(Email) {
+                this.email = email
+                this.password = password
+            }
+            SignInResult.Success
+        } catch (e: AuthRestException) {
+            Log.e("AuthRepository", "Auth signin failed", e)
+            SignInResult.Error.InvalidCredentials
+        } catch (e: Exception) {
+            Log.e("AuthRepository", "Sign in failed", e)
+            when {
+                e.message?.contains("network", ignoreCase = true) == true -> {
+                    SignInResult.Error.NetworkError
+                }
+                else -> SignInResult.Error.UnknownError(e)
+            }
+        }
+    }
+
+    /**
+     * Termina la sessione dell'utente corrente.
+     */
+    suspend fun signOut() {
+        auth.signOut()
+    }
 }

@@ -29,6 +29,12 @@
     <string name="errorString">Si è verificato un errore</string>
     <string name="network_error">Errore di rete</string>
 
+    <!-- SignIn Screen -->
+    <string name="sign_in_title">Accedi per procedere</string>
+    <string name="sign_in_button">Accedi</string>
+    <string name="dont_have_account">Non hai un account? Registrati</string>
+    <string name="or">Oppure</string>
+
     <!-- SignIn Error Messages -->
     <string name="login_cancelled">Login annullato</string>
 
