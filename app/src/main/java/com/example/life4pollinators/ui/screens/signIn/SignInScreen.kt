@@ -14,6 +14,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
@@ -28,15 +29,17 @@ import io.github.jan.supabase.compose.auth.composable.rememberSignInWithGoogle
 import io.github.jan.supabase.compose.auth.composeAuth
 import io.github.jan.supabase.compose.auth.ui.ProviderButtonContent
 import io.github.jan.supabase.compose.auth.ui.annotations.AuthUiExperimental
+import org.koin.compose.koinInject
 
 @OptIn(AuthUiExperimental::class)
 @Composable
 fun SignInScreen(
     state: SignInState,
     actions: SignInActions,
-    navController: NavHostController,
-    supabaseClient: SupabaseClient
+    navController: NavHostController
 ) {
+    val supabaseClient: SupabaseClient = koinInject()
+
     val scrollState = rememberScrollState()
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
@@ -51,13 +54,13 @@ fun SignInScreen(
                     }
                 }
                 is NativeSignInResult.ClosedByUser -> {
-                    snackbarMessage = "Login annullato"
+                    snackbarMessage = R.string.login_cancelled.toString()
                 }
                 is NativeSignInResult.Error -> {
                     snackbarMessage = result.message
                 }
                 is NativeSignInResult.NetworkError -> {
-                    snackbarMessage = "Errore di rete"
+                    snackbarMessage = R.string.network_error.toString()
                 }
             }
         }

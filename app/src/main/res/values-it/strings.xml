@@ -27,7 +27,10 @@
     <string name="email_invalid_format">Digita un indirizzo email valido</string>
     <string name="generic_signup_error">Registrazione fallita. Riprova.</string>
     <string name="errorString">Si è verificato un errore</string>
-    <string name="network_error">Errore di connessione</string>
+    <string name="network_error">Errore di rete</string>
+
+    <!-- SignIn Error Messages -->
+    <string name="login_cancelled">Login annullato</string>
 
     <!-- BottomNavBar Titles -->
     <string name="home">Home</string>

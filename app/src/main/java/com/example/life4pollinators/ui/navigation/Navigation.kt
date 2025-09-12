@@ -58,8 +58,6 @@ fun L4PNavGraph(
     settingsViewModel: SettingsViewModel,
     settingsState: SettingsState
 ){
-    val supabaseClient: SupabaseClient = koinInject()
-
     //Composable utilizzato per l'implementazione vera e propria del grafico di navigazione
     NavHost(
         navController = navController,
@@ -75,7 +73,7 @@ fun L4PNavGraph(
         composable<L4PRoute.SignIn> {
             val signInVM = koinViewModel<SignInViewModel>()
             val signInState by signInVM.state.collectAsStateWithLifecycle()
-            SignInScreen(signInState, signInVM.actions, navController, supabaseClient)
+            SignInScreen(signInState, signInVM.actions, navController)
         }
 
         composable<L4PRoute.Home> {

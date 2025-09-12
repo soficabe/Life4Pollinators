@@ -28,6 +28,9 @@
     <string name="errorString">An error occurred</string>
     <string name="network_error">Network error</string>
 
+    <!-- SignIn Error Messages -->
+    <string name="login_cancelled">Login cancelled</string>
+
     <!-- BottomNavBar Titles -->
     <string name="home">Home</string>
     <string name="profile">Profile</string>
