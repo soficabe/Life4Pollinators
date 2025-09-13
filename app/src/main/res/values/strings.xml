@@ -49,4 +49,8 @@
     <string name="light">Light</string>
     <string name="dark">Dark</string>
     <string name="system">System</string>
+    <string name="logout_confirmation_title">Confirm logout</string>
+    <string name="logout_confirmation_message">Are you sure you want to logout of your account?</string>
+    <string name="logout_confirm">Logout</string>
+    <string name="cancel">Cancel</string>
 </resources>

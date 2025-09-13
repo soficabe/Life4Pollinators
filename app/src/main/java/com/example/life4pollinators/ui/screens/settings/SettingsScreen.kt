@@ -53,10 +53,13 @@ fun SettingsScreen (
 ) {
     val scrollState = rememberScrollState()
 
-    //cambio tema (scuro, chiaro, default)
+    // Cambio tema (scuro, chiaro, default)
     var showThemeDialog by rememberSaveable { mutableStateOf(false) }
     var selectedTheme by remember { mutableStateOf(state.theme) }
     val themeOptions = Theme.entries
+
+    // Dialog di conferma logout
+    var showLogoutDialog by rememberSaveable { mutableStateOf(false) }
 
     Scaffold (
         topBar = { AppBar(navController) },
@@ -74,7 +77,7 @@ fun SettingsScreen (
             SettingsClickable(
                 stringResource(R.string.changeTheme),
                 Icons.Filled.WbSunny,
-                onClick = {showThemeDialog = true}
+                onClick = { showThemeDialog = true }
             )
 
             HorizontalDivider()
@@ -84,19 +87,13 @@ fun SettingsScreen (
                 stringResource(R.string.logout),
                 Icons.AutoMirrored.Filled.Logout,
                 Color.Red,
-                onClick = {
-                    //actions.logout()
-
-                    navController.navigate(L4PRoute.Home) {
-                        popUpTo(navController.graph.id) {
-                            inclusive = true
-                        }
-                    }
-                })
+                onClick = { showLogoutDialog = true }
+            )
             //}
 
         }
 
+        // Dialog per il cambio tema
         if(showThemeDialog) {
             ThemeRadioOptionsDialog(
                 title = stringResource(R.string.chooseTheme),
@@ -108,6 +105,22 @@ fun SettingsScreen (
                     actions.changeTheme(it)
                 },
                 onDismiss = { showThemeDialog = false }
+            )
+        }
+
+        // Dialog di conferma logout
+        if(showLogoutDialog) {
+            LogoutConfirmationDialog(
+                onConfirm = {
+                    showLogoutDialog = false
+                    actions.logout()
+                    navController.navigate(L4PRoute.Home) {
+                        popUpTo(navController.graph.id) {
+                            inclusive = true
+                        }
+                    }
+                },
+                onDismiss = { showLogoutDialog = false }
             )
         }
     }
@@ -178,6 +191,43 @@ fun ThemeRadioOptionsDialog(
         confirmButton = {
             TextButton(onClick = onDismiss) {
                 Text(stringResource(R.string.closeButton))
+            }
+        }
+    )
+}
+
+@Composable
+fun LogoutConfirmationDialog(
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = stringResource(R.string.logout_confirmation_title),
+                style = MaterialTheme.typography.headlineSmall
+            )
+        },
+        text = {
+            Text(
+                text = stringResource(R.string.logout_confirmation_message),
+                style = MaterialTheme.typography.bodyMedium
+            )
+        },
+        confirmButton = {
+            TextButton(
+                onClick = onConfirm,
+                colors = androidx.compose.material3.ButtonDefaults.textButtonColors(
+                    contentColor = MaterialTheme.colorScheme.error
+                )
+            ) {
+                Text(stringResource(R.string.logout_confirm))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.cancel))
             }
         }
     )

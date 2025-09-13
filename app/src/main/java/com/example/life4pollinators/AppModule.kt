@@ -55,7 +55,7 @@ val appModule = module {
     single { SettingsRepository(get()) }
 
     //ViewModels
-    viewModel { SettingsViewModel(get()) }
+    viewModel { SettingsViewModel(get(), get()) }
     viewModel { SignUpViewModel(get()) }
     viewModel { SignInViewModel(get()) }
 }

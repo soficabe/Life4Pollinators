@@ -50,4 +50,8 @@
     <string name="light">Chiaro</string>
     <string name="dark">Scuro</string>
     <string name="system">Sistema</string>
+    <string name="logout_confirmation_title">Conferma logout</string>
+    <string name="logout_confirmation_message">Sei sicuro di voler uscire dal tuo account?</string>
+    <string name="logout_confirm">Logout</string>
+    <string name="cancel">Annulla</string>
 </resources>
