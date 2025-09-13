@@ -26,6 +26,8 @@ import com.example.life4pollinators.ui.navigation.L4PRoute
 
 @Composable
 fun ProfileScreen(
+    state: ProfileState,
+    actions: ProfileActions,
     navController: NavHostController
 ) {
     val scrollState = rememberScrollState()
@@ -76,7 +78,7 @@ fun ProfileScreen(
             Spacer(Modifier.height(16.dp))
 
             Text(
-                "@SofiCabe",
+                "@${state.user?.username ?: ""}",
                 style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -88,9 +90,9 @@ fun ProfileScreen(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("First Name: Sofia", style = MaterialTheme.typography.bodyMedium)
-                Text("Last Name: Caberletti", style = MaterialTheme.typography.bodyMedium)
-                Text("Email: soficabe@gmail.com", style = MaterialTheme.typography.bodyMedium)
+                Text("First Name: ${state.user?.firstName ?: ""}", style = MaterialTheme.typography.bodyMedium)
+                Text("Last Name: ${state.user?.lastName ?: ""}", style = MaterialTheme.typography.bodyMedium)
+                Text("Email: ${state.user?.email ?: ""}", style = MaterialTheme.typography.bodyMedium)
             }
 
             Spacer(Modifier.height(24.dp))

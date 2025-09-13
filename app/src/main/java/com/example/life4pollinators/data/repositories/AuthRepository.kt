@@ -64,7 +64,7 @@ class AuthRepository(
     val sessionStatus: StateFlow<SessionStatus> = auth.sessionStatus
 
     // Recupera le informazioni dell'utente dalla sessione corrente.
-    suspend fun getUser(): UserInfo {
+    suspend fun getAuthUser(): UserInfo {
         return auth.retrieveUserForCurrentSession(true)
     }
 

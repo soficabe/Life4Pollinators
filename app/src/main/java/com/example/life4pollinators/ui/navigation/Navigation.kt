@@ -10,6 +10,7 @@ import androidx.navigation.compose.composable
 import com.example.life4pollinators.ui.screens.editProfile.EditProfileScreen
 import com.example.life4pollinators.ui.screens.home.HomeScreen
 import com.example.life4pollinators.ui.screens.profile.ProfileScreen
+import com.example.life4pollinators.ui.screens.profile.ProfileViewModel
 import com.example.life4pollinators.ui.screens.settings.SettingsScreen
 import com.example.life4pollinators.ui.screens.settings.SettingsState
 import com.example.life4pollinators.ui.screens.settings.SettingsViewModel
@@ -17,10 +18,8 @@ import com.example.life4pollinators.ui.screens.signIn.SignInScreen
 import com.example.life4pollinators.ui.screens.signIn.SignInViewModel
 import com.example.life4pollinators.ui.screens.signUp.SignUpScreen
 import com.example.life4pollinators.ui.screens.signUp.SignUpViewModel
-import io.github.jan.supabase.SupabaseClient
 import kotlinx.serialization.Serializable
 import org.koin.androidx.compose.koinViewModel
-import org.koin.compose.koinInject
 
 /**
  * Per avere una navigation type-safe identifichiamo ogni schermata
@@ -85,7 +84,9 @@ fun L4PNavGraph(
         }
 
         composable<L4PRoute.Profile> {
-            ProfileScreen(navController)
+            val profileVM = koinViewModel<ProfileViewModel>()
+            val profileState by profileVM.state.collectAsStateWithLifecycle()
+            ProfileScreen(profileState, profileVM.actions, navController)
         }
 
         composable<L4PRoute.EditProfile> {

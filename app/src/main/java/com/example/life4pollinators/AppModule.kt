@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.datastore.preferences.preferencesDataStore
 import com.example.life4pollinators.data.repositories.AuthRepository
 import com.example.life4pollinators.data.repositories.SettingsRepository
+import com.example.life4pollinators.data.repositories.UserRepository
+import com.example.life4pollinators.ui.screens.profile.ProfileViewModel
 import com.example.life4pollinators.ui.screens.settings.SettingsViewModel
 import com.example.life4pollinators.ui.screens.signIn.SignInViewModel
 import com.example.life4pollinators.ui.screens.signUp.SignUpViewModel
@@ -52,10 +54,12 @@ val appModule = module {
 
     //Repositories
     single { AuthRepository(get(), get()) }
+    single { UserRepository(get(), get()) }
     single { SettingsRepository(get()) }
 
     //ViewModels
     viewModel { SettingsViewModel(get(), get()) }
     viewModel { SignUpViewModel(get()) }
     viewModel { SignInViewModel(get()) }
+    viewModel { ProfileViewModel(get(), get()) }
 }
