@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -16,15 +17,27 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.filled.WbSunny
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -33,16 +46,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.life4pollinators.R
 import com.example.life4pollinators.ui.composables.AppBar
 import com.example.life4pollinators.ui.composables.BottomNavBar
 import com.example.life4pollinators.ui.navigation.L4PRoute
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.remember
 import com.example.life4pollinators.data.models.Theme
 
 @Composable
@@ -61,6 +72,15 @@ fun SettingsScreen (
     // Dialog di conferma logout
     var showLogoutDialog by rememberSaveable { mutableStateOf(false) }
 
+    // Cambio password - TUTTI E TRE I CAMPI
+    var showPasswordDialog by rememberSaveable { mutableStateOf(false) }
+    var currentPassword by rememberSaveable { mutableStateOf("") }
+    var newPassword by rememberSaveable { mutableStateOf("") }
+    var confirmPassword by rememberSaveable { mutableStateOf("") }
+    var currentPasswordVisible by rememberSaveable { mutableStateOf(false) }
+    var passwordVisible by rememberSaveable { mutableStateOf(false) }
+    var confirmPasswordVisible by rememberSaveable { mutableStateOf(false) }
+
     Scaffold (
         topBar = { AppBar(navController) },
         bottomBar = { BottomNavBar(navController = navController) }
@@ -73,6 +93,8 @@ fun SettingsScreen (
                 .verticalScroll(scrollState)
         ) {
 
+            // Sezione Aspetto
+            TextTitle(stringResource(R.string.appearance))
             HorizontalDivider()
             SettingsClickable(
                 stringResource(R.string.changeTheme),
@@ -80,13 +102,22 @@ fun SettingsScreen (
                 onClick = { showThemeDialog = true }
             )
 
-            HorizontalDivider()
-
+            // Sezione Privacy e Sicurezza (solo se autenticato)
             //if (state.isAuthenticated) {
+            TextTitle(stringResource(R.string.privacy))
+
+            HorizontalDivider()
+            SettingsClickable(
+                stringResource(R.string.changePassword),
+                Icons.Filled.Lock,
+                onClick = { showPasswordDialog = true }
+            )
+
+            HorizontalDivider()
             SettingsClickable(
                 stringResource(R.string.logout),
                 Icons.AutoMirrored.Filled.Logout,
-                Color.Red,
+                MaterialTheme.colorScheme.error,
                 onClick = { showLogoutDialog = true }
             )
             //}
@@ -123,7 +154,46 @@ fun SettingsScreen (
                 onDismiss = { showLogoutDialog = false }
             )
         }
+
+        // Dialog cambio password - CON TUTTI E TRE I CAMPI
+        if (showPasswordDialog) {
+            ChangePasswordDialog(
+                currentPassword = currentPassword,
+                newPassword = newPassword,
+                confirmPassword = confirmPassword,
+                currentPasswordVisible = currentPasswordVisible,
+                passwordVisible = passwordVisible,
+                confirmPasswordVisible = confirmPasswordVisible,
+                onCurrentPasswordChange = { currentPassword = it },
+                onNewPasswordChange = { newPassword = it },
+                onConfirmPasswordChange = { confirmPassword = it },
+                onCurrentPasswordVisibilityChange = { currentPasswordVisible = !currentPasswordVisible },
+                onPasswordVisibilityChange = { passwordVisible = !passwordVisible },
+                onConfirmPasswordVisibilityChange = { confirmPasswordVisible = !confirmPasswordVisible },
+                onConfirm = {
+                    // TODO: Implementare logica cambio password
+                    // actions.updatePassword(currentPassword, newPassword, confirmPassword)
+                    showPasswordDialog = false
+                    currentPassword = ""
+                    newPassword = ""
+                    confirmPassword = ""
+                },
+                onDismiss = {
+                    showPasswordDialog = false
+                    currentPassword = ""
+                    newPassword = ""
+                    confirmPassword = ""
+                }
+            )
+        }
     }
+}
+
+@Composable
+fun TextTitle (text: String) {
+    Text(text = text,
+        modifier = Modifier.padding(vertical = 8.dp),
+        fontWeight = FontWeight.Bold)
 }
 
 @Composable
@@ -218,11 +288,162 @@ fun LogoutConfirmationDialog(
         confirmButton = {
             TextButton(
                 onClick = onConfirm,
-                colors = androidx.compose.material3.ButtonDefaults.textButtonColors(
+                colors = ButtonDefaults.textButtonColors(
                     contentColor = MaterialTheme.colorScheme.error
                 )
             ) {
                 Text(stringResource(R.string.logout_confirm))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.cancel))
+            }
+        }
+    )
+}
+
+@Composable
+fun ChangePasswordDialog(
+    currentPassword: String,
+    newPassword: String,
+    confirmPassword: String,
+    currentPasswordVisible: Boolean,
+    passwordVisible: Boolean,
+    confirmPasswordVisible: Boolean,
+    onCurrentPasswordChange: (String) -> Unit,
+    onNewPasswordChange: (String) -> Unit,
+    onConfirmPasswordChange: (String) -> Unit,
+    onCurrentPasswordVisibilityChange: () -> Unit,
+    onPasswordVisibilityChange: () -> Unit,
+    onConfirmPasswordVisibilityChange: () -> Unit,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    // Validazioni solo per feedback visivo locale
+    val isNewPasswordTooShort = newPassword.isNotEmpty() && newPassword.length < 6
+    val doPasswordsMatch = newPassword.isNotEmpty() && confirmPassword.isNotEmpty() && newPassword == confirmPassword
+    val isFormValid = currentPassword.isNotEmpty() && newPassword.length >= 6 && doPasswordsMatch
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                stringResource(R.string.changePassword),
+                style = MaterialTheme.typography.headlineSmall
+            )
+        },
+        text = {
+            Column {
+                // 1. CAMPO PASSWORD ATTUALE
+                OutlinedTextField(
+                    value = currentPassword,
+                    onValueChange = onCurrentPasswordChange,
+                    label = { Text(stringResource(R.string.currentPassword)) },
+                    singleLine = true,
+                    visualTransformation = if (currentPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    trailingIcon = {
+                        IconButton(onClick = onCurrentPasswordVisibilityChange) {
+                            Icon(
+                                if (currentPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                "Toggle current password visibility",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    },
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        focusedLabelColor = MaterialTheme.colorScheme.primary,
+                        cursorColor = MaterialTheme.colorScheme.primary
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(Modifier.height(12.dp))
+
+                // 2. CAMPO NUOVA PASSWORD
+                OutlinedTextField(
+                    value = newPassword,
+                    onValueChange = onNewPasswordChange,
+                    label = { Text(stringResource(R.string.newPassword)) },
+                    singleLine = true,
+                    isError = isNewPasswordTooShort,
+                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    trailingIcon = {
+                        IconButton(onClick = onPasswordVisibilityChange) {
+                            Icon(
+                                if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                "Toggle password visibility",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    },
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        focusedLabelColor = MaterialTheme.colorScheme.primary,
+                        cursorColor = MaterialTheme.colorScheme.primary,
+                        errorBorderColor = MaterialTheme.colorScheme.error,
+                        errorLabelColor = MaterialTheme.colorScheme.error
+                    ),
+                    supportingText = if (isNewPasswordTooShort) {
+                        { Text(
+                            stringResource(R.string.password_too_short),
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall
+                        ) }
+                    } else null,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(Modifier.height(8.dp))
+
+                // 3. CAMPO CONFERMA PASSWORD
+                OutlinedTextField(
+                    value = confirmPassword,
+                    onValueChange = onConfirmPasswordChange,
+                    label = { Text(stringResource(R.string.confirmNewPassword)) },
+                    singleLine = true,
+                    isError = confirmPassword.isNotEmpty() && !doPasswordsMatch,
+                    visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    trailingIcon = {
+                        IconButton(onClick = onConfirmPasswordVisibilityChange) {
+                            Icon(
+                                if (confirmPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                "Toggle confirm password visibility",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    },
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        focusedLabelColor = MaterialTheme.colorScheme.primary,
+                        cursorColor = MaterialTheme.colorScheme.primary,
+                        errorBorderColor = MaterialTheme.colorScheme.error,
+                        errorLabelColor = MaterialTheme.colorScheme.error
+                    ),
+                    supportingText = if (confirmPassword.isNotEmpty() && !doPasswordsMatch) {
+                        { Text(
+                            stringResource(R.string.passwords_not_match),
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall
+                        ) }
+                    } else null,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = onConfirm,
+                enabled = isFormValid,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            ) {
+                Text(stringResource(R.string.saveString))
             }
         },
         dismissButton = {

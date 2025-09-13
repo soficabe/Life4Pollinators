@@ -54,4 +54,13 @@
     <string name="logout_confirmation_message">Sei sicuro di voler uscire dal tuo account?</string>
     <string name="logout_confirm">Logout</string>
     <string name="cancel">Annulla</string>
+    <string name="appearance">Aspetto</string>
+    <string name="privacy">Privacy e Sicurezza</string>
+    <string name="changePassword">Cambia Password</string>
+    <string name="newPassword">Nuova Password</string>
+    <string name="confirmNewPassword">Conferma Nuova Password</string>
+    <string name="saveString">Salva</string>
+    <string name="currentPassword">Password Attuale</string>
+    <string name="password_too_short">La password deve essere lunga almeno 6 caratteri</string>
+    <string name="passwords_not_match">Le password non corrispondono</string>
 </resources>
