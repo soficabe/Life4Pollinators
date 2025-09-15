@@ -26,17 +26,18 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -57,6 +58,7 @@ import com.example.life4pollinators.ui.composables.AppBar
 import com.example.life4pollinators.ui.composables.BottomNavBar
 import com.example.life4pollinators.ui.navigation.L4PRoute
 import com.example.life4pollinators.data.models.Theme
+import com.example.life4pollinators.data.repositories.ChangePasswordResult
 
 @Composable
 fun SettingsScreen (
@@ -74,14 +76,24 @@ fun SettingsScreen (
     // Dialog di conferma logout
     var showLogoutDialog by rememberSaveable { mutableStateOf(false) }
 
-    // Cambio password - TUTTI E TRE I CAMPI
+// Cambio password - SOLO DUE CAMPI
     var showPasswordDialog by rememberSaveable { mutableStateOf(false) }
-    var currentPassword by rememberSaveable { mutableStateOf("") }
     var newPassword by rememberSaveable { mutableStateOf("") }
     var confirmPassword by rememberSaveable { mutableStateOf("") }
-    var currentPasswordVisible by rememberSaveable { mutableStateOf(false) }
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
     var confirmPasswordVisible by rememberSaveable { mutableStateOf(false) }
+
+    // Gestione esito cambio password
+    LaunchedEffect(state.changePasswordResult) {
+        when (state.changePasswordResult) {
+            ChangePasswordResult.Success -> {
+                showPasswordDialog = false
+                newPassword = ""
+                confirmPassword = ""
+            }
+            else -> {}
+        }
+    }
 
     Scaffold (
         topBar = { AppBar(navController) },
@@ -161,35 +173,33 @@ fun SettingsScreen (
             )
         }
 
-        // Dialog cambio password - CON TUTTI E TRE I CAMPI
         if (showPasswordDialog) {
             ChangePasswordDialog(
-                currentPassword = currentPassword,
                 newPassword = newPassword,
                 confirmPassword = confirmPassword,
-                currentPasswordVisible = currentPasswordVisible,
                 passwordVisible = passwordVisible,
                 confirmPasswordVisible = confirmPasswordVisible,
-                onCurrentPasswordChange = { currentPassword = it },
-                onNewPasswordChange = { newPassword = it },
-                onConfirmPasswordChange = { confirmPassword = it },
-                onCurrentPasswordVisibilityChange = { currentPasswordVisible = !currentPasswordVisible },
+                onNewPasswordChange = {
+                    newPassword = it
+                    actions.clearChangePasswordError()
+                },
+                onConfirmPasswordChange = {
+                    confirmPassword = it
+                    actions.clearChangePasswordError()
+                },
                 onPasswordVisibilityChange = { passwordVisible = !passwordVisible },
                 onConfirmPasswordVisibilityChange = { confirmPasswordVisible = !confirmPasswordVisible },
                 onConfirm = {
-                    // TODO: Implementare logica cambio password
-                    // actions.updatePassword(currentPassword, newPassword, confirmPassword)
-                    showPasswordDialog = false
-                    currentPassword = ""
-                    newPassword = ""
-                    confirmPassword = ""
+                    actions.changePassword(newPassword, confirmPassword)  // Rimosso currentPassword
                 },
                 onDismiss = {
                     showPasswordDialog = false
-                    currentPassword = ""
                     newPassword = ""
                     confirmPassword = ""
-                }
+                    actions.clearChangePasswordError()
+                },
+                isLoading = state.isChangingPassword,
+                errorMessage = state.changePasswordError
             )
         }
     }
@@ -311,26 +321,19 @@ fun LogoutConfirmationDialog(
 
 @Composable
 fun ChangePasswordDialog(
-    currentPassword: String,
     newPassword: String,
     confirmPassword: String,
-    currentPasswordVisible: Boolean,
     passwordVisible: Boolean,
     confirmPasswordVisible: Boolean,
-    onCurrentPasswordChange: (String) -> Unit,
     onNewPasswordChange: (String) -> Unit,
     onConfirmPasswordChange: (String) -> Unit,
-    onCurrentPasswordVisibilityChange: () -> Unit,
     onPasswordVisibilityChange: () -> Unit,
     onConfirmPasswordVisibilityChange: () -> Unit,
     onConfirm: () -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    isLoading: Boolean = false,
+    errorMessage: Int? = null
 ) {
-    // Validazioni solo per feedback visivo locale
-    val isNewPasswordTooShort = newPassword.isNotEmpty() && newPassword.length < 6
-    val doPasswordsMatch = newPassword.isNotEmpty() && confirmPassword.isNotEmpty() && newPassword == confirmPassword
-    val isFormValid = currentPassword.isNotEmpty() && newPassword.length >= 6 && doPasswordsMatch
-
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
@@ -341,39 +344,11 @@ fun ChangePasswordDialog(
         },
         text = {
             Column {
-                // 1. CAMPO PASSWORD ATTUALE
-                OutlinedTextField(
-                    value = currentPassword,
-                    onValueChange = onCurrentPasswordChange,
-                    label = { Text(stringResource(R.string.currentPassword)) },
-                    singleLine = true,
-                    visualTransformation = if (currentPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                    trailingIcon = {
-                        IconButton(onClick = onCurrentPasswordVisibilityChange) {
-                            Icon(
-                                if (currentPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                                "Toggle current password visibility",
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    },
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        focusedLabelColor = MaterialTheme.colorScheme.primary,
-                        cursorColor = MaterialTheme.colorScheme.primary
-                    ),
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Spacer(Modifier.height(12.dp))
-
-                // 2. CAMPO NUOVA PASSWORD
                 OutlinedTextField(
                     value = newPassword,
                     onValueChange = onNewPasswordChange,
                     label = { Text(stringResource(R.string.newPassword)) },
                     singleLine = true,
-                    isError = isNewPasswordTooShort,
                     visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
                         IconButton(onClick = onPasswordVisibilityChange) {
@@ -384,32 +359,16 @@ fun ChangePasswordDialog(
                             )
                         }
                     },
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        focusedLabelColor = MaterialTheme.colorScheme.primary,
-                        cursorColor = MaterialTheme.colorScheme.primary,
-                        errorBorderColor = MaterialTheme.colorScheme.error,
-                        errorLabelColor = MaterialTheme.colorScheme.error
-                    ),
-                    supportingText = if (isNewPasswordTooShort) {
-                        { Text(
-                            stringResource(R.string.password_too_short),
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodySmall
-                        ) }
-                    } else null,
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(16.dp))
 
-                // 3. CAMPO CONFERMA PASSWORD
                 OutlinedTextField(
                     value = confirmPassword,
                     onValueChange = onConfirmPasswordChange,
                     label = { Text(stringResource(R.string.confirmNewPassword)) },
                     singleLine = true,
-                    isError = confirmPassword.isNotEmpty() && !doPasswordsMatch,
                     visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
                         IconButton(onClick = onConfirmPasswordVisibilityChange) {
@@ -420,36 +379,29 @@ fun ChangePasswordDialog(
                             )
                         }
                     },
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        focusedLabelColor = MaterialTheme.colorScheme.primary,
-                        cursorColor = MaterialTheme.colorScheme.primary,
-                        errorBorderColor = MaterialTheme.colorScheme.error,
-                        errorLabelColor = MaterialTheme.colorScheme.error
-                    ),
-                    supportingText = if (confirmPassword.isNotEmpty() && !doPasswordsMatch) {
-                        { Text(
-                            stringResource(R.string.passwords_not_match),
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodySmall
-                        ) }
-                    } else null,
                     modifier = Modifier.fillMaxWidth()
                 )
+
+                if (errorMessage != null) {
+                    Text(
+                        text = stringResource(id = errorMessage),
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                }
             }
         },
         confirmButton = {
             Button(
                 onClick = onConfirm,
-                enabled = isFormValid,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary,
-                    disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                enabled = !isLoading,
             ) {
-                Text(stringResource(R.string.saveString))
+                if (isLoading) {
+                    CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                } else {
+                    Text(stringResource(R.string.saveString))
+                }
             }
         },
         dismissButton = {

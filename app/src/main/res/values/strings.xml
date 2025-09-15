@@ -62,4 +62,6 @@
     <string name="currentPassword">Current Password</string>
     <string name="password_too_short">The password must be at least 6 characters long</string>
     <string name="passwords_not_match">Passwords do not match</string>
+    <string name="current_password_wrong">The current password is not correct.</string>
+    <string name="generic_change_psw_error">Change password failed. Please try again.</string>
 </resources>

@@ -49,6 +49,18 @@ sealed interface SignInResult {
     }
 }
 
+sealed interface ChangePasswordResult {
+    data object Success : ChangePasswordResult
+
+    sealed interface Error : ChangePasswordResult {
+        data object RequiredFields : Error
+        data object WeakPassword : Error
+        data object PasswordMismatch : Error
+        data object NetworkError : Error
+        data class UnknownError(val exception: Throwable) : Error
+    }
+}
+
 /**
  * Repository per gestire autenticazione (con trigger automatico per tabella user)
  */
@@ -163,6 +175,23 @@ class AuthRepository(
         return null // Validazione superata
     }
 
+    // Valida i dati di cambio password
+    private fun validateChangePasswordData(
+        newPassword: String,
+        confirmPassword: String
+    ): ChangePasswordResult.Error? {
+        if (newPassword.isBlank() || confirmPassword.isBlank()) {
+            return ChangePasswordResult.Error.RequiredFields
+        }
+        if (newPassword.length < 6) {
+            return ChangePasswordResult.Error.WeakPassword
+        }
+        if (newPassword != confirmPassword) {
+            return ChangePasswordResult.Error.PasswordMismatch
+        }
+        return null
+    }
+
     // Registra un nuovo utente con email/password.
     suspend fun signUp(
         username: String,
@@ -251,5 +280,37 @@ class AuthRepository(
      */
     suspend fun signOut() {
         auth.signOut()
+    }
+
+    /**
+     * Aggiorna la password dell'utente autenticato.
+     *
+     * @param newPassword nuova password
+     * @param confirmPassword conferma nuova password
+     * @return ChangePasswordResult indicante l'esito dell'operazione
+     */
+    suspend fun changePassword(
+        newPassword: String,
+        confirmPassword: String
+    ): ChangePasswordResult {
+        // Validazione locale
+        validateChangePasswordData(newPassword, confirmPassword)?.let { return it }
+
+        return try {
+            // Aggiorna direttamente la password senza verificare quella attuale
+            auth.updateUser {
+                password = newPassword
+            }
+            ChangePasswordResult.Success
+        } catch (e: AuthRestException) {
+            when {
+                e.message?.contains("network", true) == true -> {
+                    ChangePasswordResult.Error.NetworkError
+                }
+                else -> ChangePasswordResult.Error.UnknownError(e)
+            }
+        } catch (e: Exception) {
+            ChangePasswordResult.Error.UnknownError(e)
+        }
     }
 }
