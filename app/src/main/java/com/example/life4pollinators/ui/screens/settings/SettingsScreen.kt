@@ -17,10 +17,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.filled.AppSettingsAlt
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -98,7 +100,11 @@ fun SettingsScreen (
             HorizontalDivider()
             SettingsClickable(
                 stringResource(R.string.changeTheme),
-                Icons.Filled.WbSunny,
+                when(state.theme) {
+                    Theme.Light -> Icons.Filled.LightMode
+                    Theme.Dark -> Icons.Filled.DarkMode
+                    Theme.System -> Icons.Filled.AppSettingsAlt
+                },
                 onClick = { showThemeDialog = true }
             )
 

@@ -43,7 +43,7 @@
     <string name="profile">Profilo</string>
 
     <!-- Settings -->
-    <string name="changeTheme">Cambia tema</string>
+    <string name="changeTheme">Cambia Tema</string>
     <string name="chooseTheme">Scegli tema</string>
     <string name="closeButton">Chiudi</string>
     <string name="logout">Esci</string>

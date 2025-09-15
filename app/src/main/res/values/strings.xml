@@ -42,7 +42,7 @@
     <string name="profile">Profile</string>
     
     <!-- Settings -->
-    <string name="changeTheme">Change theme</string>
+    <string name="changeTheme">Change Theme</string>
     <string name="chooseTheme">Choose theme</string>
     <string name="closeButton">Close</string>
     <string name="logout">Logout</string>
