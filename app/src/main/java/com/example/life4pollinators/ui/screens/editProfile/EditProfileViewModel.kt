@@ -38,6 +38,10 @@ interface EditProfileActions {
     fun setFirstName(firstName: String)
     fun setLastName(lastName: String)
     fun setEmail(email: String)
+    fun resetUsername()
+    fun resetFirstName()
+    fun resetLastName()
+    fun resetEmail()
     fun saveChanges()
     fun clearMessages()
     suspend fun loadUserData()
@@ -64,6 +68,39 @@ class EditProfileViewModel(
         override fun setEmail(email: String) {
             _state.update { it.copy(email = email, errorMessage = null) }
         }
+
+        override fun resetUsername() {
+            _state.update { state ->
+                state.user?.let { user ->
+                    state.copy(username = user.username)
+                } ?: state
+            }
+        }
+
+        override fun resetFirstName() {
+            _state.update { state ->
+                state.user?.let { user ->
+                    state.copy(firstName = user.firstName)
+                } ?: state
+            }
+        }
+
+        override fun resetLastName() {
+            _state.update { state ->
+                state.user?.let { user ->
+                    state.copy(lastName = user.lastName)
+                } ?: state
+            }
+        }
+
+        override fun resetEmail() {
+            _state.update { state ->
+                state.user?.let { user ->
+                    state.copy(email = user.email)
+                } ?: state
+            }
+        }
+
         override fun clearMessages() {
             _state.update { it.copy(errorMessage = null, isSuccess = false, emailConfirmationSentMessage = null) }
         }

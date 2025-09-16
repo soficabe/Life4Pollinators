@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Person
@@ -141,6 +142,18 @@ fun EditProfileScreen(
                     singleLine = true,
                     shape = RoundedCornerShape(12.dp),
                     enabled = !state.isSaving,
+                    trailingIcon = {
+                        val isModified = state.username != state.user?.username
+                        IconButton(
+                            onClick = { actions.resetUsername() },
+                            enabled = isModified
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Refresh,
+                                contentDescription = "Reset username"
+                            )
+                        }
+                    }
                 )
 
                 // First Name Field
@@ -152,6 +165,18 @@ fun EditProfileScreen(
                     singleLine = true,
                     shape = RoundedCornerShape(12.dp),
                     enabled = !state.isSaving,
+                    trailingIcon = {
+                        val isModified = state.firstName != state.user?.firstName
+                        IconButton(
+                            onClick = { actions.resetFirstName() },
+                            enabled = isModified
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Refresh,
+                                contentDescription = "Reset first name"
+                            )
+                        }
+                    }
                 )
 
                 // Last Name Field
@@ -163,6 +188,18 @@ fun EditProfileScreen(
                     singleLine = true,
                     shape = RoundedCornerShape(12.dp),
                     enabled = !state.isSaving,
+                    trailingIcon = {
+                        val isModified = state.lastName != state.user?.lastName
+                        IconButton(
+                            onClick = { actions.resetLastName() },
+                            enabled = isModified
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Refresh,
+                                contentDescription = "Reset last name"
+                            )
+                        }
+                    }
                 )
 
                 // Email Field
@@ -175,6 +212,18 @@ fun EditProfileScreen(
                     keyboardOptions = KeyboardOptions(keyboardType = Email),
                     shape = RoundedCornerShape(12.dp),
                     enabled = !state.isSaving,
+                    trailingIcon = {
+                        val isModified = state.email != state.user?.email
+                        IconButton(
+                            onClick = { actions.resetEmail() },
+                            enabled = isModified
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Refresh,
+                                contentDescription = "Reset email"
+                            )
+                        }
+                    }
                 )
             }
 

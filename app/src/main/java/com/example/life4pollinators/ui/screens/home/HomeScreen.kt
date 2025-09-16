@@ -10,25 +10,17 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.life4pollinators.data.models.NavBarTab
-import com.example.life4pollinators.data.repositories.AuthRepository
 import com.example.life4pollinators.ui.composables.AppBar
 import com.example.life4pollinators.ui.composables.BottomNavBar
 import com.example.life4pollinators.ui.composables.SectionCard
-import io.github.jan.supabase.auth.status.SessionStatus
-import org.koin.compose.koinInject
 
 @Composable
 fun HomeScreen(
     navController: NavHostController
 ) {
-    // DEBUG - rimuovere dopo test
-    val authRepository: AuthRepository = koinInject()
-    val sessionStatus by authRepository.sessionStatus.collectAsState()
-    val user = authRepository.user
 
     Scaffold(
         topBar = {
@@ -47,17 +39,6 @@ fun HomeScreen(
                 .padding(horizontal = 16.dp, vertical = 24.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            // DEBUG - rimuovere dopo test
-            Text(
-                text = "AUTH STATUS: ${if (sessionStatus is SessionStatus.Authenticated) "✅ LOGGED IN" else "❌ NOT LOGGED IN"}",
-                color = if (sessionStatus is SessionStatus.Authenticated) Color.Green else Color.Red,
-                style = MaterialTheme.typography.titleMedium
-            )
-            if (user != null) {
-                Text("Email: ${user.email}", color = Color.Blue)
-            }
-            Spacer(Modifier.height(16.dp))
-            // END DEBUG
 
             Text(
                 "Learn About:",
