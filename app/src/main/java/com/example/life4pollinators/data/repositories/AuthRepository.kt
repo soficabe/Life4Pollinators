@@ -61,6 +61,17 @@ sealed interface ChangePasswordResult {
     }
 }
 
+//Risultati della modifica profilo
+sealed interface EditProfileResult {
+    data object Success : EditProfileResult
+    sealed interface Error : EditProfileResult {
+        data object InvalidEmail : Error
+        data object EmailAlreadyExists : Error
+        data object NetworkError : Error
+        data class UnknownError(val exception: Throwable) : Error
+    }
+}
+
 /**
  * Repository per gestire autenticazione (con trigger automatico per tabella user)
  */
@@ -280,6 +291,29 @@ class AuthRepository(
      */
     suspend fun signOut() {
         auth.signOut()
+    }
+
+    // --- MODIFICA EMAIL usando solo Supabase Auth (il trigger aggiornerà la tabella user)
+    suspend fun updateUserEmail(email: String): EditProfileResult {
+        return try {
+            auth.updateUser {
+                this.email = email
+            }
+            EditProfileResult.Success
+        } catch (e: AuthRestException) {
+            Log.e("AuthRepository", "Update user email failed - Auth exception", e)
+            if (e.message?.contains("email", ignoreCase = true) == true &&
+                e.message?.contains("already", ignoreCase = true) == true) {
+                EditProfileResult.Error.EmailAlreadyExists
+            } else if (e.message?.contains("network", ignoreCase = true) == true) {
+                EditProfileResult.Error.NetworkError
+            } else {
+                EditProfileResult.Error.UnknownError(e)
+            }
+        } catch (e: Exception) {
+            Log.e("AuthRepository", "Update user email failed", e)
+            EditProfileResult.Error.UnknownError(e)
+        }
     }
 
     /**

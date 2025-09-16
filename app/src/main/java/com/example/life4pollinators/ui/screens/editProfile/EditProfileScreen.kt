@@ -17,7 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.KeyboardType.Companion.Email
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.life4pollinators.data.models.NavBarTab
@@ -26,18 +26,41 @@ import com.example.life4pollinators.ui.composables.BottomNavBar
 
 @Composable
 fun EditProfileScreen(
+    state: EditProfileState,
+    actions: EditProfileActions,
     navController: NavHostController
 ) {
     val scrollState = rememberScrollState()
+    val snackbarHostState = remember { SnackbarHostState() }
 
-    var username by remember { mutableStateOf("SofiCabe") }
-    var firstName by remember { mutableStateOf("Sofia") }
-    var lastName by remember { mutableStateOf("Caberletti") }
-    var email by remember { mutableStateOf("soficabe@gmail.com") }
+    // Feedback per errori
+    LaunchedEffect(state.errorMessage) {
+        state.errorMessage?.let { message ->
+            snackbarHostState.showSnackbar(message)
+            actions.clearMessages()
+        }
+    }
+    // Feedback per successo
+    LaunchedEffect(state.isSuccess) {
+        if (state.isSuccess && state.emailConfirmationSentMessage == null) {
+            snackbarHostState.showSnackbar("Modifica profilo salvata!")
+            actions.clearMessages()
+            navController.navigateUp()
+        }
+    }
+    // Notifica cambio email
+    LaunchedEffect(state.emailConfirmationSentMessage) {
+        state.emailConfirmationSentMessage?.let { message ->
+            snackbarHostState.showSnackbar(message)
+            actions.clearMessages()
+            navController.navigateUp()
+        }
+    }
 
     Scaffold(
         topBar = { AppBar(navController) },
-        bottomBar = { BottomNavBar(NavBarTab.Profile, navController) }
+        bottomBar = { BottomNavBar(NavBarTab.Profile, navController) },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
         Column(
             modifier = Modifier
@@ -49,7 +72,7 @@ fun EditProfileScreen(
         ) {
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Profile Avatar with edit functionality
+            // Profile Avatar (da implementare upload img)
             Box(contentAlignment = Alignment.Center) {
                 Surface(
                     modifier = Modifier.size(110.dp),
@@ -83,9 +106,10 @@ fun EditProfileScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Change Image Button
+            // Change Image Button (disabled per ora)
             TextButton(
-                onClick = { /*TODO: Change image*/ },
+                onClick = { /* Da implementare */ },
+                enabled = false,
                 colors = ButtonDefaults.textButtonColors(
                     contentColor = MaterialTheme.colorScheme.primary
                 )
@@ -97,74 +121,60 @@ fun EditProfileScreen(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    "Change Image",
+                    "Change Image (soon)",
                     style = MaterialTheme.typography.labelLarge
                 )
             }
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Form Fields
             Column(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 // Username Field
                 OutlinedTextField(
-                    value = username,
-                    onValueChange = { username = it },
+                    value = state.username,
+                    onValueChange = { actions.setUsername(it) },
                     label = { Text("Username") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     shape = RoundedCornerShape(12.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        focusedLabelColor = MaterialTheme.colorScheme.primary,
-                        cursorColor = MaterialTheme.colorScheme.primary
-                    )
+                    enabled = !state.isSaving,
                 )
 
                 // First Name Field
                 OutlinedTextField(
-                    value = firstName,
-                    onValueChange = { firstName = it },
+                    value = state.firstName,
+                    onValueChange = { actions.setFirstName(it) },
                     label = { Text("First Name") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     shape = RoundedCornerShape(12.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        focusedLabelColor = MaterialTheme.colorScheme.primary
-                    )
+                    enabled = !state.isSaving,
                 )
 
                 // Last Name Field
                 OutlinedTextField(
-                    value = lastName,
-                    onValueChange = { lastName = it },
+                    value = state.lastName,
+                    onValueChange = { actions.setLastName(it) },
                     label = { Text("Last Name") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     shape = RoundedCornerShape(12.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        focusedLabelColor = MaterialTheme.colorScheme.primary
-                    )
+                    enabled = !state.isSaving,
                 )
 
                 // Email Field
                 OutlinedTextField(
-                    value = email,
-                    onValueChange = { email = it },
+                    value = state.email,
+                    onValueChange = { actions.setEmail(it) },
                     label = { Text("Email") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                    keyboardOptions = KeyboardOptions(keyboardType = Email),
                     shape = RoundedCornerShape(12.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        focusedLabelColor = MaterialTheme.colorScheme.primary
-                    )
+                    enabled = !state.isSaving,
                 )
             }
 
@@ -172,25 +182,36 @@ fun EditProfileScreen(
 
             // Save Changes Button
             FilledTonalButton(
-                onClick = {
-                    // TODO: Save changes logic
-                    navController.navigateUp()
-                },
+                onClick = { actions.saveChanges() },
                 modifier = Modifier
                     .padding(horizontal = 40.dp)
                     .fillMaxWidth()
                     .height(52.dp),
                 shape = RoundedCornerShape(20.dp),
+                enabled = state.hasChanges && !state.isSaving && !state.isLoading,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary
                 )
             ) {
-                Icon(imageVector = Icons.Outlined.Check, contentDescription = "Edit Profile")
-                Spacer(Modifier.width(8.dp))
-                Text(
-                    "Save Changes",
-                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Medium)
-                )
+                if (state.isSaving) {
+                    CircularProgressIndicator(
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.size(22.dp),
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Icon(imageVector = Icons.Outlined.Check, contentDescription = "Edit Profile")
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        "Save Changes",
+                        style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Medium)
+                    )
+                }
+            }
+
+            if (state.isLoading) {
+                Spacer(modifier = Modifier.height(18.dp))
+                CircularProgressIndicator()
             }
 
             Spacer(modifier = Modifier.height(32.dp))

@@ -11,6 +11,7 @@ import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -31,6 +32,10 @@ fun ProfileScreen(
     navController: NavHostController
 ) {
     val scrollState = rememberScrollState()
+
+    LaunchedEffect(Unit) {
+        actions.refreshProfile()
+    }
 
     Scaffold(
         topBar = { AppBar(navController) },
@@ -112,7 +117,7 @@ fun ProfileScreen(
                 )
                 ProfileStatCard(
                     value = "8",
-                    label = "Contributions",
+                    label = "Tests Taken",
                     color = MaterialTheme.colorScheme.tertiaryContainer,
                     modifier = Modifier.weight(1f)
                 )

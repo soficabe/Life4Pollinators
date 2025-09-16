@@ -8,6 +8,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.life4pollinators.ui.screens.editProfile.EditProfileScreen
+import com.example.life4pollinators.ui.screens.editProfile.EditProfileViewModel
 import com.example.life4pollinators.ui.screens.home.HomeScreen
 import com.example.life4pollinators.ui.screens.profile.ProfileScreen
 import com.example.life4pollinators.ui.screens.profile.ProfileViewModel
@@ -90,7 +91,9 @@ fun L4PNavGraph(
         }
 
         composable<L4PRoute.EditProfile> {
-            EditProfileScreen(navController)
+            val editProfileVM = koinViewModel<EditProfileViewModel>()
+            val editProfileState by editProfileVM.state.collectAsStateWithLifecycle()
+            EditProfileScreen(editProfileState, editProfileVM.actions, navController)
         }
     }
 }

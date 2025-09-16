@@ -3,17 +3,24 @@ package com.example.life4pollinators.data.repositories
 import android.util.Log
 import com.example.life4pollinators.data.database.entities.User
 import io.github.jan.supabase.SupabaseClient
-import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.postgrest.from
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+
+sealed interface UpdateUserProfileResult {
+    data object Success : UpdateUserProfileResult
+    sealed interface Error : UpdateUserProfileResult {
+        data object UsernameAlreadyExists : Error
+        data object NetworkError : Error
+        data class UnknownError(val exception: Throwable) : Error
+    }
+}
 
 /**
  * Repository per la gestione dei dati utente nel database.
  */
 class UserRepository(
-    private val supabase: SupabaseClient,
-    private val auth: Auth
+    private val supabase: SupabaseClient
 ) {
 
     /**
@@ -38,44 +45,54 @@ class UserRepository(
         }
     }
 
-//    /**
-//     * Aggiorna il profilo di un utente esistente nel database.
-//     *
-//     * @param userId ID dell'utente da aggiornare
-//     * @param name nuovo nome (opzionale)
-//     * @param surname nuovo cognome (opzionale)
-//     * @param imageUrl nuovo URL dell'immagine profilo (opzionale)
-//     * @return UpdateUserProfileResult indicante l'esito dell'operazione
-//     */
-//    suspend fun updateUserProfile(
-//        userId: String,
-//        name: String? = null,
-//        surname: String? = null,
-//        imageUrl: String? = null
-//    ): UpdateUserProfileResult {
-//        return withContext(Dispatchers.IO) {
-//            try {
-//                //costruzione campi da aggiornare
-//                val updateData = mutableMapOf<String, String?>()
-//                name?.let { updateData["name"] = it }
-//                surname?.let { updateData["surname"] = it }
-//                imageUrl?.let { updateData["image"] = it }
-//
-//                //esecuzione update solo se ci sono campi da modificare
-//                if (updateData.isNotEmpty()) {
-//                    supabase.from("User")
-//                        .update(updateData) {
-//                            filter {
-//                                eq("id", userId)
-//                            }
-//                        }
-//                }
-//
-//                UpdateUserProfileResult.Success
-//            } catch (e: Exception) {
-//                Log.e("UserRepository", "Error updating user profile: ${e.message}", e)
-//                UpdateUserProfileResult.Error
-//            }
-//        }
-//    }
+    // Controllo unicità username (escludendo l'utente stesso)
+    private suspend fun isUsernameExists(username: String, excludeUserId: String? = null): Boolean {
+        return try {
+            val res = supabase.from("user")
+                .select {
+                    filter { eq("username", username) }
+                }.decodeList<User>()
+            if (excludeUserId != null) {
+                res.any { it.username == username && it.id != excludeUserId }
+            } else {
+                res.isNotEmpty()
+            }
+        } catch (e: Exception) {
+            Log.e("UserRepository", "Error checking username existence", e)
+            false
+        }
+    }
+
+    // Metodo di update profilo (username, firstName, lastName)
+    suspend fun updateUserProfile(
+        userId: String,
+        username: String,
+        firstName: String,
+        lastName: String
+    ): UpdateUserProfileResult {
+        return withContext(Dispatchers.IO) {
+            try {
+                // Controllo unicità username (escludendo se stesso)
+                if (isUsernameExists(username, excludeUserId = userId)) {
+                    return@withContext UpdateUserProfileResult.Error.UsernameAlreadyExists
+                }
+
+                val updateData = mapOf(
+                    "username" to username,
+                    "first_name" to firstName,
+                    "last_name" to lastName
+                )
+
+                supabase.from("user")
+                    .update(updateData) {
+                        filter { eq("id", userId) }
+                    }
+
+                UpdateUserProfileResult.Success
+            } catch (e: Exception) {
+                Log.e("UserRepository", "Error updating user profile: ${e.message}", e)
+                UpdateUserProfileResult.Error.UnknownError(e)
+            }
+        }
+    }
 }
