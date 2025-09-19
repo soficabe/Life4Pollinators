@@ -7,6 +7,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.life4pollinators.ui.AuthViewModel
 import com.example.life4pollinators.ui.screens.editProfile.EditProfileScreen
 import com.example.life4pollinators.ui.screens.editProfile.EditProfileViewModel
 import com.example.life4pollinators.ui.screens.home.HomeScreen
@@ -58,6 +59,9 @@ fun L4PNavGraph(
     settingsViewModel: SettingsViewModel,
     settingsState: SettingsState
 ){
+    val authViewModel = koinViewModel<AuthViewModel>()
+    val isAuthenticated by authViewModel.isAuthenticated.collectAsStateWithLifecycle()
+
     //Composable utilizzato per l'implementazione vera e propria del grafico di navigazione
     NavHost(
         navController = navController,
@@ -77,11 +81,11 @@ fun L4PNavGraph(
         }
 
         composable<L4PRoute.Home> {
-            HomeScreen(navController)
+            HomeScreen(isAuthenticated, navController)
         }
 
         composable<L4PRoute.Settings> {
-            SettingsScreen(settingsState, settingsViewModel.actions, navController)
+            SettingsScreen(settingsState, settingsViewModel.actions, isAuthenticated, navController)
         }
 
         composable<L4PRoute.Profile> {

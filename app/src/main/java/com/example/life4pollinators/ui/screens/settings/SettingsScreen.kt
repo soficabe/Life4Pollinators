@@ -64,6 +64,7 @@ import com.example.life4pollinators.data.repositories.ChangePasswordResult
 fun SettingsScreen (
     state: SettingsState,
     actions: SettingsActions,
+    isAuthenticated: Boolean,
     navController: NavHostController
 ) {
     val scrollState = rememberScrollState()
@@ -97,7 +98,13 @@ fun SettingsScreen (
 
     Scaffold (
         topBar = { AppBar(navController) },
-        bottomBar = { BottomNavBar(navController = navController) }
+        bottomBar = {
+            BottomNavBar(
+                isAuthenticated = isAuthenticated,
+                navController = navController
+            )
+        }
+
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -121,24 +128,24 @@ fun SettingsScreen (
             )
 
             // Sezione Privacy e Sicurezza (solo se autenticato)
-            //if (state.isAuthenticated) {
-            TextTitle(stringResource(R.string.privacy))
+            if (isAuthenticated) {
+                TextTitle(stringResource(R.string.privacy))
 
-            HorizontalDivider()
-            SettingsClickable(
-                stringResource(R.string.changePassword),
-                Icons.Filled.Lock,
-                onClick = { showPasswordDialog = true }
-            )
+                HorizontalDivider()
+                SettingsClickable(
+                    stringResource(R.string.changePassword),
+                    Icons.Filled.Lock,
+                    onClick = { showPasswordDialog = true }
+                )
 
-            HorizontalDivider()
-            SettingsClickable(
-                stringResource(R.string.logout),
-                Icons.AutoMirrored.Filled.Logout,
-                MaterialTheme.colorScheme.error,
-                onClick = { showLogoutDialog = true }
-            )
-            //}
+                HorizontalDivider()
+                SettingsClickable(
+                    stringResource(R.string.logout),
+                    Icons.AutoMirrored.Filled.Logout,
+                    MaterialTheme.colorScheme.error,
+                    onClick = { showLogoutDialog = true }
+                )
+            }
 
         }
 

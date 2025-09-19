@@ -78,7 +78,7 @@ fun EditProfileScreen(
 
     Scaffold(
         topBar = { AppBar(navController) },
-        bottomBar = { BottomNavBar(NavBarTab.Profile, navController) },
+        bottomBar = { BottomNavBar(selectedTab = NavBarTab.Profile, navController = navController) },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
         Column(

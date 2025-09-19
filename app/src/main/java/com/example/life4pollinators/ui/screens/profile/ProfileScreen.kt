@@ -35,7 +35,7 @@ fun ProfileScreen(
 
     Scaffold(
         topBar = { AppBar(navController) },
-        bottomBar = { BottomNavBar(selectedTab = NavBarTab.Profile, navController) }
+        bottomBar = { BottomNavBar(selectedTab = NavBarTab.Profile, navController = navController) }
     ) { padding ->
         Column(
             Modifier

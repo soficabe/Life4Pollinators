@@ -19,6 +19,7 @@ import com.example.life4pollinators.ui.composables.SectionCard
 
 @Composable
 fun HomeScreen(
+    isAuthenticated: Boolean,
     navController: NavHostController
 ) {
 
@@ -28,6 +29,7 @@ fun HomeScreen(
         },
         bottomBar = {
             BottomNavBar(
+                isAuthenticated = isAuthenticated,
                 selectedTab = NavBarTab.Home,
                 navController = navController
             )

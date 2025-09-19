@@ -16,6 +16,7 @@ import com.example.life4pollinators.ui.navigation.L4PRoute
 
 @Composable
 fun BottomNavBar(
+    isAuthenticated: Boolean = true,
     selectedTab: NavBarTab = NavBarTab.None,
     navController: NavHostController
 ) {
@@ -30,19 +31,34 @@ fun BottomNavBar(
             icon = { Icon(Icons.Outlined.Visibility, contentDescription = "Sightings") },
             label = { Text("Sightings") },
             selected = false,
-            onClick = { navController.navigate(L4PRoute.SignIn) }
+            onClick = {
+                if(isAuthenticated)
+                    navController.navigate(L4PRoute.Home) //poi sarà la vera schermata
+                else
+                    navController.navigate(L4PRoute.SignIn)
+            }
         )
         NavigationBarItem(
             icon = { Icon(Icons.Outlined.AddCircle, contentDescription = "Add Sighting") },
             label = { Text("Add Sighting") },
             selected = false,
-            onClick = { navController.navigate(L4PRoute.SignUp) }
+            onClick = {
+                if(isAuthenticated)
+                    navController.navigate(L4PRoute.Home) //poi sarà la vera schermata
+                else
+                    navController.navigate(L4PRoute.SignIn)
+            }
         )
         NavigationBarItem(
             icon = { Icon(Icons.Outlined.Person, contentDescription = "User Profile") },
             label = { Text("User Profile") },
             selected = selectedTab == NavBarTab.Profile,
-            onClick = { navController.navigate(L4PRoute.Profile) }
+            onClick = {
+                if(isAuthenticated)
+                    navController.navigate(L4PRoute.Profile)
+                else
+                    navController.navigate(L4PRoute.SignIn)
+            }
         )
     }
 }

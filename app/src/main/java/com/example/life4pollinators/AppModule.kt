@@ -6,6 +6,7 @@ import com.example.life4pollinators.data.repositories.AuthRepository
 import com.example.life4pollinators.data.repositories.ImageRepository
 import com.example.life4pollinators.data.repositories.SettingsRepository
 import com.example.life4pollinators.data.repositories.UserRepository
+import com.example.life4pollinators.ui.AuthViewModel
 import com.example.life4pollinators.ui.screens.editProfile.EditProfileViewModel
 import com.example.life4pollinators.ui.screens.profile.ProfileViewModel
 import com.example.life4pollinators.ui.screens.settings.SettingsViewModel
@@ -61,6 +62,7 @@ val appModule = module {
     single { ImageRepository(get()) }
 
     //ViewModels
+    viewModel { AuthViewModel(get()) }
     viewModel { SettingsViewModel(get(), get()) }
     viewModel { SignUpViewModel(get()) }
     viewModel { SignInViewModel(get()) }
