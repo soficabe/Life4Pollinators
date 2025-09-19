@@ -68,26 +68,27 @@ class UserRepository(
         userId: String,
         username: String,
         firstName: String,
-        lastName: String
+        lastName: String,
+        image: String?
     ): UpdateUserProfileResult {
         return withContext(Dispatchers.IO) {
             try {
-                // Controllo unicità username (escludendo se stesso)
                 if (isUsernameExists(username, excludeUserId = userId)) {
                     return@withContext UpdateUserProfileResult.Error.UsernameAlreadyExists
                 }
-
-                val updateData = mapOf(
+                // Costruzione coerente di tutti i campi da aggiornare
+                val updateData = mutableMapOf(
                     "username" to username,
                     "first_name" to firstName,
                     "last_name" to lastName
                 )
-
+                if (image != null) {
+                    updateData["image"] = image
+                }
                 supabase.from("user")
                     .update(updateData) {
                         filter { eq("id", userId) }
                     }
-
                 UpdateUserProfileResult.Success
             } catch (e: Exception) {
                 Log.e("UserRepository", "Error updating user profile: ${e.message}", e)

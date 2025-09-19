@@ -3,6 +3,7 @@ package com.example.life4pollinators
 import android.content.Context
 import androidx.datastore.preferences.preferencesDataStore
 import com.example.life4pollinators.data.repositories.AuthRepository
+import com.example.life4pollinators.data.repositories.ImageRepository
 import com.example.life4pollinators.data.repositories.SettingsRepository
 import com.example.life4pollinators.data.repositories.UserRepository
 import com.example.life4pollinators.ui.screens.editProfile.EditProfileViewModel
@@ -57,11 +58,12 @@ val appModule = module {
     single { AuthRepository(get(), get()) }
     single { UserRepository(get()) }
     single { SettingsRepository(get()) }
+    single { ImageRepository(get()) }
 
     //ViewModels
     viewModel { SettingsViewModel(get(), get()) }
     viewModel { SignUpViewModel(get()) }
     viewModel { SignInViewModel(get()) }
     viewModel { ProfileViewModel(get(), get()) }
-    viewModel { EditProfileViewModel(get(), get()) }
+    viewModel { EditProfileViewModel(get(), get(), get()) }
 }

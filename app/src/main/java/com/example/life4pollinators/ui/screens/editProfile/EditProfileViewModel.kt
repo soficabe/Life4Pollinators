@@ -1,10 +1,13 @@
 package com.example.life4pollinators.ui.screens.editProfile
 
+import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.life4pollinators.data.database.entities.User
 import com.example.life4pollinators.data.repositories.AuthRepository
 import com.example.life4pollinators.data.repositories.EditProfileResult
+import com.example.life4pollinators.data.repositories.ImageRepository
 import com.example.life4pollinators.data.repositories.UpdateUserProfileResult
 import com.example.life4pollinators.data.repositories.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,18 +21,21 @@ data class EditProfileState(
     val firstName: String = "",
     val lastName: String = "",
     val email: String = "",
+    val image: String? = null,              // URL della foto profilo
+    val isUploadingImage: Boolean = false,     // Stato upload foto profilo
     val isLoading: Boolean = false,
     val isSaving: Boolean = false,
     val errorMessage: String? = null,
     val isSuccess: Boolean = false,
-    val emailConfirmationSentMessage: String? = null // <--- nuovo campo
+    val emailConfirmationSentMessage: String? = null
 ) {
     val hasChanges: Boolean
         get() = user?.let {
             username != it.username ||
                     firstName != it.firstName ||
                     lastName != it.lastName ||
-                    email != it.email
+                    email != it.email ||
+                    image != it.image // confronta con campo serializzato User
         } ?: false
 }
 
@@ -45,11 +51,14 @@ interface EditProfileActions {
     fun saveChanges()
     fun clearMessages()
     suspend fun loadUserData()
+    fun setError(message: String)
+    fun onProfileImageSelected(uri: Uri, context: Context)
 }
 
 class EditProfileViewModel(
     private val authRepository: AuthRepository,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val imageRepository: ImageRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(EditProfileState(isLoading = true))
@@ -104,11 +113,21 @@ class EditProfileViewModel(
         override fun clearMessages() {
             _state.update { it.copy(errorMessage = null, isSuccess = false, emailConfirmationSentMessage = null) }
         }
+
         override fun saveChanges() {
             saveUserProfile()
         }
+
         override suspend fun loadUserData() {
             loadUserDataInternal()
+        }
+
+        override fun setError(message: String) {
+            _state.update { it.copy(errorMessage = message) }
+        }
+
+        override fun onProfileImageSelected(uri: Uri, context: Context) {
+            uploadProfileImage(uri, context)
         }
     }
 
@@ -129,6 +148,7 @@ class EditProfileViewModel(
                         firstName = it.firstName,
                         lastName = it.lastName,
                         email = it.email,
+                        image = it.image,
                         isLoading = false,
                         errorMessage = null
                     )
@@ -224,25 +244,28 @@ class EditProfileViewModel(
                     }
                 }
 
-                // Aggiorna username/firstName/lastName se cambiati
+                // Aggiorna username/firstName/lastName/image se cambiati
                 if (originalUser != null && (
                             currentState.username != originalUser.username ||
                                     currentState.firstName != originalUser.firstName ||
-                                    currentState.lastName != originalUser.lastName
+                                    currentState.lastName != originalUser.lastName ||
+                                    currentState.image != originalUser.image
                             )
                 ) {
                     when (userRepository.updateUserProfile(
                         userId = userId,
                         username = currentState.username,
                         firstName = currentState.firstName,
-                        lastName = currentState.lastName
+                        lastName = currentState.lastName,
+                        image = currentState.image // ora passa image
                     )) {
                         is UpdateUserProfileResult.Success -> {
                             val updatedUser = originalUser.copy(
                                 username = currentState.username,
                                 firstName = currentState.firstName,
                                 lastName = currentState.lastName,
-                                email = currentState.email
+                                email = currentState.email,
+                                image = currentState.image
                             )
                             _state.update {
                                 it.copy(
@@ -300,6 +323,23 @@ class EditProfileViewModel(
                 _state.update {
                     it.copy(isSaving = false, errorMessage = "Errore inatteso: ${e.message}")
                 }
+            }
+        }
+    }
+
+    private fun uploadProfileImage(uri: Uri, context: Context) {
+        viewModelScope.launch {
+            _state.update { it.copy(isUploadingImage = true, errorMessage = null) }
+            try {
+                val userId = authRepository.getAuthUser().id
+                val imageUrl = imageRepository.uploadProfileImage(userId, uri, context)
+                if (imageUrl != null) {
+                    _state.update { it.copy(image = imageUrl, isUploadingImage = false) }
+                } else {
+                    _state.update { it.copy(errorMessage = "Errore upload immagine", isUploadingImage = false) }
+                }
+            } catch (e: Exception) {
+                _state.update { it.copy(errorMessage = "Errore upload immagine", isUploadingImage = false) }
             }
         }
     }

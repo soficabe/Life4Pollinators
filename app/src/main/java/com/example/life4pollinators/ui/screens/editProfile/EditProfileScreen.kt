@@ -1,9 +1,7 @@
 package com.example.life4pollinators.ui.screens.editProfile
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -11,19 +9,19 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Edit
-import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType.Companion.Email
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.life4pollinators.data.models.NavBarTab
 import com.example.life4pollinators.ui.composables.AppBar
 import com.example.life4pollinators.ui.composables.BottomNavBar
+import com.example.life4pollinators.ui.composables.ProfileIcon
+import com.example.life4pollinators.utils.rememberCameraLauncher
+import com.example.life4pollinators.utils.rememberGalleryLauncher
 
 @Composable
 fun EditProfileScreen(
@@ -33,6 +31,26 @@ fun EditProfileScreen(
 ) {
     val scrollState = rememberScrollState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
+
+    // Gestione dialog per scelta foto
+    var showImagePicker by remember { mutableStateOf(false) }
+
+    val launchCamera = rememberCameraLauncher(
+        onPhotoReady = { uri ->
+            actions.onProfileImageSelected(uri, context)
+            showImagePicker = false
+        },
+        onError = { errorMsg ->
+            actions.setError(errorMsg)
+            showImagePicker = false
+        }
+    )
+
+    val launchGallery = rememberGalleryLauncher { uri ->
+        actions.onProfileImageSelected(uri, context)
+        showImagePicker = false
+    }
 
     // Feedback per errori
     LaunchedEffect(state.errorMessage) {
@@ -73,44 +91,20 @@ fun EditProfileScreen(
         ) {
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Profile Avatar (da implementare upload img)
-            Box(contentAlignment = Alignment.Center) {
-                Surface(
-                    modifier = Modifier.size(110.dp),
-                    shape = CircleShape,
-                    shadowElevation = 6.dp,
-                    tonalElevation = 2.dp
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(
-                                brush = Brush.radialGradient(
-                                    colors = listOf(
-                                        MaterialTheme.colorScheme.primaryContainer,
-                                        MaterialTheme.colorScheme.surfaceVariant
-                                    ),
-                                    radius = 110f
-                                )
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Person,
-                            contentDescription = "Profile image",
-                            modifier = Modifier.size(54.dp),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
-            }
+            // Profile Avatar (sempre gestito da ProfileIcon)
+            ProfileIcon(
+                imageUrl = state.image,
+                isClickable = true,
+                onClick = { showImagePicker = true },
+                showLoader = state.isLoading || state.isUploadingImage
+            )
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Change Image Button (disabled per ora)
+            // Change Image Button
             TextButton(
-                onClick = { /* Da implementare */ },
-                enabled = false,
+                onClick = { showImagePicker = true },
+                enabled = !state.isUploadingImage && !state.isSaving && !state.isLoading,
                 colors = ButtonDefaults.textButtonColors(
                     contentColor = MaterialTheme.colorScheme.primary
                 )
@@ -122,8 +116,33 @@ fun EditProfileScreen(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    "Change Image (soon)",
+                    "Change Image",
                     style = MaterialTheme.typography.labelLarge
+                )
+            }
+
+            // Dialog scelta immagine
+            if (showImagePicker) {
+                AlertDialog(
+                    onDismissRequest = { showImagePicker = false },
+                    title = { Text("Choose photo") },
+                    text = {
+                        Column {
+                            Button(
+                                onClick = { launchCamera() },
+                                modifier = Modifier.fillMaxWidth()
+                            ) { Text("Take a photo") }
+                            Spacer(Modifier.height(8.dp))
+                            Button(
+                                onClick = { launchGallery() },
+                                modifier = Modifier.fillMaxWidth()
+                            ) { Text("Choose from gallery") }
+                        }
+                    },
+                    confirmButton = {},
+                    dismissButton = {
+                        TextButton(onClick = { showImagePicker = false }) { Text("Cancel") }
+                    }
                 )
             }
 
@@ -149,7 +168,7 @@ fun EditProfileScreen(
                             enabled = isModified
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Refresh,
+                                imageVector = Icons.Filled.Refresh,
                                 contentDescription = "Reset username"
                             )
                         }
@@ -172,7 +191,7 @@ fun EditProfileScreen(
                             enabled = isModified
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Refresh,
+                                imageVector = Icons.Filled.Refresh,
                                 contentDescription = "Reset first name"
                             )
                         }
@@ -195,7 +214,7 @@ fun EditProfileScreen(
                             enabled = isModified
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Refresh,
+                                imageVector = Icons.Filled.Refresh,
                                 contentDescription = "Reset last name"
                             )
                         }
@@ -209,7 +228,7 @@ fun EditProfileScreen(
                     label = { Text("Email") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = Email),
+                    keyboardOptions = KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Email),
                     shape = RoundedCornerShape(12.dp),
                     enabled = !state.isSaving,
                     trailingIcon = {
@@ -219,7 +238,7 @@ fun EditProfileScreen(
                             enabled = isModified
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Refresh,
+                                imageVector = Icons.Filled.Refresh,
                                 contentDescription = "Reset email"
                             )
                         }
@@ -237,7 +256,7 @@ fun EditProfileScreen(
                     .fillMaxWidth()
                     .height(52.dp),
                 shape = RoundedCornerShape(20.dp),
-                enabled = state.hasChanges && !state.isSaving && !state.isLoading,
+                enabled = state.hasChanges && !state.isSaving && !state.isLoading && !state.isUploadingImage,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary
                 )
@@ -253,7 +272,7 @@ fun EditProfileScreen(
                     Spacer(Modifier.width(8.dp))
                     Text(
                         "Save Changes",
-                        style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Medium)
+                        style = MaterialTheme.typography.labelLarge.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Medium)
                     )
                 }
             }

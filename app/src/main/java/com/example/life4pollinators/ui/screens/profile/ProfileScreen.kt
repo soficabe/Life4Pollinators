@@ -1,26 +1,22 @@
 package com.example.life4pollinators.ui.screens.profile
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Edit
-import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.life4pollinators.data.models.NavBarTab
 import com.example.life4pollinators.ui.composables.AppBar
 import com.example.life4pollinators.ui.composables.BottomNavBar
+import com.example.life4pollinators.ui.composables.ProfileIcon
 import com.example.life4pollinators.ui.composables.ProfileStatCard
 import com.example.life4pollinators.ui.composables.RankingBadge
 import com.example.life4pollinators.ui.navigation.L4PRoute
@@ -50,41 +46,17 @@ fun ProfileScreen(
         ) {
             Spacer(Modifier.height(24.dp))
 
-            // Avatar migliorato ma semplice
-            Surface(
-                modifier = Modifier.size(110.dp),
-                shape = CircleShape,
-                shadowElevation = 6.dp,
-                tonalElevation = 2.dp
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(
-                            brush = Brush.radialGradient(
-                                colors = listOf(
-                                    MaterialTheme.colorScheme.primaryContainer,
-                                    MaterialTheme.colorScheme.surfaceVariant
-                                ),
-                                radius = 110f
-                            )
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Person,
-                        contentDescription = "Profile image",
-                        modifier = Modifier.size(54.dp),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
-            }
+            ProfileIcon(
+                imageUrl = state.user?.image,
+                isClickable = false,
+                showLoader = state.isRefreshing
+            )
 
             Spacer(Modifier.height(16.dp))
 
             Text(
                 "@${state.user?.username ?: ""}",
-                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold),
                 color = MaterialTheme.colorScheme.onSurface
             )
 
@@ -127,7 +99,7 @@ fun ProfileScreen(
 
             Text(
                 "Ranking",
-                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+                style = MaterialTheme.typography.titleLarge.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
             )
 
             Spacer(Modifier.height(16.dp))
@@ -168,7 +140,7 @@ fun ProfileScreen(
                 Spacer(Modifier.width(8.dp))
                 Text(
                     "Edit Profile",
-                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Medium)
+                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Medium)
                 )
             }
 

@@ -106,4 +106,7 @@ dependencies {
     implementation (libs.play.services.auth)
     implementation (libs.androidx.credentials)
     implementation(libs.googleid)
+
+    //dipendenza per coil (per usare AsyncImage)
+    implementation(libs.coil.compose)
 }
