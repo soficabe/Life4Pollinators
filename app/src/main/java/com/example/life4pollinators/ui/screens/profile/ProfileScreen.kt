@@ -11,8 +11,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.example.life4pollinators.R
 import com.example.life4pollinators.data.models.NavBarTab
 import com.example.life4pollinators.ui.composables.AppBar
 import com.example.life4pollinators.ui.composables.BottomNavBar
@@ -67,9 +69,9 @@ fun ProfileScreen(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("First Name: ${state.user?.firstName ?: ""}", style = MaterialTheme.typography.bodyMedium)
-                Text("Last Name: ${state.user?.lastName ?: ""}", style = MaterialTheme.typography.bodyMedium)
-                Text("Email: ${state.user?.email ?: ""}", style = MaterialTheme.typography.bodyMedium)
+                Text("${stringResource(R.string.first_name)}: ${state.user?.firstName ?: ""}", style = MaterialTheme.typography.bodyMedium)
+                Text("${stringResource(R.string.last_name)}: ${state.user?.lastName ?: ""}", style = MaterialTheme.typography.bodyMedium)
+                Text("${stringResource(R.string.email)}: ${state.user?.email ?: ""}", style = MaterialTheme.typography.bodyMedium)
             }
 
             Spacer(Modifier.height(24.dp))
@@ -83,13 +85,13 @@ fun ProfileScreen(
             ) {
                 ProfileStatCard(
                     value = "10/39",
-                    label = "Sightings",
+                    label = stringResource(R.string.sightings),
                     color = MaterialTheme.colorScheme.secondaryContainer,
                     modifier = Modifier.weight(1f)
                 )
                 ProfileStatCard(
                     value = "8",
-                    label = "Tests Taken",
+                    label = stringResource(R.string.tests_taken),
                     color = MaterialTheme.colorScheme.tertiaryContainer,
                     modifier = Modifier.weight(1f)
                 )
@@ -98,7 +100,7 @@ fun ProfileScreen(
             Spacer(Modifier.height(32.dp))
 
             Text(
-                "Ranking",
+                stringResource(R.string.ranking),
                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
             )
 
@@ -112,13 +114,13 @@ fun ProfileScreen(
                     .padding(horizontal = 40.dp)
             ) {
                 RankingBadge(
-                    period = "Day",
+                    period = stringResource(R.string.day),
                     rank = 5,
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.weight(1f)
                 )
                 RankingBadge(
-                    period = "Week",
+                    period = stringResource(R.string.week),
                     rank = 2,
                     color = MaterialTheme.colorScheme.tertiary,
                     modifier = Modifier.weight(1f)
@@ -139,7 +141,7 @@ fun ProfileScreen(
                 Icon(imageVector = Icons.Outlined.Edit, contentDescription = "Edit Profile")
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    "Edit Profile",
+                    stringResource(R.string.title_edit_profile),
                     style = MaterialTheme.typography.labelLarge.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Medium)
                 )
             }

@@ -8,6 +8,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.FileProvider
 import kotlinx.coroutines.delay
 import java.io.File
+import com.example.life4pollinators.R
 
 @Composable
 fun rememberCameraLauncher(
@@ -23,7 +24,7 @@ fun rememberCameraLauncher(
     ) { success ->
         photoUri?.let { uri ->
             if (success) pendingCameraUri = uri
-            else onError?.invoke("Foto non salvata")
+            else onError?.invoke(context.getString(R.string.photo_not_saved))
         }
     }
 
@@ -47,7 +48,7 @@ fun rememberCameraLauncher(
                 }
             }
             if (found) onPhotoReady(uri)
-            else onError?.invoke("Errore nella foto")
+            else onError?.invoke(context.getString(R.string.photo_error))
             pendingCameraUri = null
         }
     }

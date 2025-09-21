@@ -1,6 +1,13 @@
 <resources>
     <string name="app_name">Life4Pollinators</string>
 
+    <!-- Screen Titles -->
+    <string name="title_learn">Learn</string>
+    <string name="title_profile">Profile</string>
+    <string name="title_edit_profile">Edit Profile</string>
+    <string name="title_settings">Settings</string>
+    <string name="unknown_screen">Unknown Screen</string>
+
     <!-- SignIn -->
     <string name="signInWithGoogle">Sign in with Google</string>
 
@@ -40,7 +47,33 @@
     <!-- BottomNavBar Titles -->
     <string name="home">Home</string>
     <string name="profile">Profile</string>
-    
+    <string name="learn">Learn</string>
+    <string name="sightings">Sightings</string>
+    <string name="add_sighting">Add Sighting</string>
+    <string name="user_profile">User Profile</string>
+
+    <!-- Learn Screen -->
+    <string name="learn_about">Learn About:</string>
+    <string name="plants">Plants</string>
+    <string name="insects">Insects</string>
+    <string name="test_your_classification_skills">Test your classification skills:</string>
+
+    <!-- Profile Screen -->
+    <string name="tests_taken">Tests Taken</string>
+    <string name="ranking">Ranking</string>
+    <string name="day">Day</string>
+    <string name="week">Week</string>
+
+    <!-- Edit Profile Screen -->
+    <string name="change_image">Change Image</string>
+    <string name="choose_photo">Choose photo</string>
+    <string name="take_photo">Take a photo</string>
+    <string name="choose_gallery">Choose from gallery</string>
+    <string name="save_changes">Save Changes</string>
+    <string name="profile_saved">Profile Saved!</string>
+    <string name="photo_not_saved">Photo not saved</string>
+    <string name="photo_error">Photo error</string>
+
     <!-- Settings -->
     <string name="changeTheme">Change Theme</string>
     <string name="chooseTheme">Choose theme</string>

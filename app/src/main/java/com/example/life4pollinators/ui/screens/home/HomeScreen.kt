@@ -10,8 +10,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.example.life4pollinators.R
 import com.example.life4pollinators.data.models.NavBarTab
 import com.example.life4pollinators.ui.composables.AppBar
 import com.example.life4pollinators.ui.composables.BottomNavBar
@@ -43,38 +45,38 @@ fun HomeScreen(
         ) {
 
             Text(
-                "Learn About:",
+                stringResource(R.string.learn_about),
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
             SectionCard(
-                title = "Plants",
+                title = stringResource(R.string.plants),
                 imageRes = Icons.Outlined.Image, // usa la tua risorsa
                 backgroundColor = MaterialTheme.colorScheme.primaryContainer,
                 onClick = { /*TODO*/ }
             )
             Spacer(Modifier.height(8.dp))
             SectionCard(
-                title = "Insects",
+                title = stringResource(R.string.insects),
                 imageRes = Icons.Outlined.Image, // usa la tua risorsa
                 backgroundColor = MaterialTheme.colorScheme.primaryContainer,
                 onClick = { /*TODO*/ }
             )
             Spacer(Modifier.height(24.dp))
             Text(
-                "Test your classification skills:",
+                stringResource(R.string.test_your_classification_skills),
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
             SectionCard(
-                title = "Plants",
+                title = stringResource(R.string.plants),
                 imageRes = Icons.Outlined.Image,
                 backgroundColor = MaterialTheme.colorScheme.surface,
                 onClick = { /*TODO*/ }
             )
             Spacer(Modifier.height(8.dp))
             SectionCard(
-                title = "Insects",
+                title = stringResource(R.string.insects),
                 imageRes = Icons.Outlined.Image,
                 backgroundColor = MaterialTheme.colorScheme.surface,
                 onClick = { /*TODO*/ }

@@ -10,7 +10,9 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavHostController
+import com.example.life4pollinators.R
 import com.example.life4pollinators.data.models.NavBarTab
 import com.example.life4pollinators.ui.navigation.L4PRoute
 
@@ -23,13 +25,13 @@ fun BottomNavBar(
     NavigationBar {
         NavigationBarItem(
             icon = { Icon(Icons.AutoMirrored.Outlined.MenuBook, contentDescription = "Learn") },
-            label = { Text("Learn") },
+            label = { Text(stringResource(R.string.learn)) },
             selected = selectedTab == NavBarTab.Home,
             onClick = { navController.navigate(L4PRoute.Home) }
         )
         NavigationBarItem(
             icon = { Icon(Icons.Outlined.Visibility, contentDescription = "Sightings") },
-            label = { Text("Sightings") },
+            label = { Text(stringResource(R.string.sightings)) },
             selected = false,
             onClick = {
                 if(isAuthenticated)
@@ -40,7 +42,7 @@ fun BottomNavBar(
         )
         NavigationBarItem(
             icon = { Icon(Icons.Outlined.AddCircle, contentDescription = "Add Sighting") },
-            label = { Text("Add Sighting") },
+            label = { Text(stringResource(R.string.add_sighting)) },
             selected = false,
             onClick = {
                 if(isAuthenticated)
@@ -51,7 +53,7 @@ fun BottomNavBar(
         )
         NavigationBarItem(
             icon = { Icon(Icons.Outlined.Person, contentDescription = "User Profile") },
-            label = { Text("User Profile") },
+            label = { Text(stringResource(R.string.user_profile)) },
             selected = selectedTab == NavBarTab.Profile,
             onClick = {
                 if(isAuthenticated)

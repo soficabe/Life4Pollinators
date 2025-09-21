@@ -14,8 +14,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.example.life4pollinators.R
 import com.example.life4pollinators.data.models.NavBarTab
 import com.example.life4pollinators.ui.composables.AppBar
 import com.example.life4pollinators.ui.composables.BottomNavBar
@@ -59,10 +61,13 @@ fun EditProfileScreen(
             actions.clearMessages()
         }
     }
+
+    val profileSavedMsg = stringResource(R.string.profile_saved)
+
     // Feedback per successo
     LaunchedEffect(state.isSuccess) {
         if (state.isSuccess && state.emailConfirmationSentMessage == null) {
-            snackbarHostState.showSnackbar("Modifica profilo salvata!")
+            snackbarHostState.showSnackbar(profileSavedMsg)
             actions.clearMessages()
             navController.navigateUp()
         }
@@ -116,7 +121,7 @@ fun EditProfileScreen(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    "Change Image",
+                    stringResource(R.string.change_image),
                     style = MaterialTheme.typography.labelLarge
                 )
             }
@@ -125,23 +130,23 @@ fun EditProfileScreen(
             if (showImagePicker) {
                 AlertDialog(
                     onDismissRequest = { showImagePicker = false },
-                    title = { Text("Choose photo") },
+                    title = { Text(stringResource(R.string.choose_photo)) },
                     text = {
                         Column {
                             Button(
                                 onClick = { launchCamera() },
                                 modifier = Modifier.fillMaxWidth()
-                            ) { Text("Take a photo") }
+                            ) { Text(stringResource(R.string.take_photo)) }
                             Spacer(Modifier.height(8.dp))
                             Button(
                                 onClick = { launchGallery() },
                                 modifier = Modifier.fillMaxWidth()
-                            ) { Text("Choose from gallery") }
+                            ) { Text(stringResource(R.string.choose_gallery)) }
                         }
                     },
                     confirmButton = {},
                     dismissButton = {
-                        TextButton(onClick = { showImagePicker = false }) { Text("Cancel") }
+                        TextButton(onClick = { showImagePicker = false }) { Text(stringResource(R.string.cancel)) }
                     }
                 )
             }
@@ -156,7 +161,7 @@ fun EditProfileScreen(
                 OutlinedTextField(
                     value = state.username,
                     onValueChange = { actions.setUsername(it) },
-                    label = { Text("Username") },
+                    label = { Text(stringResource(R.string.username)) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     shape = RoundedCornerShape(12.dp),
@@ -179,7 +184,7 @@ fun EditProfileScreen(
                 OutlinedTextField(
                     value = state.firstName,
                     onValueChange = { actions.setFirstName(it) },
-                    label = { Text("First Name") },
+                    label = { Text(stringResource(R.string.first_name)) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     shape = RoundedCornerShape(12.dp),
@@ -202,7 +207,7 @@ fun EditProfileScreen(
                 OutlinedTextField(
                     value = state.lastName,
                     onValueChange = { actions.setLastName(it) },
-                    label = { Text("Last Name") },
+                    label = { Text(stringResource(R.string.last_name)) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     shape = RoundedCornerShape(12.dp),
@@ -225,7 +230,7 @@ fun EditProfileScreen(
                 OutlinedTextField(
                     value = state.email,
                     onValueChange = { actions.setEmail(it) },
-                    label = { Text("Email") },
+                    label = { Text(stringResource(R.string.email)) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Email),
@@ -271,7 +276,7 @@ fun EditProfileScreen(
                     Icon(imageVector = Icons.Outlined.Check, contentDescription = "Edit Profile")
                     Spacer(Modifier.width(8.dp))
                     Text(
-                        "Save Changes",
+                        stringResource(R.string.save_changes),
                         style = MaterialTheme.typography.labelLarge.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Medium)
                     )
                 }

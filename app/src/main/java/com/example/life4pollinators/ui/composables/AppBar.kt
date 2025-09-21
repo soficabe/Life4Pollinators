@@ -11,10 +11,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.example.life4pollinators.R
 import com.example.life4pollinators.ui.navigation.L4PRoute
 import com.example.life4pollinators.ui.theme.AppBarGreen
 
@@ -28,14 +30,14 @@ fun AppBar(
     //Definizione del titolo dell'AppBar in base alla rotta attuale
     val title = when {
         backStackEntry?.destination?.hasRoute<L4PRoute.Home>() == true ->
-            "Learn"
+            stringResource(R.string.title_learn)
         backStackEntry?.destination?.hasRoute<L4PRoute.Profile>() == true ->
-            "Profile"
+            stringResource(R.string.title_profile)
         backStackEntry?.destination?.hasRoute<L4PRoute.EditProfile>() == true ->
-            "Edit Profile"
+            stringResource(R.string.title_edit_profile)
         backStackEntry?.destination?.hasRoute<L4PRoute.Settings>() == true ->
-            "Settings"
-        else -> "Unknown Screen"
+            stringResource(R.string.title_settings)
+        else -> stringResource(R.string.unknown_screen)
     }
 
     CenterAlignedTopAppBar(

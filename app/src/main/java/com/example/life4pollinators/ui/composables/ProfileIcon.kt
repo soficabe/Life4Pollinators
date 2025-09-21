@@ -57,7 +57,7 @@ fun ProfileIcon(
                         .data(imageUrl)
                         .crossfade(true)
                         .build(),
-                    contentDescription = "Immagine profilo",
+                    contentDescription = "Profile Image",
                     modifier = Modifier
                         .size(size)
                         .clip(CircleShape),
@@ -79,7 +79,7 @@ fun ProfileIcon(
                     error = {
                         Icon(
                             imageVector = Icons.Filled.AccountCircle,
-                            contentDescription = "Immagine profilo predefinita",
+                            contentDescription = "Default Profile image",
                             modifier = Modifier.size(size),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -89,7 +89,7 @@ fun ProfileIcon(
             else -> {
                 Icon(
                     imageVector = Icons.Filled.AccountCircle,
-                    contentDescription = "Immagine profilo predefinita",
+                    contentDescription = "Default Profile image",
                     modifier = Modifier.size(size),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
