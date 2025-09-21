@@ -19,29 +19,29 @@ fun ProfileStatCard(
 ) {
     Surface(
         modifier = modifier
-            .height(90.dp)
-            .widthIn(min = 120.dp),
+            .height(82.dp)
+            .widthIn(min = 110.dp),
         color = color,
         tonalElevation = 3.dp,
         shadowElevation = 4.dp,
-        shape = RoundedCornerShape(16.dp)
+        shape = RoundedCornerShape(14.dp)
     ) {
         Column(
             Modifier
                 .fillMaxSize()
-                .padding(12.dp),
+                .padding(11.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
                 value,
-                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
                 color = MaterialTheme.colorScheme.onSurface
             )
-            Spacer(Modifier.height(4.dp))
+            Spacer(Modifier.height(2.dp))
             Text(
                 label,
-                style = MaterialTheme.typography.labelLarge,
+                style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }

@@ -20,26 +20,26 @@ fun RankingBadge(
     period: String,
     rank: Int,
     color: Color = MaterialTheme.colorScheme.primary,
-    ) {
+) {
     Card(
         modifier = modifier,
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
-        shape = RoundedCornerShape(16.dp)
+        shape = RoundedCornerShape(14.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(14.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            // Cerchio "pulito" con bordo e gradiente
+
             Box(
                 modifier = Modifier
-                    .size(60.dp)
+                    .size(55.dp)
                     .background(
                         brush = Brush.radialGradient(
                             colors = listOf(
@@ -54,7 +54,7 @@ fun RankingBadge(
             ) {
                 Text(
                     text = "${rank}°",
-                    style = MaterialTheme.typography.titleMedium.copy(
+                    style = MaterialTheme.typography.titleSmall.copy(
                         fontWeight = FontWeight.Bold
                     ),
                     color = color
@@ -64,7 +64,7 @@ fun RankingBadge(
             // Label periodo
             Text(
                 text = period,
-                style = MaterialTheme.typography.labelLarge.copy(
+                style = MaterialTheme.typography.labelMedium.copy(
                     fontWeight = FontWeight.Medium
                 ),
                 color = MaterialTheme.colorScheme.onSurfaceVariant

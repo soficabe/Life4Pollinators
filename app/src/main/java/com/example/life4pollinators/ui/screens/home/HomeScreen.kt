@@ -71,16 +71,17 @@ fun HomeScreen(
             SectionCard(
                 title = stringResource(R.string.plants),
                 imageRes = Icons.Outlined.Image,
-                backgroundColor = MaterialTheme.colorScheme.surface,
+                backgroundColor = MaterialTheme.colorScheme.surfaceContainer,
                 onClick = { /*TODO*/ }
             )
             Spacer(Modifier.height(8.dp))
             SectionCard(
                 title = stringResource(R.string.insects),
                 imageRes = Icons.Outlined.Image,
-                backgroundColor = MaterialTheme.colorScheme.surface,
+                backgroundColor = MaterialTheme.colorScheme.surfaceContainer,
                 onClick = { /*TODO*/ }
             )
+            Spacer(Modifier.height(8.dp))
         }
     }
 }

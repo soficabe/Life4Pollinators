@@ -12,6 +12,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.life4pollinators.R
@@ -46,7 +47,7 @@ fun ProfileScreen(
                 .verticalScroll(scrollState),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(20.dp))
 
             ProfileIcon(
                 imageUrl = state.user?.image,
@@ -54,17 +55,15 @@ fun ProfileScreen(
                 showLoader = state.isRefreshing
             )
 
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(12.dp))
 
             Text(
                 "@${state.user?.username ?: ""}",
-                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold),
+                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
                 color = MaterialTheme.colorScheme.onSurface
             )
 
-            Spacer(Modifier.height(12.dp))
-
-            // Informazioni utente più compatte
+            Spacer(Modifier.height(10.dp))
             Column(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -74,18 +73,17 @@ fun ProfileScreen(
                 Text("${stringResource(R.string.email)}: ${state.user?.email ?: ""}", style = MaterialTheme.typography.bodyMedium)
             }
 
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(16.dp))
 
-            // Stat cards migliorate
             Row(
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 32.dp)
+                    .padding(horizontal = 24.dp)
             ) {
                 ProfileStatCard(
                     value = "10/39",
-                    label = stringResource(R.string.sightings),
+                    label = stringResource(R.string.title_sightings),
                     color = MaterialTheme.colorScheme.secondaryContainer,
                     modifier = Modifier.weight(1f)
                 )
@@ -97,21 +95,20 @@ fun ProfileScreen(
                 )
             }
 
-            Spacer(Modifier.height(32.dp))
+            Spacer(Modifier.height(20.dp))
 
             Text(
                 stringResource(R.string.ranking),
-                style = MaterialTheme.typography.titleLarge.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
             )
 
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(12.dp))
 
-            // Ranking badges migliorati
             Row(
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 40.dp)
+                    .padding(horizontal = 32.dp)
             ) {
                 RankingBadge(
                     period = stringResource(R.string.day),
@@ -127,26 +124,25 @@ fun ProfileScreen(
                 )
             }
 
-            Spacer(Modifier.height(32.dp))
+            Spacer(Modifier.height(24.dp))
 
-            // Edit button migliorato
             FilledTonalButton(
                 onClick = { navController.navigate(L4PRoute.EditProfile) },
-                shape = RoundedCornerShape(20.dp),
+                shape = RoundedCornerShape(16.dp),
                 modifier = Modifier
-                    .padding(horizontal = 40.dp)
+                    .padding(horizontal = 32.dp)
                     .fillMaxWidth()
-                    .height(52.dp)
+                    .height(48.dp)
             ) {
                 Icon(imageVector = Icons.Outlined.Edit, contentDescription = "Edit Profile")
                 Spacer(Modifier.width(8.dp))
                 Text(
                     stringResource(R.string.title_edit_profile),
-                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Medium)
+                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Medium)
                 )
             }
 
-            Spacer(Modifier.height(32.dp))
+            Spacer(Modifier.height(16.dp))
         }
     }
 }

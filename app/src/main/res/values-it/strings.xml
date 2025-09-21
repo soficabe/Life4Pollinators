@@ -7,6 +7,7 @@
     <string name="title_profile">Profilo</string>
     <string name="title_edit_profile">Modifica Profilo</string>
     <string name="title_settings">Impostazioni</string>
+    <string name="title_sightings">Avvistamenti</string>
     <string name="unknown_screen">Schermata Sconosciuta</string>
 
     <!-- SignIn -->
@@ -54,15 +55,15 @@
     <string name="home">Home</string>
     <string name="profile">Profilo</string>
     <string name="learn">Impara</string>
-    <string name="sightings">Avvistamenti</string>
+    <string name="sightings">Avvista</string>
     <string name="add_sighting">Aggiungi</string>
-    <string name="user_profile">Profilo Utente</string>
+    <string name="user_profile">Profilo</string>
 
     <!-- Learn Screen -->
     <string name="learn_about">Scopri di più su:</string>
     <string name="plants">Piante</string>
     <string name="insects">Insetti</string>
-    <string name="test_your_classification_skills">Metti alla prova le tue capacità di classificazione:</string>
+    <string name="test_your_classification_skills">Testa le tue capacità di classificazione:</string>
 
     <!-- Profile Screen -->
     <string name="tests_taken">Test Completati</string>

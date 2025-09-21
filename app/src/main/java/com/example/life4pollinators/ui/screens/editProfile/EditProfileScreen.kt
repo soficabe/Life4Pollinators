@@ -9,6 +9,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.Photo
+import androidx.compose.material.icons.outlined.PhotoCamera
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -125,7 +127,7 @@ fun EditProfileScreen(
             ) {
                 Icon(
                     imageVector = Icons.Outlined.Edit,
-                    contentDescription = null,
+                    contentDescription = "Edit Profile Image",
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
@@ -145,12 +147,26 @@ fun EditProfileScreen(
                             Button(
                                 onClick = { launchCamera() },
                                 modifier = Modifier.fillMaxWidth()
-                            ) { Text(stringResource(R.string.take_photo)) }
+                            ) {
+                                Text(stringResource(R.string.take_photo))
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Icon(
+                                    imageVector = Icons.Outlined.PhotoCamera,
+                                    contentDescription = "Camera"
+                                )
+                            }
                             Spacer(Modifier.height(8.dp))
                             Button(
                                 onClick = { launchGallery() },
                                 modifier = Modifier.fillMaxWidth()
-                            ) { Text(stringResource(R.string.choose_gallery)) }
+                            ) {
+                                Text(stringResource(R.string.choose_gallery))
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Icon(
+                                    imageVector = Icons.Outlined.Photo,
+                                    contentDescription = "Photo from Gallery"
+                                )
+                            }
                         }
                     },
                     confirmButton = {},

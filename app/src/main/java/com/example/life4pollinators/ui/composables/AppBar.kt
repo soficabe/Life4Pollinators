@@ -48,7 +48,7 @@ fun AppBar(
             )
         },
         navigationIcon = {
-            if(title != "Learn" && navController.previousBackStackEntry != null) {
+            if(title != stringResource(R.string.title_learn) && navController.previousBackStackEntry != null) {
                 IconButton(onClick = {navController.navigateUp()}) {
                     Icon(Icons.AutoMirrored.Outlined.ArrowBack, "Go Back")
                 }
