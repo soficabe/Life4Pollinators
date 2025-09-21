@@ -43,8 +43,9 @@ fun EditProfileScreen(
             actions.onProfileImageSelected(uri, context)
             showImagePicker = false
         },
-        onError = { errorMsg ->
-            actions.setError(errorMsg)
+        onError = { errorMsgRes ->
+            // errorMsgRes è ora un id risorsa Int
+            actions.setErrorRes(errorMsgRes)
             showImagePicker = false
         }
     )
@@ -54,10 +55,14 @@ fun EditProfileScreen(
         showImagePicker = false
     }
 
-    // Feedback per errori
-    LaunchedEffect(state.errorMessage) {
-        state.errorMessage?.let { message ->
-            snackbarHostState.showSnackbar(message)
+    // Feedback per errori (localizzato)
+    LaunchedEffect(state.errorMessageRes, state.errorMessageArg) {
+        if (state.errorMessageRes != null) {
+            val msg = if (state.errorMessageArg != null)
+                context.getString(state.errorMessageRes, state.errorMessageArg)
+            else
+                context.getString(state.errorMessageRes)
+            snackbarHostState.showSnackbar(msg)
             actions.clearMessages()
         }
     }
@@ -72,10 +77,14 @@ fun EditProfileScreen(
             navController.navigateUp()
         }
     }
-    // Notifica cambio email
-    LaunchedEffect(state.emailConfirmationSentMessage) {
-        state.emailConfirmationSentMessage?.let { message ->
-            snackbarHostState.showSnackbar(message)
+    // Notifica cambio email (localizzato)
+    LaunchedEffect(state.emailConfirmationSentMessage, state.emailConfirmationSentArg) {
+        if (state.emailConfirmationSentMessage != null && state.emailConfirmationSentArg != null) {
+            val msg = context.getString(
+                state.emailConfirmationSentMessage.toInt(),
+                state.emailConfirmationSentArg
+            )
+            snackbarHostState.showSnackbar(msg)
             actions.clearMessages()
             navController.navigateUp()
         }

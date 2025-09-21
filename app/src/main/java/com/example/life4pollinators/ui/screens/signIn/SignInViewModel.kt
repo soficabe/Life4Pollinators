@@ -8,21 +8,16 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import com.example.life4pollinators.R
 
-/**
- * Data class rappresentante lo stato completo della schermata di SignIn.
- */
 data class SignInState(
     val email: String = "",
     val psw: String = "",
     val signInResult: SignInResult? = null,
-    val errorMessage: String? = null,
+    val errorMessageRes: Int? = null,
     val isLoading: Boolean = false
 )
 
-/**
- * Interface che definisce tutte le azioni possibili nella schermata di SignIn.
- */
 interface SignInActions {
     fun setEmail(email: String)
     fun setPsw(psw: String)
@@ -30,37 +25,27 @@ interface SignInActions {
     fun clearError()
 }
 
-/**
- * ViewModel per la gestione della logica della schermata di SignIn.
- */
 class SignInViewModel(
     private val authRepository: AuthRepository
 ) : ViewModel() {
     private val _state = MutableStateFlow(SignInState())
     val state = _state.asStateFlow()
 
-    /**
-     * Implementazione azioni di signIn.
-     */
     val actions = object : SignInActions {
         override fun setEmail(email: String) {
-            _state.update { it.copy(email = email, errorMessage = null) }
+            _state.update { it.copy(email = email, errorMessageRes = null) }
         }
 
         override fun setPsw(psw: String) {
-            _state.update { it.copy(psw = psw, errorMessage = null) }
+            _state.update { it.copy(psw = psw, errorMessageRes = null) }
         }
 
-        /**
-         * Esegue il signIn dell'utente.
-         */
         override fun signIn() {
             val currentState = _state.value
 
-            // Reset errore precedente e imposta loading
             _state.update {
                 it.copy(
-                    errorMessage = null,
+                    errorMessageRes = null,
                     signInResult = SignInResult.Loading,
                     isLoading = true
                 )
@@ -68,13 +53,11 @@ class SignInViewModel(
 
             viewModelScope.launch {
                 try {
-                    // Chiamata al repository
                     val result = authRepository.signIn(
                         email = currentState.email,
                         password = currentState.psw
                     )
 
-                    // Aggiornamento stato con risultato
                     _state.update {
                         it.copy(
                             signInResult = result,
@@ -82,44 +65,32 @@ class SignInViewModel(
                         )
                     }
 
-                    // Gestione messaggi di errore specifici
                     when (result) {
-                        SignInResult.Loading -> {
-                            // Già gestito sopra
-                        }
-
+                        SignInResult.Loading -> {}
                         SignInResult.Success -> {
-                            // Successo - navigazione gestita dalla UI
-                            _state.update { it.copy(errorMessage = null) }
+                            _state.update { it.copy(errorMessageRes = null) }
                         }
-
                         is SignInResult.Error -> {
-                            val errorMessage = when (result) {
+                            val errorMessageRes = when (result) {
                                 SignInResult.Error.InvalidCredentials ->
-                                    "Invalid email or password. Please check your credentials."
-
+                                    R.string.invalid_credentials
                                 SignInResult.Error.RequiredFields ->
-                                    "Email and password are required"
-
+                                    R.string.required_fields
                                 SignInResult.Error.InvalidEmail ->
-                                    "Please enter a valid email address"
-
+                                    R.string.invalid_email
                                 SignInResult.Error.NetworkError ->
-                                    "Network error. Please check your connection."
-
+                                    R.string.network_error
                                 is SignInResult.Error.UnknownError ->
-                                    "Sign in failed. Please try again."
+                                    R.string.unknown_error
                             }
-
-                            _state.update { it.copy(errorMessage = errorMessage) }
+                            _state.update { it.copy(errorMessageRes = errorMessageRes) }
                         }
                     }
                 } catch (e: Exception) {
-                    // Gestione errori imprevisti
                     _state.update {
                         it.copy(
                             signInResult = SignInResult.Error.UnknownError(e),
-                            errorMessage = "Sign in failed. Please try again.",
+                            errorMessageRes = R.string.unknown_error,
                             isLoading = false
                         )
                     }
@@ -130,7 +101,7 @@ class SignInViewModel(
         override fun clearError() {
             _state.update {
                 it.copy(
-                    errorMessage = null,
+                    errorMessageRes = null,
                     signInResult = null
                 )
             }

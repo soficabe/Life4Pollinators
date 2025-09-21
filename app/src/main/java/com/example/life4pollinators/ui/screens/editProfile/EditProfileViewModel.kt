@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import com.example.life4pollinators.R
 
 data class EditProfileState(
     val user: User? = null,
@@ -21,13 +22,15 @@ data class EditProfileState(
     val firstName: String = "",
     val lastName: String = "",
     val email: String = "",
-    val image: String? = null,              // URL della foto profilo
-    val isUploadingImage: Boolean = false,     // Stato upload foto profilo
+    val image: String? = null,
+    val isUploadingImage: Boolean = false,
     val isLoading: Boolean = false,
     val isSaving: Boolean = false,
-    val errorMessage: String? = null,
+    val errorMessageRes: Int? = null,
+    val errorMessageArg: String? = null,
     val isSuccess: Boolean = false,
-    val emailConfirmationSentMessage: String? = null
+    val emailConfirmationSentMessage: String? = null,
+    val emailConfirmationSentArg: String? = null
 ) {
     val hasChanges: Boolean
         get() = user?.let {
@@ -35,7 +38,7 @@ data class EditProfileState(
                     firstName != it.firstName ||
                     lastName != it.lastName ||
                     email != it.email ||
-                    image != it.image // confronta con campo serializzato User
+                    image != it.image
         } ?: false
 }
 
@@ -51,7 +54,7 @@ interface EditProfileActions {
     fun saveChanges()
     fun clearMessages()
     suspend fun loadUserData()
-    fun setError(message: String)
+    fun setErrorRes(resId: Int, arg: String? = null)
     fun onProfileImageSelected(uri: Uri, context: Context)
 }
 
@@ -66,16 +69,16 @@ class EditProfileViewModel(
 
     val actions = object : EditProfileActions {
         override fun setUsername(username: String) {
-            _state.update { it.copy(username = username, errorMessage = null) }
+            _state.update { it.copy(username = username, errorMessageRes = null, errorMessageArg = null) }
         }
         override fun setFirstName(firstName: String) {
-            _state.update { it.copy(firstName = firstName, errorMessage = null) }
+            _state.update { it.copy(firstName = firstName, errorMessageRes = null, errorMessageArg = null) }
         }
         override fun setLastName(lastName: String) {
-            _state.update { it.copy(lastName = lastName, errorMessage = null) }
+            _state.update { it.copy(lastName = lastName, errorMessageRes = null, errorMessageArg = null) }
         }
         override fun setEmail(email: String) {
-            _state.update { it.copy(email = email, errorMessage = null) }
+            _state.update { it.copy(email = email, errorMessageRes = null, errorMessageArg = null) }
         }
 
         override fun resetUsername() {
@@ -111,7 +114,7 @@ class EditProfileViewModel(
         }
 
         override fun clearMessages() {
-            _state.update { it.copy(errorMessage = null, isSuccess = false, emailConfirmationSentMessage = null) }
+            _state.update { it.copy(errorMessageRes = null, errorMessageArg = null, isSuccess = false, emailConfirmationSentMessage = null, emailConfirmationSentArg = null) }
         }
 
         override fun saveChanges() {
@@ -122,8 +125,8 @@ class EditProfileViewModel(
             loadUserDataInternal()
         }
 
-        override fun setError(message: String) {
-            _state.update { it.copy(errorMessage = message) }
+        override fun setErrorRes(resId: Int, arg: String?) {
+            _state.update { it.copy(errorMessageRes = resId, errorMessageArg = arg) }
         }
 
         override fun onProfileImageSelected(uri: Uri, context: Context) {
@@ -136,7 +139,7 @@ class EditProfileViewModel(
     }
 
     private suspend fun loadUserDataInternal() {
-        _state.update { it.copy(isLoading = true, errorMessage = null) }
+        _state.update { it.copy(isLoading = true, errorMessageRes = null, errorMessageArg = null) }
         try {
             val currentUser = authRepository.getAuthUser()
             val userProfile = userRepository.getUser(currentUser.id)
@@ -150,17 +153,18 @@ class EditProfileViewModel(
                         email = it.email,
                         image = it.image,
                         isLoading = false,
-                        errorMessage = null
+                        errorMessageRes = null,
+                        errorMessageArg = null
                     )
                 }
             } ?: run {
-                _state.update { it.copy(isLoading = false, errorMessage = "Utente non trovato") }
+                _state.update { it.copy(isLoading = false, errorMessageRes = R.string.user_not_found) }
             }
         } catch (e: Exception) {
             _state.update {
                 it.copy(
                     isLoading = false,
-                    errorMessage = "Errore nel caricare il profilo"
+                    errorMessageRes = R.string.error_loading_profile
                 )
             }
         }
@@ -171,27 +175,26 @@ class EditProfileViewModel(
             val currentState = _state.value
             val originalUser = currentState.user
 
-            // Validazione base
             if (currentState.username.isBlank() ||
                 currentState.firstName.isBlank() ||
                 currentState.lastName.isBlank() ||
                 currentState.email.isBlank()
             ) {
-                _state.update { it.copy(errorMessage = "Tutti i campi sono obbligatori") }
+                _state.update { it.copy(errorMessageRes = R.string.all_fields_required) }
                 return@launch
             }
 
             if (!currentState.email.contains("@") || !currentState.email.contains(".")) {
-                _state.update { it.copy(errorMessage = "Formato email non valido") }
+                _state.update { it.copy(errorMessageRes = R.string.invalid_email_format) }
                 return@launch
             }
 
             if (!currentState.hasChanges) {
-                _state.update { it.copy(errorMessage = "Nessuna modifica da salvare") }
+                _state.update { it.copy(errorMessageRes = R.string.no_changes_to_save) }
                 return@launch
             }
 
-            _state.update { it.copy(isSaving = true, errorMessage = null, isSuccess = false) }
+            _state.update { it.copy(isSaving = true, errorMessageRes = null, errorMessageArg = null, isSuccess = false) }
 
             var emailJustChanged = false
 
@@ -199,7 +202,6 @@ class EditProfileViewModel(
                 val authUser = authRepository.getAuthUser()
                 val userId = authUser.id
 
-                // Aggiorna email se è cambiata
                 if (originalUser != null && currentState.email != originalUser.email) {
                     when (authRepository.updateUserEmail(currentState.email)) {
                         is EditProfileResult.Success -> {
@@ -209,7 +211,7 @@ class EditProfileViewModel(
                             _state.update {
                                 it.copy(
                                     isSaving = false,
-                                    errorMessage = "Email già esistente"
+                                    errorMessageRes = R.string.email_already_exists
                                 )
                             }
                             return@launch
@@ -218,7 +220,7 @@ class EditProfileViewModel(
                             _state.update {
                                 it.copy(
                                     isSaving = false,
-                                    errorMessage = "Formato email non valido"
+                                    errorMessageRes = R.string.invalid_email_format
                                 )
                             }
                             return@launch
@@ -227,7 +229,7 @@ class EditProfileViewModel(
                             _state.update {
                                 it.copy(
                                     isSaving = false,
-                                    errorMessage = "Errore di rete"
+                                    errorMessageRes = R.string.network_error
                                 )
                             }
                             return@launch
@@ -236,7 +238,7 @@ class EditProfileViewModel(
                             _state.update {
                                 it.copy(
                                     isSaving = false,
-                                    errorMessage = "Errore sconosciuto"
+                                    errorMessageRes = R.string.unknown_error
                                 )
                             }
                             return@launch
@@ -244,7 +246,6 @@ class EditProfileViewModel(
                     }
                 }
 
-                // Aggiorna username/firstName/lastName/image se cambiati
                 if (originalUser != null && (
                             currentState.username != originalUser.username ||
                                     currentState.firstName != originalUser.firstName ||
@@ -257,7 +258,7 @@ class EditProfileViewModel(
                         username = currentState.username,
                         firstName = currentState.firstName,
                         lastName = currentState.lastName,
-                        image = currentState.image // ora passa image
+                        image = currentState.image
                     )) {
                         is UpdateUserProfileResult.Success -> {
                             val updatedUser = originalUser.copy(
@@ -277,25 +278,24 @@ class EditProfileViewModel(
                         }
                         is UpdateUserProfileResult.Error.UsernameAlreadyExists -> {
                             _state.update {
-                                it.copy(isSaving = false, errorMessage = "Username già esistente")
+                                it.copy(isSaving = false, errorMessageRes = R.string.username_already_exists)
                             }
                             return@launch
                         }
                         is UpdateUserProfileResult.Error.NetworkError -> {
                             _state.update {
-                                it.copy(isSaving = false, errorMessage = "Errore di rete")
+                                it.copy(isSaving = false, errorMessageRes = R.string.network_error)
                             }
                             return@launch
                         }
                         is UpdateUserProfileResult.Error.UnknownError -> {
                             _state.update {
-                                it.copy(isSaving = false, errorMessage = "Errore sconosciuto")
+                                it.copy(isSaving = false, errorMessageRes = R.string.unknown_error)
                             }
                             return@launch
                         }
                     }
                 } else if (!emailJustChanged) {
-                    // Solo email era da aggiornare
                     if (originalUser != null) {
                         val updatedUser = originalUser.copy(email = currentState.email)
                         _state.update {
@@ -308,20 +308,24 @@ class EditProfileViewModel(
                     }
                 }
 
-                // Mostra la notifica solo se email appena cambiata
                 if (emailJustChanged) {
                     _state.update {
                         it.copy(
                             isSaving = false,
                             isSuccess = true,
-                            emailConfirmationSentMessage = "Una email di conferma è stata inviata a ${currentState.email}. Controlla la nuova casella per confermare il cambio."
+                            emailConfirmationSentMessage = R.string.confirmation_email_sent.toString(),
+                            emailConfirmationSentArg = currentState.email
                         )
                     }
                 }
 
             } catch (e: Exception) {
                 _state.update {
-                    it.copy(isSaving = false, errorMessage = "Errore inatteso: ${e.message}")
+                    it.copy(
+                        isSaving = false,
+                        errorMessageRes = R.string.unexpected_error,
+                        errorMessageArg = e.message
+                    )
                 }
             }
         }
@@ -329,17 +333,17 @@ class EditProfileViewModel(
 
     private fun uploadProfileImage(uri: Uri, context: Context) {
         viewModelScope.launch {
-            _state.update { it.copy(isUploadingImage = true, errorMessage = null) }
+            _state.update { it.copy(isUploadingImage = true, errorMessageRes = null, errorMessageArg = null) }
             try {
                 val userId = authRepository.getAuthUser().id
                 val imageUrl = imageRepository.uploadProfileImage(userId, uri, context)
                 if (imageUrl != null) {
                     _state.update { it.copy(image = imageUrl, isUploadingImage = false) }
                 } else {
-                    _state.update { it.copy(errorMessage = "Errore upload immagine", isUploadingImage = false) }
+                    _state.update { it.copy(errorMessageRes = R.string.image_upload_error, isUploadingImage = false) }
                 }
             } catch (e: Exception) {
-                _state.update { it.copy(errorMessage = "Errore upload immagine", isUploadingImage = false) }
+                _state.update { it.copy(errorMessageRes = R.string.image_upload_error, isUploadingImage = false) }
             }
         }
     }

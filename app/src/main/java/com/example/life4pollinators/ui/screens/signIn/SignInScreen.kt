@@ -47,27 +47,21 @@ fun SignInScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     var snackbarMessage by remember { mutableStateOf<String?>(null) }
 
-    // Gestisce navigazione post-signIn
     LaunchedEffect(state.signInResult) {
         when (state.signInResult) {
-            null -> {
-                // Stato iniziale - nessuna azione richiesta
-            }
-            SignInResult.Loading -> {
-                // Loading gestito tramite UI
-            }
+            null -> {}
+            SignInResult.Loading -> {}
             SignInResult.Success -> {
-                // Navigazione alla home con rimozione dello stack di signIn
                 navController.navigate(L4PRoute.Home) {
                     popUpTo(L4PRoute.SignIn) { inclusive = true }
                 }
             }
-            is SignInResult.Error -> {
-                // Errori gestiti tramite errorMessage nella UI
-            }
+            is SignInResult.Error -> {}
         }
     }
 
+    val closedByUserMsg = stringResource(R.string.login_cancelled_by_user)
+    val networkErrorMsg = stringResource(R.string.network_error)
     val googleAuthState = supabaseClient.composeAuth.rememberSignInWithGoogle(
         onResult = { result ->
             when (result) {
@@ -77,13 +71,13 @@ fun SignInScreen(
                     }
                 }
                 is NativeSignInResult.ClosedByUser -> {
-                    snackbarMessage = "Login cancelled by user"
+                    snackbarMessage = closedByUserMsg
                 }
                 is NativeSignInResult.Error -> {
                     snackbarMessage = result.message
                 }
                 is NativeSignInResult.NetworkError -> {
-                    snackbarMessage = "Network error. Please check your connection."
+                    snackbarMessage = networkErrorMsg
                 }
             }
         }
@@ -108,7 +102,7 @@ fun SignInScreen(
 
             Image(
                 painter = painterResource(id = R.drawable.logo_l4p_no_bg),
-                contentDescription = "Logo App",
+                contentDescription = null,
                 modifier = Modifier.size(70.dp)
             )
 
@@ -121,7 +115,6 @@ fun SignInScreen(
 
             Spacer(Modifier.height(12.dp))
 
-            // Card che racchiude i campi
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 tonalElevation = 2.dp,
@@ -133,7 +126,6 @@ fun SignInScreen(
                         .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    // Campo Email
                     OutlinedTextField(
                         value = state.email,
                         onValueChange = {
@@ -147,7 +139,6 @@ fun SignInScreen(
                                 state.signInResult is SignInResult.Error.InvalidCredentials
                     )
 
-                    // Campo Password
                     OutlinedTextField(
                         value = state.psw,
                         onValueChange = {
@@ -168,7 +159,7 @@ fun SignInScreen(
                                         Icons.Outlined.Visibility
                                     else
                                         Icons.Outlined.VisibilityOff,
-                                    contentDescription = if (passwordVisible) "Hide password" else "Show password"
+                                    contentDescription = null
                                 )
                             }
                         },
@@ -176,10 +167,10 @@ fun SignInScreen(
                                 state.signInResult is SignInResult.Error.RequiredFields
                     )
 
-                    // Messaggio di errore
-                    if (state.errorMessage != null) {
+                    // Messaggio di errore: ora usa l'id risorsa
+                    if (state.errorMessageRes != null) {
                         Text(
-                            text = state.errorMessage,
+                            text = stringResource(id = state.errorMessageRes),
                             color = MaterialTheme.colorScheme.error,
                             textAlign = TextAlign.Center,
                             style = MaterialTheme.typography.bodySmall,
@@ -189,7 +180,6 @@ fun SignInScreen(
                         )
                     }
 
-                    // Bottone Sign In
                     Button(
                         onClick = { actions.signIn() },
                         modifier = Modifier.fillMaxWidth(),
@@ -206,7 +196,6 @@ fun SignInScreen(
                         }
                     }
 
-                    // Link per navigare al signup
                     TextButton(
                         onClick = { navController.navigate(L4PRoute.SignUp) },
                         modifier = Modifier.align(Alignment.CenterHorizontally)
@@ -221,7 +210,6 @@ fun SignInScreen(
 
             Spacer(Modifier.height(24.dp))
 
-            // Divider "Or"
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -233,13 +221,11 @@ fun SignInScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            // Google SignIn Button (library compose-auth-ui)
             OutlinedButton(
                 onClick = { googleAuthState.startFlow() },
                 content = { ProviderButtonContent(provider = Google) }
             )
 
-            // Opzione per continuare senza login
             TextButton(
                 onClick = { navController.navigate(L4PRoute.Home) },
                 modifier = Modifier.padding(top = 8.dp)

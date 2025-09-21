@@ -34,7 +34,6 @@
     <string name="email_invalid_format">Digita un indirizzo email valido</string>
     <string name="generic_signup_error">Registrazione fallita. Riprova.</string>
     <string name="errorString">Si è verificato un errore</string>
-    <string name="network_error">Errore di rete</string>
 
     <!-- SignIn Screen -->
     <string name="sign_in_title">Accedi per procedere</string>
@@ -44,6 +43,12 @@
 
     <!-- SignIn Error Messages -->
     <string name="login_cancelled">Login annullato</string>
+    <string name="login_cancelled_by_user">Login annullato dall\'utente</string>
+    <string name="network_error">Errore di rete. Verifica la connessione.</string>
+    <string name="invalid_credentials">Email o password non valide. Controlla le credenziali.</string>
+    <string name="required_fields">Email e password sono obbligatori</string>
+    <string name="invalid_email">Inserisci un indirizzo email valido</string>
+    <string name="unknown_error">Accesso non riuscito. Riprova.</string>
 
     <!-- BottomNavBar Titles -->
     <string name="home">Home</string>
@@ -74,6 +79,14 @@
     <string name="profile_saved">Modifica profilo salvata!</string>
     <string name="photo_not_saved">Foto non salvata</string>
     <string name="photo_error">Errore nella foto</string>
+    <string name="all_fields_required">Tutti i campi sono obbligatori</string>
+    <string name="invalid_email_format">Formato email non valido</string>
+    <string name="no_changes_to_save">Nessuna modifica da salvare</string>
+    <string name="user_not_found">Utente non trovato</string>
+    <string name="error_loading_profile">Errore nel caricare il profilo</string>
+    <string name="image_upload_error">Errore upload immagine</string>
+    <string name="unexpected_error">Errore inatteso: %1$s</string>
+    <string name="confirmation_email_sent">Una email di conferma è stata inviata a %1$s. Controlla la nuova casella per confermare il cambio.</string>
 
     <!-- Settings -->
     <string name="changeTheme">Cambia Tema</string>

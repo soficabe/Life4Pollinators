@@ -33,7 +33,6 @@
     <string name="email_invalid_format">Please enter a valid email address</string>
     <string name="generic_signup_error">Registration failed. Please try again.</string>
     <string name="errorString">An error occurred</string>
-    <string name="network_error">Network error</string>
 
     <!-- SignIn Screen -->
     <string name="sign_in_title">Sign In to continue</string>
@@ -43,6 +42,12 @@
 
     <!-- SignIn Error Messages -->
     <string name="login_cancelled">Login cancelled</string>
+    <string name="login_cancelled_by_user">Login cancelled by user</string>
+    <string name="network_error">Network error. Please check your connection.</string>
+    <string name="invalid_credentials">Invalid email or password. Please check your credentials.</string>
+    <string name="required_fields">Email and password are required</string>
+    <string name="invalid_email">Please enter a valid email address</string>
+    <string name="unknown_error">Sign in failed. Please try again.</string>
 
     <!-- BottomNavBar Titles -->
     <string name="home">Home</string>
@@ -73,6 +78,14 @@
     <string name="profile_saved">Profile Saved!</string>
     <string name="photo_not_saved">Photo not saved</string>
     <string name="photo_error">Photo error</string>
+    <string name="all_fields_required">All fields are required</string>
+    <string name="invalid_email_format">Invalid email format</string>
+    <string name="no_changes_to_save">No changes to save</string>
+    <string name="user_not_found">User not found</string>
+    <string name="error_loading_profile">Error loading profile</string>
+    <string name="image_upload_error">Image upload error</string>
+    <string name="unexpected_error">Unexpected error: %1$s</string>
+    <string name="confirmation_email_sent">A confirmation email has been sent to %1$s. Check your new inbox to confirm the change.</string>
 
     <!-- Settings -->
     <string name="changeTheme">Change Theme</string>

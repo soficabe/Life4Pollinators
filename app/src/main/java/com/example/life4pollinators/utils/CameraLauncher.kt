@@ -13,7 +13,7 @@ import com.example.life4pollinators.R
 @Composable
 fun rememberCameraLauncher(
     onPhotoReady: (Uri) -> Unit,
-    onError: ((String) -> Unit)? = null
+    onError: ((Int) -> Unit)? = null   // PATCH: ora prende un Int
 ): () -> Unit {
     val context = LocalContext.current
     var photoUri by remember { mutableStateOf<Uri?>(null) }
@@ -24,7 +24,7 @@ fun rememberCameraLauncher(
     ) { success ->
         photoUri?.let { uri ->
             if (success) pendingCameraUri = uri
-            else onError?.invoke(context.getString(R.string.photo_not_saved))
+            else onError?.invoke(R.string.photo_not_saved)   // PATCH: passa id risorsa
         }
     }
 
@@ -48,7 +48,7 @@ fun rememberCameraLauncher(
                 }
             }
             if (found) onPhotoReady(uri)
-            else onError?.invoke(context.getString(R.string.photo_error))
+            else onError?.invoke(R.string.photo_error)   // PATCH: passa id risorsa
             pendingCameraUri = null
         }
     }
