@@ -4,21 +4,18 @@ import android.content.Context
 import android.net.Uri
 import android.util.Log
 import io.github.jan.supabase.storage.Storage
-import java.util.UUID
 
 /**
- * Repository per la gestione dell’upload delle immagini su Supabase Storage
+ * Repository per la gestione dell’upload delle immagini su Supabase Storage.
  */
 class ImageRepository(private val storage: Storage) {
     private suspend fun uploadImage(
-        userId: String,
         uri: Uri,
         context: Context,
-        bucket: String
+        bucket: String,
+        fileName: String
     ): String? {
         return try {
-            val extension = ".jpg"
-            val fileName = "${userId}_${UUID.randomUUID()}$extension"
             val inputStream = context.contentResolver.openInputStream(uri) ?: return null
             val bytes = inputStream.readBytes()
             if (bytes.isEmpty()) return null
@@ -31,17 +28,23 @@ class ImageRepository(private val storage: Storage) {
     }
 
     /**
-     * Funzione per l'upload dell'immagine profilo
+     * Funzione per l'upload dell'immagine profilo.
+     * Sovrascrive sempre la foto profilo dell'utente (nessuna foto vecchia rimane nello storage).
      */
     suspend fun uploadProfileImage(
         userId: String,
         uri: Uri,
         context: Context
     ): String? =
-        uploadImage(userId, uri, context, bucket = "profile-images")
+        uploadImage(
+            uri,
+            context,
+            bucket = "profile-images",
+            fileName = "user_${userId}_profile.jpg"
+        )
 
     // In futuro:
-    // suspend fun uploadInsectPhoto(...) = uploadImage(..., bucket = "insect-photos")
-    // suspend fun uploadPlantPhoto(...) = uploadImage(..., bucket = "plant-photos")
-    // suspend fun uploadSightingPhoto(...) = uploadImage(..., bucket = "sighting-photos")
+    // suspend fun uploadInsectPhoto(...) = uploadImage(..., bucket = "insect-photos", fileName = ...)
+    // suspend fun uploadPlantPhoto(...) = uploadImage(..., bucket = "plant-photos", fileName = ...)
+    // suspend fun uploadSightingPhoto(...) = uploadImage(..., bucket = "sighting-photos", fileName = ...)
 }

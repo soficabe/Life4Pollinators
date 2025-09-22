@@ -24,6 +24,7 @@ import com.example.life4pollinators.data.models.NavBarTab
 import com.example.life4pollinators.ui.composables.AppBar
 import com.example.life4pollinators.ui.composables.BottomNavBar
 import com.example.life4pollinators.ui.composables.ProfileIcon
+import com.example.life4pollinators.ui.navigation.L4PRoute
 import com.example.life4pollinators.utils.rememberCameraLauncher
 import com.example.life4pollinators.utils.rememberGalleryLauncher
 
@@ -76,7 +77,9 @@ fun EditProfileScreen(
         if (state.isSuccess && state.emailConfirmationSentMessage == null) {
             snackbarHostState.showSnackbar(profileSavedMsg)
             actions.clearMessages()
-            navController.navigateUp()
+            navController.navigate(L4PRoute.Profile) {
+                popUpTo(L4PRoute.Profile) { inclusive = true }
+            }
         }
     }
     // Notifica cambio email (localizzato)
@@ -88,7 +91,9 @@ fun EditProfileScreen(
             )
             snackbarHostState.showSnackbar(msg)
             actions.clearMessages()
-            navController.navigateUp()
+            navController.navigate(L4PRoute.Profile) {
+                popUpTo(L4PRoute.Profile) { inclusive = true }
+            }
         }
     }
 
@@ -109,7 +114,7 @@ fun EditProfileScreen(
 
             // Profile Avatar (sempre gestito da ProfileIcon)
             ProfileIcon(
-                imageUrl = state.image,
+                imageUrl = state.newProfileImageUri?.toString() ?: state.image,
                 isClickable = true,
                 onClick = { showImagePicker = true },
                 showLoader = state.isLoading || state.isUploadingImage
@@ -280,7 +285,7 @@ fun EditProfileScreen(
 
             // Save Changes Button
             FilledTonalButton(
-                onClick = { actions.saveChanges() },
+                onClick = { actions.saveChanges(context) },
                 modifier = Modifier
                     .padding(horizontal = 40.dp)
                     .fillMaxWidth()

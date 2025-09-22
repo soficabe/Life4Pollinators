@@ -14,14 +14,20 @@ import com.example.life4pollinators.ui.screens.settings.SettingsViewModel
 import com.example.life4pollinators.ui.theme.Life4PollinatorsTheme
 import org.koin.androidx.compose.koinViewModel
 
+/**
+ * Activity di ingresso dell'app: gestisce il tema, la navigazione e
+ * l'inizializzazione della UI Compose.
+ */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+            // Ottiene il ViewModel delle impostazioni tramite Koin
             val settingsViewModel = koinViewModel<SettingsViewModel>()
             val settingsState by settingsViewModel.state.collectAsStateWithLifecycle()
 
+            // Imposta il tema secondo le preferenze utente o il sistema
             Life4PollinatorsTheme (
                 darkTheme = when (settingsState.theme) {
                     Theme.Light -> false
@@ -29,11 +35,7 @@ class MainActivity : ComponentActivity() {
                     Theme.System -> isSystemInDarkTheme()
                 }
             ) {
-                /**
-                 * Il NavController è l'oggetto che gestisce la navigazione.
-                 * Viene passato al NavGraph per tenere traccia della destinazione attuale
-                 * e per fornire i metodi per muoversi tra le destinazioni definite nel grafo stesso.
-                 */
+                // NavController per la navigazione tramite Compose
                 val navController = rememberNavController()
                 L4PNavGraph(
                     navController = navController,

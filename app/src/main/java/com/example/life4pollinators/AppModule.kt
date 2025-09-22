@@ -27,11 +27,19 @@ import io.github.jan.supabase.storage.storage
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
+/**
+ * Modulo di Dependency Injection per l'applicazione.
+ *
+ * Qui vengono definiti tutti i singleton e i ViewModel utilizzati nell'app tramite Koin.
+ * (Definisce tutte le dipendenze)
+ */
 val Context.dataStore by preferencesDataStore("preferences")
 
 val appModule = module {
+    // DataStore Preferences
     single { get<Context>().dataStore }
 
+    // Supabase Client e moduli
     single {
         createSupabaseClient(
             supabaseUrl = BuildConfig.SUPABASE_URL,
@@ -50,18 +58,19 @@ val appModule = module {
         }
     }
 
+    // Moduli Supabase
     single { get<SupabaseClient>().auth }
     single { get<SupabaseClient>().composeAuth }
     single { get<SupabaseClient>().postgrest }
     single { get<SupabaseClient>().storage }
 
-    //Repositories
+    // Repositories
     single { AuthRepository(get(), get()) }
     single { UserRepository(get()) }
     single { SettingsRepository(get()) }
     single { ImageRepository(get()) }
 
-    //ViewModels
+    // ViewModels
     viewModel { AuthViewModel(get()) }
     viewModel { SettingsViewModel(get(), get()) }
     viewModel { SignUpViewModel(get()) }

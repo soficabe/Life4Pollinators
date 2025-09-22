@@ -23,6 +23,7 @@ data class EditProfileState(
     val lastName: String = "",
     val email: String = "",
     val image: String? = null,
+    val newProfileImageUri: Uri? = null,
     val isUploadingImage: Boolean = false,
     val isLoading: Boolean = false,
     val isSaving: Boolean = false,
@@ -38,7 +39,7 @@ data class EditProfileState(
                     firstName != it.firstName ||
                     lastName != it.lastName ||
                     email != it.email ||
-                    image != it.image
+                    newProfileImageUri != null
         } ?: false
 }
 
@@ -51,7 +52,7 @@ interface EditProfileActions {
     fun resetFirstName()
     fun resetLastName()
     fun resetEmail()
-    fun saveChanges()
+    fun saveChanges(context: Context)
     fun clearMessages()
     suspend fun loadUserData()
     fun setErrorRes(resId: Int, arg: String? = null)
@@ -117,8 +118,8 @@ class EditProfileViewModel(
             _state.update { it.copy(errorMessageRes = null, errorMessageArg = null, isSuccess = false, emailConfirmationSentMessage = null, emailConfirmationSentArg = null) }
         }
 
-        override fun saveChanges() {
-            saveUserProfile()
+        override fun saveChanges(context: Context) {
+            saveUserProfile(context)
         }
 
         override suspend fun loadUserData() {
@@ -130,7 +131,8 @@ class EditProfileViewModel(
         }
 
         override fun onProfileImageSelected(uri: Uri, context: Context) {
-            uploadProfileImage(uri, context)
+            // Salva solo l'uri della foto scelta/scattata (già salvata in galleria)
+            _state.update { it.copy(newProfileImageUri = uri, errorMessageRes = null, errorMessageArg = null) }
         }
     }
 
@@ -154,7 +156,8 @@ class EditProfileViewModel(
                         image = it.image,
                         isLoading = false,
                         errorMessageRes = null,
-                        errorMessageArg = null
+                        errorMessageArg = null,
+                        newProfileImageUri = null // Reset eventuale immagine temporanea
                     )
                 }
             } ?: run {
@@ -170,7 +173,7 @@ class EditProfileViewModel(
         }
     }
 
-    private fun saveUserProfile() {
+    private fun saveUserProfile(context: Context) {
         viewModelScope.launch {
             val currentState = _state.value
             val originalUser = currentState.user
@@ -246,65 +249,62 @@ class EditProfileViewModel(
                     }
                 }
 
-                if (originalUser != null && (
-                            currentState.username != originalUser.username ||
-                                    currentState.firstName != originalUser.firstName ||
-                                    currentState.lastName != originalUser.lastName ||
-                                    currentState.image != originalUser.image
-                            )
-                ) {
-                    when (userRepository.updateUserProfile(
-                        userId = userId,
-                        username = currentState.username,
-                        firstName = currentState.firstName,
-                        lastName = currentState.lastName,
-                        image = currentState.image
-                    )) {
-                        is UpdateUserProfileResult.Success -> {
-                            val updatedUser = originalUser.copy(
-                                username = currentState.username,
-                                firstName = currentState.firstName,
-                                lastName = currentState.lastName,
-                                email = currentState.email,
-                                image = currentState.image
-                            )
-                            _state.update {
-                                it.copy(
-                                    isSaving = false,
-                                    isSuccess = true,
-                                    user = updatedUser
-                                )
-                            }
-                        }
-                        is UpdateUserProfileResult.Error.UsernameAlreadyExists -> {
-                            _state.update {
-                                it.copy(isSaving = false, errorMessageRes = R.string.username_already_exists)
-                            }
-                            return@launch
-                        }
-                        is UpdateUserProfileResult.Error.NetworkError -> {
-                            _state.update {
-                                it.copy(isSaving = false, errorMessageRes = R.string.network_error)
-                            }
-                            return@launch
-                        }
-                        is UpdateUserProfileResult.Error.UnknownError -> {
-                            _state.update {
-                                it.copy(isSaving = false, errorMessageRes = R.string.unknown_error)
-                            }
-                            return@launch
-                        }
+                // upload immagine SOLO ora, se nuova selezionata
+                var imageUrl: String? = null
+                val newImageUri = currentState.newProfileImageUri
+                if (newImageUri != null) {
+                    imageUrl = imageRepository.uploadProfileImage(userId, newImageUri, context)
+                    if (imageUrl == null) {
+                        _state.update { it.copy(isSaving = false, errorMessageRes = R.string.image_upload_error) }
+                        return@launch
                     }
-                } else if (!emailJustChanged) {
-                    if (originalUser != null) {
-                        val updatedUser = originalUser.copy(email = currentState.email)
+                }
+
+                val updatedImage = imageUrl ?: currentState.image
+
+                val userUpdateResult = userRepository.updateUserProfile(
+                    userId = userId,
+                    username = currentState.username,
+                    firstName = currentState.firstName,
+                    lastName = currentState.lastName,
+                    image = updatedImage
+                )
+
+                when (userUpdateResult) {
+                    is UpdateUserProfileResult.Success -> {
+                        val updatedUser = originalUser!!.copy(
+                            username = currentState.username,
+                            firstName = currentState.firstName,
+                            lastName = currentState.lastName,
+                            email = currentState.email,
+                            image = updatedImage
+                        )
                         _state.update {
                             it.copy(
                                 isSaving = false,
                                 isSuccess = true,
-                                user = updatedUser
+                                user = updatedUser,
+                                image = updatedImage
                             )
                         }
+                    }
+                    is UpdateUserProfileResult.Error.UsernameAlreadyExists -> {
+                        _state.update {
+                            it.copy(isSaving = false, errorMessageRes = R.string.username_already_exists)
+                        }
+                        return@launch
+                    }
+                    is UpdateUserProfileResult.Error.NetworkError -> {
+                        _state.update {
+                            it.copy(isSaving = false, errorMessageRes = R.string.network_error)
+                        }
+                        return@launch
+                    }
+                    is UpdateUserProfileResult.Error.UnknownError -> {
+                        _state.update {
+                            it.copy(isSaving = false, errorMessageRes = R.string.unknown_error)
+                        }
+                        return@launch
                     }
                 }
 
@@ -327,23 +327,6 @@ class EditProfileViewModel(
                         errorMessageArg = e.message
                     )
                 }
-            }
-        }
-    }
-
-    private fun uploadProfileImage(uri: Uri, context: Context) {
-        viewModelScope.launch {
-            _state.update { it.copy(isUploadingImage = true, errorMessageRes = null, errorMessageArg = null) }
-            try {
-                val userId = authRepository.getAuthUser().id
-                val imageUrl = imageRepository.uploadProfileImage(userId, uri, context)
-                if (imageUrl != null) {
-                    _state.update { it.copy(image = imageUrl, isUploadingImage = false) }
-                } else {
-                    _state.update { it.copy(errorMessageRes = R.string.image_upload_error, isUploadingImage = false) }
-                }
-            } catch (e: Exception) {
-                _state.update { it.copy(errorMessageRes = R.string.image_upload_error, isUploadingImage = false) }
             }
         }
     }
