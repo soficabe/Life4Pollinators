@@ -6,6 +6,9 @@ import android.util.Log
 import io.github.jan.supabase.storage.Storage
 import java.util.UUID
 
+/**
+ * Repository per la gestione dell’upload delle immagini su Supabase Storage
+ */
 class ImageRepository(private val storage: Storage) {
     private suspend fun uploadImage(
         userId: String,
@@ -27,10 +30,18 @@ class ImageRepository(private val storage: Storage) {
         }
     }
 
-    suspend fun uploadProfileImage(userId: String, uri: Uri, context: Context): String? =
+    /**
+     * Funzione per l'upload dell'immagine profilo
+     */
+    suspend fun uploadProfileImage(
+        userId: String,
+        uri: Uri,
+        context: Context
+    ): String? =
         uploadImage(userId, uri, context, bucket = "profile-images")
 
     // In futuro:
     // suspend fun uploadInsectPhoto(...) = uploadImage(..., bucket = "insect-photos")
+    // suspend fun uploadPlantPhoto(...) = uploadImage(..., bucket = "plant-photos")
     // suspend fun uploadSightingPhoto(...) = uploadImage(..., bucket = "sighting-photos")
 }

@@ -7,6 +7,9 @@ import io.github.jan.supabase.postgrest.from
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
+/**
+ * Risultati possibili dell'aggiornamento del profilo utente
+ */
 sealed interface UpdateUserProfileResult {
     data object Success : UpdateUserProfileResult
     sealed interface Error : UpdateUserProfileResult {
@@ -17,7 +20,8 @@ sealed interface UpdateUserProfileResult {
 }
 
 /**
- * Repository per la gestione dei dati utente nel database.
+ * Repository per la gestione dei dati utente nel database:
+ * recupero e l’aggiornamento dei dati utente (diversi dall’autenticazione) su Supabase.
  */
 class UserRepository(
     private val supabase: SupabaseClient
@@ -45,8 +49,17 @@ class UserRepository(
         }
     }
 
-    // Controllo unicità username (escludendo l'utente stesso)
-    private suspend fun isUsernameExists(username: String, excludeUserId: String? = null): Boolean {
+    /**
+     * Controllo unicità username (escludendo l'utente stesso)
+     *
+     * @param username di cui controllare l'unicitò
+     * @param excludeUserId username attuale da escludere nel controllo
+     * @return Boolean
+     */
+    private suspend fun isUsernameExists(
+        username: String,
+        excludeUserId: String? = null
+    ): Boolean {
         return try {
             val res = supabase.from("user")
                 .select {
@@ -63,7 +76,9 @@ class UserRepository(
         }
     }
 
-    // Metodo di update profilo (username, firstName, lastName)
+    /**
+     * Funzione per l'aggiornamento del profilo (username, firstName, lastName, image)
+     */
     suspend fun updateUserProfile(
         userId: String,
         username: String,
@@ -76,7 +91,7 @@ class UserRepository(
                 if (isUsernameExists(username, excludeUserId = userId)) {
                     return@withContext UpdateUserProfileResult.Error.UsernameAlreadyExists
                 }
-                // Costruzione coerente di tutti i campi da aggiornare
+                // Campi da aggiornare
                 val updateData = mutableMapOf(
                     "username" to username,
                     "first_name" to firstName,
