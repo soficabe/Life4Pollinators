@@ -24,6 +24,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 
+/**
+ * Card componibile per mostrare una sezione cliccabile nella home o lista.
+ *
+ * @param title Titolo della sezione.
+ * @param imageRes Icona/immagine da visualizzare a sinistra.
+ * @param backgroundColor Colore di sfondo della card.
+ * @param onClick Callback eseguita al click sulla card.
+ * @param modifier Modificatore opzionale.
+ */
 @Composable
 fun SectionCard(
     modifier: Modifier = Modifier,

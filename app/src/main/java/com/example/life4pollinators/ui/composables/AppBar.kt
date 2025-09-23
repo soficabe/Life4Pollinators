@@ -20,6 +20,12 @@ import com.example.life4pollinators.R
 import com.example.life4pollinators.ui.navigation.L4PRoute
 import com.example.life4pollinators.ui.theme.AppBarGreen
 
+/**
+ * Barra superiore dell'app (TopAppBar) allineata centralmente.
+ * Mostra titolo dinamico in base alla rotta e pulsanti di navigazione/azione.
+ *
+ * @param navController Controller di navigazione per gestire back e navigazione a settings.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppBar(
@@ -27,7 +33,7 @@ fun AppBar(
 ) {
     val backStackEntry by navController.currentBackStackEntryAsState()
 
-    //Definizione del titolo dell'AppBar in base alla rotta attuale
+    // Determina il titolo dell'AppBar in base alla rotta attuale
     val title = when {
         backStackEntry?.destination?.hasRoute<L4PRoute.Home>() == true ->
             stringResource(R.string.title_learn)
@@ -48,6 +54,7 @@ fun AppBar(
             )
         },
         navigationIcon = {
+            // Mostra il pulsante back solo se non siamo in Home e c'è una schermata precedente
             if(title != stringResource(R.string.title_learn) && navController.previousBackStackEntry != null) {
                 IconButton(onClick = {navController.navigateUp()}) {
                     Icon(Icons.AutoMirrored.Outlined.ArrowBack, "Go Back")
@@ -55,7 +62,8 @@ fun AppBar(
             }
         },
         actions = {
-            if(title != "Settings") {
+            // Mostra il pulsante settings solo se non siamo già su Settings
+            if(title != stringResource(R.string.title_settings)) {
                 IconButton(onClick = {navController.navigate(L4PRoute.Settings)}) {
                     Icon(Icons.Outlined.Settings, "Settings")
                 }

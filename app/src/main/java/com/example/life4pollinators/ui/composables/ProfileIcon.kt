@@ -20,6 +20,14 @@ import androidx.compose.ui.unit.dp
 import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 
+/**
+ * Icona profilo utente rotonda, mostra immagine del database, loader o icona di default.
+ *
+ * @param imageUrl URL dell'immagine profilo (può essere null).
+ * @param isClickable Se true, l'icona è cliccabile.
+ * @param onClick Callback chiamata al click (se isClickable).
+ * @param showLoader Se true, mostra un loader centrale.
+ */
 @Composable
 fun ProfileIcon(
     modifier: Modifier = Modifier,
