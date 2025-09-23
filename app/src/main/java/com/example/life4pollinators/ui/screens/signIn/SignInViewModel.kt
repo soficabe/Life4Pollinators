@@ -2,22 +2,25 @@ package com.example.life4pollinators.ui.screens.signIn
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.life4pollinators.R
 import com.example.life4pollinators.data.repositories.AuthRepository
 import com.example.life4pollinators.data.repositories.SignInResult
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import com.example.life4pollinators.R
 
 /**
- * Data class rappresentante lo stato della schermata di SignIn.
+ * Stato della schermata di login.
+ * Include errori per campo per validazione lato client.
  */
 data class SignInState(
     val email: String = "",
     val psw: String = "",
     val signInResult: SignInResult? = null,
-    val errorMessageRes: Int? = null,
+    val errorMessageRes: Int? = null, // errore generico (backend)
+    val emailError: Int? = null,
+    val passwordError: Int? = null,
     val isLoading: Boolean = false
 )
 
@@ -34,6 +37,7 @@ interface SignInActions {
 /**
  * ViewModel per la schermata di login utente.
  * Gestisce stato, azioni e logica di autenticazione.
+ * Effettua la validazione lato client.
  */
 class SignInViewModel(
     private val authRepository: AuthRepository
@@ -41,26 +45,48 @@ class SignInViewModel(
     private val _state = MutableStateFlow(SignInState())
     val state = _state.asStateFlow()
 
-    //Implementazione azioni di SignIn
     val actions = object : SignInActions {
         override fun setEmail(email: String) {
-            _state.update { it.copy(email = email, errorMessageRes = null) }
+            _state.update { it.copy(email = email, emailError = null, errorMessageRes = null) }
         }
 
         override fun setPsw(psw: String) {
-            _state.update { it.copy(psw = psw, errorMessageRes = null) }
+            _state.update { it.copy(psw = psw, passwordError = null, errorMessageRes = null) }
         }
 
         /**
-         * Esegue il sign in dell'utente.
+         * Esegue il sign in dell'utente con validazione lato client.
          */
         override fun signIn() {
             val currentState = _state.value
 
-            // Reset errore precedente e impostazione a Loading
+            // Reset errori precedenti
             _state.update {
                 it.copy(
                     errorMessageRes = null,
+                    emailError = null,
+                    passwordError = null
+                )
+            }
+
+            // Validazione lato client
+            var hasError = false
+            if (currentState.email.isBlank()) {
+                _state.update { it.copy(emailError = R.string.required_fields) }
+                hasError = true
+            } else if (!currentState.email.contains("@") || !currentState.email.contains(".")) {
+                _state.update { it.copy(emailError = R.string.invalid_email) }
+                hasError = true
+            }
+            if (currentState.psw.isBlank()) {
+                _state.update { it.copy(passwordError = R.string.required_fields) }
+                hasError = true
+            }
+            if (hasError) return
+
+            // Solo se tutto ok procedi col repository
+            _state.update {
+                it.copy(
                     signInResult = SignInResult.Loading,
                     isLoading = true
                 )
@@ -68,13 +94,11 @@ class SignInViewModel(
 
             viewModelScope.launch {
                 try {
-                    // Chiamata al repository con tutti i controlli
                     val result = authRepository.signIn(
                         email = currentState.email,
                         password = currentState.psw
                     )
 
-                    // Aggiornamento stato con risultato
                     _state.update {
                         it.copy(
                             signInResult = result,
@@ -84,9 +108,7 @@ class SignInViewModel(
 
                     // Gestione messaggi di errore specifici
                     when (result) {
-                        SignInResult.Loading -> {
-                            // Stato di caricamento
-                        }
+                        SignInResult.Loading -> {}
                         SignInResult.Success -> {
                             _state.update { it.copy(errorMessageRes = null) }
                         }
@@ -107,7 +129,6 @@ class SignInViewModel(
                         }
                     }
                 } catch (e: Exception) {
-                    // Gestione errori imprevisti
                     _state.update {
                         it.copy(
                             signInResult = SignInResult.Error.UnknownError(e),
@@ -123,7 +144,9 @@ class SignInViewModel(
             _state.update {
                 it.copy(
                     errorMessageRes = null,
-                    signInResult = null
+                    signInResult = null,
+                    emailError = null,
+                    passwordError = null
                 )
             }
         }

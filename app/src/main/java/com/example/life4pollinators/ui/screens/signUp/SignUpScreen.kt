@@ -1,35 +1,16 @@
 package com.example.life4pollinators.ui.screens.signUp
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -46,10 +27,7 @@ import com.example.life4pollinators.ui.navigation.L4PRoute
 
 /**
  * Schermata di registrazione utente con email/password.
- *
- * @param state Stato della UI
- * @param actions Azioni per manipolare lo stato
- * @param navController Controller di navigazione
+ * Ora mostra errori per campo in caso di validazione lato client.
  */
 @Composable
 fun SignUpScreen(
@@ -64,18 +42,13 @@ fun SignUpScreen(
     // Gestisce navigazione post-registrazione
     LaunchedEffect(state.signUpResult) {
         when (state.signUpResult) {
-            SignUpResult.Loading -> {
-                // Stato di caricamento - nessuna azione richiesta
-            }
+            SignUpResult.Loading -> {}
             SignUpResult.Success -> {
-                // Navigazione alla home con rimozione dello stack di registrazione
                 navController.navigate(L4PRoute.Home) {
                     popUpTo(L4PRoute.SignUp) { inclusive = true }
                 }
             }
-            else -> {
-                // Altri stati gestiti tramite errorMessage nella UI
-            }
+            else -> {}
         }
     }
 
@@ -127,7 +100,10 @@ fun SignUpScreen(
                         label = { Text(stringResource(R.string.username)) },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
-                        isError = state.errorMessage == R.string.username_already_exists
+                        isError = state.usernameError != null,
+                        supportingText = {
+                            state.usernameError?.let { Text(text = stringResource(it), color = MaterialTheme.colorScheme.error) }
+                        }
                     )
 
                     // Campo First Name
@@ -139,7 +115,11 @@ fun SignUpScreen(
                         },
                         label = { Text(stringResource(R.string.first_name)) },
                         modifier = Modifier.fillMaxWidth(),
-                        singleLine = true
+                        singleLine = true,
+                        isError = state.firstNameError != null,
+                        supportingText = {
+                            state.firstNameError?.let { Text(text = stringResource(it), color = MaterialTheme.colorScheme.error) }
+                        }
                     )
 
                     // Campo Last Name
@@ -151,7 +131,11 @@ fun SignUpScreen(
                         },
                         label = { Text(stringResource(R.string.last_name)) },
                         modifier = Modifier.fillMaxWidth(),
-                        singleLine = true
+                        singleLine = true,
+                        isError = state.lastNameError != null,
+                        supportingText = {
+                            state.lastNameError?.let { Text(text = stringResource(it), color = MaterialTheme.colorScheme.error) }
+                        }
                     )
 
                     // Campo Email
@@ -164,9 +148,10 @@ fun SignUpScreen(
                         label = { Text(stringResource(R.string.email)) },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
-                        isError = state.errorMessage == R.string.email_already_exists ||
-                                state.errorMessage == R.string.email_invalid_format ||
-                                state.errorMessage == R.string.userExisting_error
+                        isError = state.emailError != null,
+                        supportingText = {
+                            state.emailError?.let { Text(text = stringResource(it), color = MaterialTheme.colorScheme.error) }
+                        }
                     )
 
                     // Campo Password
@@ -194,7 +179,10 @@ fun SignUpScreen(
                                 )
                             }
                         },
-                        isError = state.errorMessage == R.string.weakPassword
+                        isError = state.passwordError != null,
+                        supportingText = {
+                            state.passwordError?.let { Text(text = stringResource(it), color = MaterialTheme.colorScheme.error) }
+                        }
                     )
 
                     // Campo Confirm Password
@@ -222,10 +210,13 @@ fun SignUpScreen(
                                 )
                             }
                         },
-                        isError = state.errorMessage == R.string.passwordNotMatch_error
+                        isError = state.confirmPasswordError != null,
+                        supportingText = {
+                            state.confirmPasswordError?.let { Text(text = stringResource(it), color = MaterialTheme.colorScheme.error) }
+                        }
                     )
 
-                    // Messaggio di errore
+                    // Messaggio di errore generico (es. network error)
                     if (state.errorMessage != null) {
                         Text(
                             text = stringResource(id = state.errorMessage),
@@ -239,7 +230,6 @@ fun SignUpScreen(
                     }
 
                     // Bottone per inviare i dati di registrazione.
-                    // Mostra un loader se isLoading è true
                     Button(
                         onClick = { actions.signUp() },
                         modifier = Modifier.fillMaxWidth(),

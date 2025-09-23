@@ -18,7 +18,7 @@ import com.example.life4pollinators.R
 
 /**
  * Stato della schermata di modifica profilo.
- * Contiene tutti i dati inseriti, stati di caricamento e messaggi di feedback.
+ * Include errori per campo per validazione lato client.
  */
 data class EditProfileState(
     val user: User? = null,
@@ -35,7 +35,11 @@ data class EditProfileState(
     val errorMessageArg: String? = null,
     val isSuccess: Boolean = false,
     val emailConfirmationSentMessage: String? = null,
-    val emailConfirmationSentArg: String? = null
+    val emailConfirmationSentArg: String? = null,
+    val usernameError: Int? = null,
+    val firstNameError: Int? = null,
+    val lastNameError: Int? = null,
+    val emailError: Int? = null
 ) {
     /**
      * True se almeno un campo è stato modificato rispetto ai dati originali.
@@ -73,6 +77,7 @@ interface EditProfileActions {
 /**
  * ViewModel per la schermata di editing profilo.
  * Gestisce il caricamento e la validazione dei dati, la logica di salvataggio e l'upload dell'immagine profilo.
+ * Effettua la validazione lato client.
  */
 class EditProfileViewModel(
     private val authRepository: AuthRepository,
@@ -85,22 +90,22 @@ class EditProfileViewModel(
 
     val actions = object : EditProfileActions {
         override fun setUsername(username: String) {
-            _state.update { it.copy(username = username, errorMessageRes = null, errorMessageArg = null) }
+            _state.update { it.copy(username = username, usernameError = null, errorMessageRes = null, errorMessageArg = null) }
         }
         override fun setFirstName(firstName: String) {
-            _state.update { it.copy(firstName = firstName, errorMessageRes = null, errorMessageArg = null) }
+            _state.update { it.copy(firstName = firstName, firstNameError = null, errorMessageRes = null, errorMessageArg = null) }
         }
         override fun setLastName(lastName: String) {
-            _state.update { it.copy(lastName = lastName, errorMessageRes = null, errorMessageArg = null) }
+            _state.update { it.copy(lastName = lastName, lastNameError = null, errorMessageRes = null, errorMessageArg = null) }
         }
         override fun setEmail(email: String) {
-            _state.update { it.copy(email = email, errorMessageRes = null, errorMessageArg = null) }
+            _state.update { it.copy(email = email, emailError = null, errorMessageRes = null, errorMessageArg = null) }
         }
 
         override fun resetUsername() {
             _state.update { state ->
                 state.user?.let { user ->
-                    state.copy(username = user.username)
+                    state.copy(username = user.username, usernameError = null)
                 } ?: state
             }
         }
@@ -108,7 +113,7 @@ class EditProfileViewModel(
         override fun resetFirstName() {
             _state.update { state ->
                 state.user?.let { user ->
-                    state.copy(firstName = user.firstName)
+                    state.copy(firstName = user.firstName, firstNameError = null)
                 } ?: state
             }
         }
@@ -116,7 +121,7 @@ class EditProfileViewModel(
         override fun resetLastName() {
             _state.update { state ->
                 state.user?.let { user ->
-                    state.copy(lastName = user.lastName)
+                    state.copy(lastName = user.lastName, lastNameError = null)
                 } ?: state
             }
         }
@@ -124,16 +129,60 @@ class EditProfileViewModel(
         override fun resetEmail() {
             _state.update { state ->
                 state.user?.let { user ->
-                    state.copy(email = user.email)
+                    state.copy(email = user.email, emailError = null)
                 } ?: state
             }
         }
 
         override fun clearMessages() {
-            _state.update { it.copy(errorMessageRes = null, errorMessageArg = null, isSuccess = false, emailConfirmationSentMessage = null, emailConfirmationSentArg = null) }
+            _state.update { it.copy(
+                errorMessageRes = null, errorMessageArg = null, isSuccess = false,
+                emailConfirmationSentMessage = null, emailConfirmationSentArg = null,
+                usernameError = null, firstNameError = null, lastNameError = null, emailError = null
+            ) }
         }
 
         override fun saveChanges(context: Context) {
+            val currentState = _state.value
+            // Reset errori precedenti
+            _state.update {
+                it.copy(
+                    errorMessageRes = null,
+                    errorMessageArg = null,
+                    usernameError = null,
+                    firstNameError = null,
+                    lastNameError = null,
+                    emailError = null
+                )
+            }
+
+            // Validazione lato client
+            var hasError = false
+            if (currentState.username.isBlank()) {
+                _state.update { it.copy(usernameError = R.string.requiredFields_error) }
+                hasError = true
+            }
+            if (currentState.firstName.isBlank()) {
+                _state.update { it.copy(firstNameError = R.string.requiredFields_error) }
+                hasError = true
+            }
+            if (currentState.lastName.isBlank()) {
+                _state.update { it.copy(lastNameError = R.string.requiredFields_error) }
+                hasError = true
+            }
+            if (currentState.email.isBlank()) {
+                _state.update { it.copy(emailError = R.string.requiredFields_error) }
+                hasError = true
+            } else if (!currentState.email.contains("@") || !currentState.email.contains(".")) {
+                _state.update { it.copy(emailError = R.string.invalid_email_format) }
+                hasError = true
+            }
+            if (!currentState.hasChanges) {
+                _state.update { it.copy(errorMessageRes = R.string.no_changes_to_save) }
+                hasError = true
+            }
+            if (hasError) return
+
             saveUserProfile(context)
         }
 
@@ -175,7 +224,7 @@ class EditProfileViewModel(
                         isLoading = false,
                         errorMessageRes = null,
                         errorMessageArg = null,
-                        newProfileImageUri = null // Reset eventuale immagine temporanea
+                        newProfileImageUri = null
                     )
                 }
             } ?: run {
@@ -200,26 +249,6 @@ class EditProfileViewModel(
             val currentState = _state.value
             val originalUser = currentState.user
 
-            // Validazione campi obbligatori
-            if (currentState.username.isBlank() ||
-                currentState.firstName.isBlank() ||
-                currentState.lastName.isBlank() ||
-                currentState.email.isBlank()
-            ) {
-                _state.update { it.copy(errorMessageRes = R.string.all_fields_required) }
-                return@launch
-            }
-
-            if (!currentState.email.contains("@") || !currentState.email.contains(".")) {
-                _state.update { it.copy(errorMessageRes = R.string.invalid_email_format) }
-                return@launch
-            }
-
-            if (!currentState.hasChanges) {
-                _state.update { it.copy(errorMessageRes = R.string.no_changes_to_save) }
-                return@launch
-            }
-
             _state.update { it.copy(isSaving = true, errorMessageRes = null, errorMessageArg = null, isSuccess = false) }
 
             var emailJustChanged = false
@@ -238,7 +267,7 @@ class EditProfileViewModel(
                             _state.update {
                                 it.copy(
                                     isSaving = false,
-                                    errorMessageRes = R.string.email_already_exists
+                                    emailError = R.string.email_already_exists
                                 )
                             }
                             return@launch
@@ -247,7 +276,7 @@ class EditProfileViewModel(
                             _state.update {
                                 it.copy(
                                     isSaving = false,
-                                    errorMessageRes = R.string.invalid_email_format
+                                    emailError = R.string.invalid_email_format
                                 )
                             }
                             return@launch
@@ -273,7 +302,7 @@ class EditProfileViewModel(
                     }
                 }
 
-                // upload immagine SOLO se nuova selezionata
+                // PATCH: upload immagine SOLO se nuova selezionata, e aggiungi query param per invalidare la cache
                 var imageUrl: String? = null
                 val newImageUri = currentState.newProfileImageUri
                 if (newImageUri != null) {
@@ -282,11 +311,12 @@ class EditProfileViewModel(
                         _state.update { it.copy(isSaving = false, errorMessageRes = R.string.image_upload_error) }
                         return@launch
                     }
+                    // Forza cache busting aggiungendo timestamp all'URL
+                    imageUrl = "$imageUrl?t=${System.currentTimeMillis()}"
                 }
 
                 val updatedImage = imageUrl ?: currentState.image
 
-                // Aggiorna dati base (username, nome, cognome, immagine)
                 val userUpdateResult = userRepository.updateUserProfile(
                     userId = userId,
                     username = currentState.username,
@@ -309,13 +339,14 @@ class EditProfileViewModel(
                                 isSaving = false,
                                 isSuccess = true,
                                 user = updatedUser,
-                                image = updatedImage
+                                image = updatedImage,
+                                newProfileImageUri = null // PATCH: resetta anche questo
                             )
                         }
                     }
                     is UpdateUserProfileResult.Error.UsernameAlreadyExists -> {
                         _state.update {
-                            it.copy(isSaving = false, errorMessageRes = R.string.username_already_exists)
+                            it.copy(isSaving = false, usernameError = R.string.username_already_exists)
                         }
                         return@launch
                     }

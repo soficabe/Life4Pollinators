@@ -33,6 +33,7 @@ import com.example.life4pollinators.utils.rememberGalleryLauncher
  *
  * Permette la modifica di tutti i dati anagrafici e dell'immagine profilo.
  * Gestisce feedback di successo/errore tramite snackbar e mostra loader durante il salvataggio.
+ * Mostra errori per campo in caso di validazione lato client.
  * L'utente può scattare una foto o selezionarne una dalla galleria.
  *
  * @param state Stato attuale del profilo in editing
@@ -199,7 +200,7 @@ fun EditProfileScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                // Campo username
+                // Username Field
                 OutlinedTextField(
                     value = state.username,
                     onValueChange = { actions.setUsername(it) },
@@ -208,6 +209,10 @@ fun EditProfileScreen(
                     singleLine = true,
                     shape = RoundedCornerShape(12.dp),
                     enabled = !state.isSaving,
+                    isError = state.usernameError != null,
+                    supportingText = {
+                        state.usernameError?.let { Text(text = stringResource(it), color = MaterialTheme.colorScheme.error) }
+                    },
                     trailingIcon = {
                         val isModified = state.username != state.user?.username
                         IconButton(
@@ -222,7 +227,7 @@ fun EditProfileScreen(
                     }
                 )
 
-                // Campo nome
+                // First Name Field
                 OutlinedTextField(
                     value = state.firstName,
                     onValueChange = { actions.setFirstName(it) },
@@ -231,6 +236,10 @@ fun EditProfileScreen(
                     singleLine = true,
                     shape = RoundedCornerShape(12.dp),
                     enabled = !state.isSaving,
+                    isError = state.firstNameError != null,
+                    supportingText = {
+                        state.firstNameError?.let { Text(text = stringResource(it), color = MaterialTheme.colorScheme.error) }
+                    },
                     trailingIcon = {
                         val isModified = state.firstName != state.user?.firstName
                         IconButton(
@@ -245,7 +254,7 @@ fun EditProfileScreen(
                     }
                 )
 
-                // Campo cognome
+                // Last Name Field
                 OutlinedTextField(
                     value = state.lastName,
                     onValueChange = { actions.setLastName(it) },
@@ -254,6 +263,10 @@ fun EditProfileScreen(
                     singleLine = true,
                     shape = RoundedCornerShape(12.dp),
                     enabled = !state.isSaving,
+                    isError = state.lastNameError != null,
+                    supportingText = {
+                        state.lastNameError?.let { Text(text = stringResource(it), color = MaterialTheme.colorScheme.error) }
+                    },
                     trailingIcon = {
                         val isModified = state.lastName != state.user?.lastName
                         IconButton(
@@ -268,7 +281,7 @@ fun EditProfileScreen(
                     }
                 )
 
-                // Campo email
+                // Email Field
                 OutlinedTextField(
                     value = state.email,
                     onValueChange = { actions.setEmail(it) },
@@ -278,6 +291,10 @@ fun EditProfileScreen(
                     keyboardOptions = KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Email),
                     shape = RoundedCornerShape(12.dp),
                     enabled = !state.isSaving,
+                    isError = state.emailError != null,
+                    supportingText = {
+                        state.emailError?.let { Text(text = stringResource(it), color = MaterialTheme.colorScheme.error) }
+                    },
                     trailingIcon = {
                         val isModified = state.email != state.user?.email
                         IconButton(

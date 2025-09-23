@@ -173,7 +173,7 @@ fun SettingsScreen (
             )
         }
 
-        //Dialog per il cambio password
+        // Dialog per il cambio password con feedback per campo
         if (showPasswordDialog) {
             ChangePasswordDialog(
                 newPassword = newPassword,
@@ -191,7 +191,7 @@ fun SettingsScreen (
                 onPasswordVisibilityChange = { passwordVisible = !passwordVisible },
                 onConfirmPasswordVisibilityChange = { confirmPasswordVisible = !confirmPasswordVisible },
                 onConfirm = {
-                    actions.changePassword(newPassword, confirmPassword)  // Rimosso currentPassword
+                    actions.changePassword(newPassword, confirmPassword)
                 },
                 onDismiss = {
                     showPasswordDialog = false
@@ -200,7 +200,9 @@ fun SettingsScreen (
                     actions.clearChangePasswordError()
                 },
                 isLoading = state.isChangingPassword,
-                errorMessage = state.changePasswordError
+                errorMessage = state.changePasswordError,
+                newPasswordError = state.newPasswordError,
+                confirmPasswordError = state.confirmPasswordError
             )
         }
 
@@ -221,6 +223,7 @@ fun SettingsScreen (
         }
     }
 }
+
 
 /**
  * Titolo di sezione per la schermata impostazioni.
@@ -349,7 +352,9 @@ fun ChangePasswordDialog(
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
     isLoading: Boolean = false,
-    errorMessage: Int? = null
+    errorMessage: Int? = null,
+    newPasswordError: Int? = null,
+    confirmPasswordError: Int? = null
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -376,7 +381,11 @@ fun ChangePasswordDialog(
                             )
                         }
                     },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    isError = newPasswordError != null,
+                    supportingText = {
+                        newPasswordError?.let { Text(text = stringResource(it), color = MaterialTheme.colorScheme.error) }
+                    }
                 )
 
                 Spacer(Modifier.height(16.dp))
@@ -396,7 +405,11 @@ fun ChangePasswordDialog(
                             )
                         }
                     },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    isError = confirmPasswordError != null,
+                    supportingText = {
+                        confirmPasswordError?.let { Text(text = stringResource(it), color = MaterialTheme.colorScheme.error) }
+                    }
                 )
 
                 if (errorMessage != null) {

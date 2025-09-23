@@ -112,16 +112,17 @@ class AuthRepository(
         firstName: String,
         lastName: String,
         email: String,
-        password: String,
-        confirmPassword: String
+        password: String
     ): SignUpResult {
         return try {
-            // Validazione locale
-            val validationError = validateSignUpData(
-                username, firstName, lastName, email, password, confirmPassword
-            )
-            if (validationError != null) {
-                return validationError
+            // Unicità username (controllo a livello di database)
+            if (isUsernameExists(username)) {
+                return SignUpResult.Error.UsernameAlreadyExists
+            }
+
+            // Unicità email (controllo a livello di database)
+            if (isEmailExists(email)) {
+                return SignUpResult.Error.EmailAlreadyExists
             }
 
             // Registrazione con Supabase Auth
@@ -162,20 +163,13 @@ class AuthRepository(
     /**
      * Autentica un utente esistente con email/password.
      *
-     * @return SignInResult con l'esito del signIn
+     * Questa funzione si occupa solo della chiamata di backend e della gestione degli errori server-side.
      */
     suspend fun signIn(
         email: String,
         password: String
     ): SignInResult {
         return try {
-            // Validazione locale prima della chiamata di rete
-            val validationError = validateSignInData(email, password)
-            if (validationError != null) {
-                return validationError
-            }
-
-            // SignIn con Supabase Auth
             auth.signInWith(Email) {
                 this.email = email
                 this.password = password
@@ -235,18 +229,10 @@ class AuthRepository(
      * Aggiorna la password dell'utente autenticato.
      *
      * @param newPassword nuova password
-     * @param confirmPassword conferma nuova password
      * @return ChangePasswordResult indicante l'esito dell'operazione
      */
-    suspend fun changePassword(
-        newPassword: String,
-        confirmPassword: String
-    ): ChangePasswordResult {
-        // Validazione locale
-        validateChangePasswordData(newPassword, confirmPassword)?.let { return it }
-
+    suspend fun changePassword(newPassword: String): ChangePasswordResult {
         return try {
-            // Aggiorna direttamente la password senza verificare quella attuale
             auth.updateUser {
                 password = newPassword
             }
@@ -307,101 +293,5 @@ class AuthRepository(
             Log.e("AuthRepository", "Error checking email existence", e)
             false
         }
-    }
-
-    /**
-     * Valida i dati di registrazione (controllo SignUp)
-     *
-     * @return SignUpResult.Error eventuale
-     */
-    private suspend fun validateSignUpData(
-        username: String,
-        firstName: String,
-        lastName: String,
-        email: String,
-        password: String,
-        confirmPassword: String
-    ): SignUpResult.Error? {
-        // Controllo campi obbligatori
-        if (username.isBlank() || firstName.isBlank() || lastName.isBlank() ||
-            email.isBlank() || password.isBlank()
-        ) {
-            return SignUpResult.Error.RequiredFields
-        }
-
-        // Controllo lunghezza password
-        if (password.length < 6) {
-            return SignUpResult.Error.WeakPassword
-        }
-
-        // Controllo corrispondenza password
-        if (password != confirmPassword) {
-            return SignUpResult.Error.PasswordMismatch
-        }
-
-        // Controllo formato email
-        if (!email.contains("@") || !email.contains(".")) {
-            return SignUpResult.Error.InvalidEmail
-        }
-
-        // Controllo unicità username (controllo a livello di database)
-        if (isUsernameExists(username)) {
-            return SignUpResult.Error.UsernameAlreadyExists
-        }
-
-        // Controllo unicità email (controllo a livello di database)
-        if (isEmailExists(email)) {
-            return SignUpResult.Error.EmailAlreadyExists
-        }
-
-        return null // Validazione superata
-    }
-
-    /**
-     * Valida i dati di login (controllo SignIn)
-     *
-     * @return SignInResult.Error eventuale
-     */
-    private fun validateSignInData(
-        email: String,
-        password: String
-    ): SignInResult.Error? {
-        // Controllo campi obbligatori
-        if (email.isBlank() || password.isBlank()) {
-            return SignInResult.Error.RequiredFields
-        }
-
-        // Controllo formato email base
-        if (!email.contains("@") || !email.contains(".")) {
-            return SignInResult.Error.InvalidEmail
-        }
-
-        return null // Validazione superata
-    }
-
-    /**
-     * Valida i dati di cambio password
-     *
-     * @return ChangePasswordResult.Error eventuale
-     */
-    private fun validateChangePasswordData(
-        newPassword: String,
-        confirmPassword: String
-    ): ChangePasswordResult.Error? {
-        // Controllo campi obbligatori
-        if (newPassword.isBlank() || confirmPassword.isBlank()) {
-            return ChangePasswordResult.Error.RequiredFields
-        }
-
-        // Controllo lunghezza password
-        if (newPassword.length < 6) {
-            return ChangePasswordResult.Error.WeakPassword
-        }
-
-        // Controllo corrispondenza password
-        if (newPassword != confirmPassword) {
-            return ChangePasswordResult.Error.PasswordMismatch
-        }
-        return null
     }
 }

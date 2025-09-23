@@ -64,9 +64,14 @@ fun ProfileScreen(
         ) {
             Spacer(Modifier.height(20.dp))
 
+            // PATCH: aggiungi parametro fittizio all'URL dell'immagine per forzare il refresh
+            val profileImageUrl = state.user?.image?.let { img ->
+                if (img.contains("?t=")) img else "$img?t=${System.currentTimeMillis()}"
+            }
+
             // Avatar utente (con loader se necessario)
             ProfileIcon(
-                imageUrl = state.user?.image,
+                imageUrl = profileImageUrl,
                 isClickable = false,
                 showLoader = state.isRefreshing
             )

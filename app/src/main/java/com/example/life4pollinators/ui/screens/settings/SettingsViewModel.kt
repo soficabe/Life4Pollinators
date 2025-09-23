@@ -15,19 +15,15 @@ import kotlinx.coroutines.launch
 
 /**
  * Stato della schermata impostazioni.
- *
- * @param theme Tema attuale selezionato
- * @param isAuthenticated True se l'utente è loggato
- * @param changePasswordResult Risultato ultimo cambio password
- * @param isChangingPassword True se il cambio password è in corso
- * @param changePasswordError Id risorsa errore cambio password
  */
 data class SettingsState(
     val theme: Theme = Theme.System,
     val isAuthenticated: Boolean = false,
     val changePasswordResult: ChangePasswordResult? = null,
     val isChangingPassword: Boolean = false,
-    val changePasswordError: Int? = null
+    val changePasswordError: Int? = null, // errore generico
+    val newPasswordError: Int? = null,
+    val confirmPasswordError: Int? = null
 )
 
 /**
@@ -36,13 +32,13 @@ data class SettingsState(
 interface SettingsActions {
     fun changeTheme(theme: Theme): Job
     fun logout() : Job
-    fun changePassword(newPassword: String, confirmPassword: String)  // Rimosso currentPassword
+    fun changePassword(newPassword: String, confirmPassword: String)
     fun clearChangePasswordError()
 }
 
 /**
  * ViewModel per la schermata delle impostazioni.
- * Gestisce tema, logout, cambio password.
+ * Gestisce tema, logout, cambio password e validazione lato client.
  */
 class SettingsViewModel(
     private val settingsRepository: SettingsRepository,
@@ -71,10 +67,42 @@ class SettingsViewModel(
                 authRepository.signOut()
             }
 
-        override fun changePassword(newPassword: String, confirmPassword: String) {  // Rimosso currentPassword
-            _state.update { it.copy(isChangingPassword = true, changePasswordError = null) }
+        /**
+         * Cambio password con validazione lato client e feedback immediato.
+         */
+        override fun changePassword(newPassword: String, confirmPassword: String) {
+            // Reset errori precedenti
+            _state.update {
+                it.copy(
+                    isChangingPassword = false,
+                    changePasswordError = null,
+                    newPasswordError = null,
+                    confirmPasswordError = null
+                )
+            }
+
+            // Validazione lato client
+            var hasError = false
+            if (newPassword.isBlank()) {
+                _state.update { it.copy(newPasswordError = R.string.requiredFields_error) }
+                hasError = true
+            } else if (newPassword.length < 6) {
+                _state.update { it.copy(newPasswordError = R.string.weakPassword) }
+                hasError = true
+            }
+            if (confirmPassword.isBlank()) {
+                _state.update { it.copy(confirmPasswordError = R.string.requiredFields_error) }
+                hasError = true
+            } else if (newPassword != confirmPassword) {
+                _state.update { it.copy(confirmPasswordError = R.string.passwordNotMatch_error) }
+                hasError = true
+            }
+            if (hasError) return
+
+            // Se tutto ok, procediamo col repository
+            _state.update { it.copy(isChangingPassword = true) }
             viewModelScope.launch {
-                val result = authRepository.changePassword(newPassword, confirmPassword)  // Rimosso currentPassword
+                val result = authRepository.changePassword(newPassword)
                 _state.update {
                     it.copy(
                         changePasswordResult = result,
@@ -94,7 +122,14 @@ class SettingsViewModel(
         }
 
         override fun clearChangePasswordError() {
-            _state.update { it.copy(changePasswordError = null, changePasswordResult = null) }
+            _state.update {
+                it.copy(
+                    changePasswordError = null,
+                    changePasswordResult = null,
+                    newPasswordError = null,
+                    confirmPasswordError = null
+                )
+            }
         }
     }
 }
