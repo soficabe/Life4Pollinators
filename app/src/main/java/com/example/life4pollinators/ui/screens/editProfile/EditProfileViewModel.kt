@@ -16,6 +16,10 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import com.example.life4pollinators.R
 
+/**
+ * Stato della schermata di modifica profilo.
+ * Contiene tutti i dati inseriti, stati di caricamento e messaggi di feedback.
+ */
 data class EditProfileState(
     val user: User? = null,
     val username: String = "",
@@ -33,6 +37,9 @@ data class EditProfileState(
     val emailConfirmationSentMessage: String? = null,
     val emailConfirmationSentArg: String? = null
 ) {
+    /**
+     * True se almeno un campo è stato modificato rispetto ai dati originali.
+     */
     val hasChanges: Boolean
         get() = user?.let {
             username != it.username ||
@@ -43,6 +50,10 @@ data class EditProfileState(
         } ?: false
 }
 
+/**
+ * Azioni disponibili nella schermata di modifica profilo.
+ * Permettono di aggiornare i campi, resettare ai dati originali, gestire l'immagine e salvare le modifiche.
+ */
 interface EditProfileActions {
     fun setUsername(username: String)
     fun setFirstName(firstName: String)
@@ -59,6 +70,10 @@ interface EditProfileActions {
     fun onProfileImageSelected(uri: Uri, context: Context)
 }
 
+/**
+ * ViewModel per la schermata di editing profilo.
+ * Gestisce il caricamento e la validazione dei dati, la logica di salvataggio e l'upload dell'immagine profilo.
+ */
 class EditProfileViewModel(
     private val authRepository: AuthRepository,
     private val userRepository: UserRepository,
@@ -140,6 +155,9 @@ class EditProfileViewModel(
         viewModelScope.launch { loadUserDataInternal() }
     }
 
+    /**
+     * Carica i dati utente autenticato dal repository.
+     */
     private suspend fun loadUserDataInternal() {
         _state.update { it.copy(isLoading = true, errorMessageRes = null, errorMessageArg = null) }
         try {
@@ -173,11 +191,16 @@ class EditProfileViewModel(
         }
     }
 
+    /**
+     * Salva tutti i dati modificati e aggiorna il profilo lato backend (inclusa eventuale immagine profilo).
+     * Gestisce anche la validazione dei campi e la gestione degli errori.
+     */
     private fun saveUserProfile(context: Context) {
         viewModelScope.launch {
             val currentState = _state.value
             val originalUser = currentState.user
 
+            // Validazione campi obbligatori
             if (currentState.username.isBlank() ||
                 currentState.firstName.isBlank() ||
                 currentState.lastName.isBlank() ||
@@ -205,6 +228,7 @@ class EditProfileViewModel(
                 val authUser = authRepository.getAuthUser()
                 val userId = authUser.id
 
+                // Gestione cambio email (se modificata)
                 if (originalUser != null && currentState.email != originalUser.email) {
                     when (authRepository.updateUserEmail(currentState.email)) {
                         is EditProfileResult.Success -> {
@@ -249,7 +273,7 @@ class EditProfileViewModel(
                     }
                 }
 
-                // upload immagine SOLO ora, se nuova selezionata
+                // upload immagine SOLO se nuova selezionata
                 var imageUrl: String? = null
                 val newImageUri = currentState.newProfileImageUri
                 if (newImageUri != null) {
@@ -262,6 +286,7 @@ class EditProfileViewModel(
 
                 val updatedImage = imageUrl ?: currentState.image
 
+                // Aggiorna dati base (username, nome, cognome, immagine)
                 val userUpdateResult = userRepository.updateUserProfile(
                     userId = userId,
                     username = currentState.username,

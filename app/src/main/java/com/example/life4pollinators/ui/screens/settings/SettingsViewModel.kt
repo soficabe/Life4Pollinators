@@ -13,6 +13,15 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+/**
+ * Stato della schermata impostazioni.
+ *
+ * @param theme Tema attuale selezionato
+ * @param isAuthenticated True se l'utente è loggato
+ * @param changePasswordResult Risultato ultimo cambio password
+ * @param isChangingPassword True se il cambio password è in corso
+ * @param changePasswordError Id risorsa errore cambio password
+ */
 data class SettingsState(
     val theme: Theme = Theme.System,
     val isAuthenticated: Boolean = false,
@@ -21,6 +30,9 @@ data class SettingsState(
     val changePasswordError: Int? = null
 )
 
+/**
+ * Azioni disponibili nella schermata impostazioni.
+ */
 interface SettingsActions {
     fun changeTheme(theme: Theme): Job
     fun logout() : Job
@@ -28,6 +40,10 @@ interface SettingsActions {
     fun clearChangePasswordError()
 }
 
+/**
+ * ViewModel per la schermata delle impostazioni.
+ * Gestisce tema, logout, cambio password.
+ */
 class SettingsViewModel(
     private val settingsRepository: SettingsRepository,
     private val authRepository: AuthRepository

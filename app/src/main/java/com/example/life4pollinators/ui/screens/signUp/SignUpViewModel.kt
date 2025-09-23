@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /**
- * Data class rappresentante lo stato completo della schermata di registrazione.
+ * Data class rappresentante lo stato della schermata di registrazione.
  */
 data class SignUpState(
     val username: String = "",
@@ -39,14 +39,17 @@ interface SignUpActions {
     fun clearError()
 }
 
-//ViewModel per la gestione della logica della schermata di registrazione.
+/**
+ * ViewModel per la schermata di registrazione utente.
+ * Gestisce lo stato della UI e la logica di business per la registrazione.
+ */
 class SignUpViewModel (
     private val authRepository: AuthRepository
 ) : ViewModel() {
     private val _state = MutableStateFlow(SignUpState())
     val state = _state.asStateFlow()
 
-    //Implementazione azioni di registrazione.
+    //Implementazione azioni di registrazione
     val actions = object : SignUpActions {
         override fun setUsername(username: String) =
             _state.update { it.copy(username = username.trim()) }
@@ -91,9 +94,14 @@ class SignUpViewModel (
                     )
 
                     // Aggiornamento stato con risultato
-                    _state.update { it.copy(signUpResult = result, isLoading = false) }
+                    _state.update {
+                        it.copy(
+                            signUpResult = result,
+                            isLoading = false
+                        )
+                    }
 
-                    // Gestione messaggi di errore specifici usando i tipi corretti
+                    // Gestione messaggi di errore specifici
                     when (result) {
                         SignUpResult.Loading -> {
                             // Stato di caricamento
@@ -122,7 +130,6 @@ class SignUpViewModel (
                         SignUpResult.Error.InvalidEmail -> {
                             _state.update { it.copy(errorMessage = R.string.email_invalid_format) }
                         }
-
 
                         SignUpResult.Error.PasswordMismatch -> {
                             _state.update { it.copy(errorMessage = R.string.passwordNotMatch_error) }

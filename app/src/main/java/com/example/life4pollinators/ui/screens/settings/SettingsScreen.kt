@@ -60,6 +60,15 @@ import com.example.life4pollinators.ui.navigation.L4PRoute
 import com.example.life4pollinators.data.models.Theme
 import com.example.life4pollinators.data.repositories.ChangePasswordResult
 
+/**
+ * Schermata delle impostazioni dell'app.
+ * Permette di cambiare tema, password e di effettuare il logout.
+ *
+ * @param state Stato attuale delle impostazioni (tema, errori, ecc.)
+ * @param actions Interfaccia delle azioni disponibili (cambio tema, logout, cambio password)
+ * @param isAuthenticated True se l'utente è autenticato (mostra opzioni aggiuntive)
+ * @param navController Controller di navigazione Compose
+ */
 @Composable
 fun SettingsScreen (
     state: SettingsState,
@@ -74,15 +83,15 @@ fun SettingsScreen (
     var selectedTheme by remember { mutableStateOf(state.theme) }
     val themeOptions = Theme.entries
 
-    // Dialog di conferma logout
-    var showLogoutDialog by rememberSaveable { mutableStateOf(false) }
-
-// Cambio password - SOLO DUE CAMPI
+    // Cambio password
     var showPasswordDialog by rememberSaveable { mutableStateOf(false) }
     var newPassword by rememberSaveable { mutableStateOf("") }
     var confirmPassword by rememberSaveable { mutableStateOf("") }
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
     var confirmPasswordVisible by rememberSaveable { mutableStateOf(false) }
+
+    // Dialog di conferma logout
+    var showLogoutDialog by rememberSaveable { mutableStateOf(false) }
 
     // Gestione esito cambio password
     LaunchedEffect(state.changePasswordResult) {
@@ -164,22 +173,7 @@ fun SettingsScreen (
             )
         }
 
-        // Dialog di conferma logout
-        if(showLogoutDialog) {
-            LogoutConfirmationDialog(
-                onConfirm = {
-                    showLogoutDialog = false
-                    actions.logout()
-                    navController.navigate(L4PRoute.Home) {
-                        popUpTo(navController.graph.id) {
-                            inclusive = true
-                        }
-                    }
-                },
-                onDismiss = { showLogoutDialog = false }
-            )
-        }
-
+        //Dialog per il cambio password
         if (showPasswordDialog) {
             ChangePasswordDialog(
                 newPassword = newPassword,
@@ -209,9 +203,29 @@ fun SettingsScreen (
                 errorMessage = state.changePasswordError
             )
         }
+
+        // Dialog di conferma logout
+        if(showLogoutDialog) {
+            LogoutConfirmationDialog(
+                onConfirm = {
+                    showLogoutDialog = false
+                    actions.logout()
+                    navController.navigate(L4PRoute.Home) {
+                        popUpTo(navController.graph.id) {
+                            inclusive = true
+                        }
+                    }
+                },
+                onDismiss = { showLogoutDialog = false }
+            )
+        }
     }
 }
 
+/**
+ * Titolo di sezione per la schermata impostazioni.
+ * @param text Testo del titolo
+ */
 @Composable
 fun TextTitle (text: String) {
     Text(text = text,
@@ -219,6 +233,14 @@ fun TextTitle (text: String) {
         fontWeight = FontWeight.Bold)
 }
 
+/**
+ * Riga cliccabile per una singola impostazione.
+ *
+ * @param title Titolo della voce
+ * @param icon Icona della voce
+ * @param color Colore del testo/icona
+ * @param onClick Azione da eseguire al click
+ */
 @Composable
 fun SettingsClickable(
     title: String,
@@ -247,6 +269,15 @@ fun SettingsClickable(
     }
 }
 
+/**
+ * Dialog per la selezione del tema (scuro, chiaro, sistema).
+ *
+ * @param title Titolo del dialog
+ * @param options Lista delle opzioni tema disponibili
+ * @param selectedOption Tema attualmente selezionato
+ * @param onOptionSelected Callback al cambio di selezione
+ * @param onDismiss Callback per chiusura dialog
+ */
 @Composable
 fun ThemeRadioOptionsDialog(
     title: String,
@@ -289,43 +320,22 @@ fun ThemeRadioOptionsDialog(
     )
 }
 
-@Composable
-fun LogoutConfirmationDialog(
-    onConfirm: () -> Unit,
-    onDismiss: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = {
-            Text(
-                text = stringResource(R.string.logout_confirmation_title),
-                style = MaterialTheme.typography.headlineSmall
-            )
-        },
-        text = {
-            Text(
-                text = stringResource(R.string.logout_confirmation_message),
-                style = MaterialTheme.typography.bodyMedium
-            )
-        },
-        confirmButton = {
-            TextButton(
-                onClick = onConfirm,
-                colors = ButtonDefaults.textButtonColors(
-                    contentColor = MaterialTheme.colorScheme.error
-                )
-            ) {
-                Text(stringResource(R.string.logout_confirm))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.cancel))
-            }
-        }
-    )
-}
-
+/**
+ * Dialog per il cambio password.
+ *
+ * @param newPassword Nuova password inserita
+ * @param confirmPassword Conferma della nuova password
+ * @param passwordVisible True se la password è visibile
+ * @param confirmPasswordVisible True se la conferma password è visibile
+ * @param onNewPasswordChange Callback cambio password
+ * @param onConfirmPasswordChange Callback cambio conferma password
+ * @param onPasswordVisibilityChange Callback visibilità password
+ * @param onConfirmPasswordVisibilityChange Callback visibilità conferma password
+ * @param onConfirm Callback al click su "Salva"
+ * @param onDismiss Callback per chiusura dialog
+ * @param isLoading True se in caricamento (show loader)
+ * @param errorMessage Id risorsa errore da mostrare (opzionale)
+ */
 @Composable
 fun ChangePasswordDialog(
     newPassword: String,
@@ -409,6 +419,49 @@ fun ChangePasswordDialog(
                 } else {
                     Text(stringResource(R.string.saveString))
                 }
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.cancel))
+            }
+        }
+    )
+}
+
+/**
+ * Dialog di conferma logout.
+ *
+ * @param onConfirm Callback al click su "Conferma"
+ * @param onDismiss Callback per chiusura dialog
+ */
+@Composable
+fun LogoutConfirmationDialog(
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = stringResource(R.string.logout_confirmation_title),
+                style = MaterialTheme.typography.headlineSmall
+            )
+        },
+        text = {
+            Text(
+                text = stringResource(R.string.logout_confirmation_message),
+                style = MaterialTheme.typography.bodyMedium
+            )
+        },
+        confirmButton = {
+            TextButton(
+                onClick = onConfirm,
+                colors = ButtonDefaults.textButtonColors(
+                    contentColor = MaterialTheme.colorScheme.error
+                )
+            ) {
+                Text(stringResource(R.string.logout_confirm))
             }
         },
         dismissButton = {

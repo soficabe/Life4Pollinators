@@ -33,6 +33,14 @@ import io.github.jan.supabase.compose.auth.ui.ProviderButtonContent
 import io.github.jan.supabase.compose.auth.ui.annotations.AuthUiExperimental
 import org.koin.compose.koinInject
 
+/**
+ * Schermata di login utente.
+ * Permette l'accesso tramite email/password o Google.
+ *
+ * @param state Stato corrente della schermata di login
+ * @param actions Interfaccia delle azioni disponibili
+ * @param navController Controller di navigazione
+ */
 @OptIn(AuthUiExperimental::class)
 @Composable
 fun SignInScreen(
@@ -40,28 +48,39 @@ fun SignInScreen(
     actions: SignInActions,
     navController: NavHostController
 ) {
+    // Ottiene il client Supabase tramite Koin per la gestione dell'autenticazione Google
     val supabaseClient: SupabaseClient = koinInject()
 
     val scrollState = rememberScrollState()
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
+    // Stato per Snackbar (messaggi temporanei)
     val snackbarHostState = remember { SnackbarHostState() }
+    // Messaggio da mostrare nella snackbar (se presente)
     var snackbarMessage by remember { mutableStateOf<String?>(null) }
 
+    // Gestisce la navigazione post-login
     LaunchedEffect(state.signInResult) {
         when (state.signInResult) {
-            null -> {}
-            SignInResult.Loading -> {}
+            SignInResult.Loading -> {
+                // Stato di caricamento - nessuna azione richiesta
+            }
             SignInResult.Success -> {
                 navController.navigate(L4PRoute.Home) {
                     popUpTo(L4PRoute.SignIn) { inclusive = true }
                 }
             }
-            is SignInResult.Error -> {}
+            is SignInResult.Error -> {
+                // Errori gestiti dalla UI tramite errorMessageRes
+            }
+            else -> {}
         }
     }
 
+    // Messaggi localizzati per errori nella login Google
     val closedByUserMsg = stringResource(R.string.login_cancelled_by_user)
     val networkErrorMsg = stringResource(R.string.network_error)
+
+    // Integrazione del login con Google tramite Supabase Compose Auth
     val googleAuthState = supabaseClient.composeAuth.rememberSignInWithGoogle(
         onResult = { result ->
             when (result) {
@@ -83,6 +102,7 @@ fun SignInScreen(
         }
     )
 
+    // Mostra la snackbar se c'è un messaggio da mostrare
     LaunchedEffect(snackbarMessage) {
         snackbarMessage?.let {
             snackbarHostState.showSnackbar(it)
@@ -115,6 +135,7 @@ fun SignInScreen(
 
             Spacer(Modifier.height(12.dp))
 
+            // Card del form di login
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 tonalElevation = 2.dp,
@@ -126,6 +147,7 @@ fun SignInScreen(
                         .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
+                    // Campo email
                     OutlinedTextField(
                         value = state.email,
                         onValueChange = {
@@ -139,6 +161,7 @@ fun SignInScreen(
                                 state.signInResult is SignInResult.Error.InvalidCredentials
                     )
 
+                    // Campo password
                     OutlinedTextField(
                         value = state.psw,
                         onValueChange = {
@@ -167,7 +190,7 @@ fun SignInScreen(
                                 state.signInResult is SignInResult.Error.RequiredFields
                     )
 
-                    // Messaggio di errore: ora usa l'id risorsa
+                    // Mostra eventuale messaggio di errore localizzato
                     if (state.errorMessageRes != null) {
                         Text(
                             text = stringResource(id = state.errorMessageRes),
@@ -180,6 +203,7 @@ fun SignInScreen(
                         )
                     }
 
+                    // Bottone per invio login, mostra loader se isLoading
                     Button(
                         onClick = { actions.signIn() },
                         modifier = Modifier.fillMaxWidth(),
@@ -196,6 +220,7 @@ fun SignInScreen(
                         }
                     }
 
+                    // Pulsante per andare alla schermata di registrazione
                     TextButton(
                         onClick = { navController.navigate(L4PRoute.SignUp) },
                         modifier = Modifier.align(Alignment.CenterHorizontally)
@@ -210,6 +235,7 @@ fun SignInScreen(
 
             Spacer(Modifier.height(24.dp))
 
+            // Separatore visivo "oppure"
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -221,11 +247,13 @@ fun SignInScreen(
 
             Spacer(Modifier.height(16.dp))
 
+            // Bottone per login con Google
             OutlinedButton(
                 onClick = { googleAuthState.startFlow() },
                 content = { ProviderButtonContent(provider = Google) }
             )
 
+            // Pulsante per continuare senza login
             TextButton(
                 onClick = { navController.navigate(L4PRoute.Home) },
                 modifier = Modifier.padding(top = 8.dp)
@@ -236,6 +264,7 @@ fun SignInScreen(
                 )
             }
 
+            // Snackbar per messaggi informativi/di errore temporanei
             SnackbarHost(hostState = snackbarHostState)
         }
     }

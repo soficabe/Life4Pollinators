@@ -10,6 +10,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import com.example.life4pollinators.R
 
+/**
+ * Data class rappresentante lo stato della schermata di SignIn.
+ */
 data class SignInState(
     val email: String = "",
     val psw: String = "",
@@ -18,6 +21,9 @@ data class SignInState(
     val isLoading: Boolean = false
 )
 
+/**
+ * Interface che definisce tutte le azioni possibili nella schermata di SignIn.
+ */
 interface SignInActions {
     fun setEmail(email: String)
     fun setPsw(psw: String)
@@ -25,12 +31,17 @@ interface SignInActions {
     fun clearError()
 }
 
+/**
+ * ViewModel per la schermata di login utente.
+ * Gestisce stato, azioni e logica di autenticazione.
+ */
 class SignInViewModel(
     private val authRepository: AuthRepository
 ) : ViewModel() {
     private val _state = MutableStateFlow(SignInState())
     val state = _state.asStateFlow()
 
+    //Implementazione azioni di SignIn
     val actions = object : SignInActions {
         override fun setEmail(email: String) {
             _state.update { it.copy(email = email, errorMessageRes = null) }
@@ -40,9 +51,13 @@ class SignInViewModel(
             _state.update { it.copy(psw = psw, errorMessageRes = null) }
         }
 
+        /**
+         * Esegue il sign in dell'utente.
+         */
         override fun signIn() {
             val currentState = _state.value
 
+            // Reset errore precedente e impostazione a Loading
             _state.update {
                 it.copy(
                     errorMessageRes = null,
@@ -53,11 +68,13 @@ class SignInViewModel(
 
             viewModelScope.launch {
                 try {
+                    // Chiamata al repository con tutti i controlli
                     val result = authRepository.signIn(
                         email = currentState.email,
                         password = currentState.psw
                     )
 
+                    // Aggiornamento stato con risultato
                     _state.update {
                         it.copy(
                             signInResult = result,
@@ -65,8 +82,11 @@ class SignInViewModel(
                         )
                     }
 
+                    // Gestione messaggi di errore specifici
                     when (result) {
-                        SignInResult.Loading -> {}
+                        SignInResult.Loading -> {
+                            // Stato di caricamento
+                        }
                         SignInResult.Success -> {
                             _state.update { it.copy(errorMessageRes = null) }
                         }
@@ -87,6 +107,7 @@ class SignInViewModel(
                         }
                     }
                 } catch (e: Exception) {
+                    // Gestione errori imprevisti
                     _state.update {
                         it.copy(
                             signInResult = SignInResult.Error.UnknownError(e),

@@ -44,6 +44,13 @@ import com.example.life4pollinators.R
 import com.example.life4pollinators.data.repositories.SignUpResult
 import com.example.life4pollinators.ui.navigation.L4PRoute
 
+/**
+ * Schermata di registrazione utente con email/password.
+ *
+ * @param state Stato della UI
+ * @param actions Azioni per manipolare lo stato
+ * @param navController Controller di navigazione
+ */
 @Composable
 fun SignUpScreen(
     state: SignUpState,
@@ -97,6 +104,7 @@ fun SignUpScreen(
 
             Spacer(Modifier.height(12.dp))
 
+            // Card del form di registrazione
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 tonalElevation = 2.dp,
@@ -230,7 +238,8 @@ fun SignUpScreen(
                         )
                     }
 
-                    // Bottone Sign Up
+                    // Bottone per inviare i dati di registrazione.
+                    // Mostra un loader se isLoading è true
                     Button(
                         onClick = { actions.signUp() },
                         modifier = Modifier.fillMaxWidth(),

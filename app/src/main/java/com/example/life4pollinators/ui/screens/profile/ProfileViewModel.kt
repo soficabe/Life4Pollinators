@@ -11,15 +11,28 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+/**
+ * Stato della schermata profilo.
+ *
+ * @property user Dati utente autenticato (null se non caricati)
+ * @property isRefreshing True se il profilo è in refresh/caricamento
+ */
 data class ProfileState(
     val user: User? = null,
     val isRefreshing: Boolean = false
 )
 
+/**
+ * Azioni disponibili nella schermata profilo.
+ */
 interface ProfileActions {
     fun refreshProfile()
 }
 
+/**
+ * ViewModel per la schermata profilo.
+ * Si occupa di caricare le informazioni dell'utente autenticato.
+ */
 class ProfileViewModel(
     private val authRepository: AuthRepository,
     private val userRepository: UserRepository
@@ -61,6 +74,7 @@ class ProfileViewModel(
     }
 
     init {
+        // Carica i dati all'avvio del ViewModel
         actions.refreshProfile()
     }
 }

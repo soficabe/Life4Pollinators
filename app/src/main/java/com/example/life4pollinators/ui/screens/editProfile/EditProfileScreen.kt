@@ -28,6 +28,17 @@ import com.example.life4pollinators.ui.navigation.L4PRoute
 import com.example.life4pollinators.utils.rememberCameraLauncher
 import com.example.life4pollinators.utils.rememberGalleryLauncher
 
+/**
+ * Schermata di editing del profilo utente.
+ *
+ * Permette la modifica di tutti i dati anagrafici e dell'immagine profilo.
+ * Gestisce feedback di successo/errore tramite snackbar e mostra loader durante il salvataggio.
+ * L'utente può scattare una foto o selezionarne una dalla galleria.
+ *
+ * @param state Stato attuale del profilo in editing
+ * @param actions Interfaccia delle azioni disponibili dalla UI
+ * @param navController Controller di navigazione Compose
+ */
 @Composable
 fun EditProfileScreen(
     state: EditProfileState,
@@ -41,24 +52,25 @@ fun EditProfileScreen(
     // Gestione dialog per scelta foto
     var showImagePicker by remember { mutableStateOf(false) }
 
+    // Launcher per fotocamera
     val launchCamera = rememberCameraLauncher(
         onPhotoReady = { uri ->
             actions.onProfileImageSelected(uri, context)
             showImagePicker = false
         },
         onError = { errorMsgRes ->
-            // errorMsgRes è ora un id risorsa Int
             actions.setErrorRes(errorMsgRes)
             showImagePicker = false
         }
     )
 
+    // Launcher per galleria
     val launchGallery = rememberGalleryLauncher { uri ->
         actions.onProfileImageSelected(uri, context)
         showImagePicker = false
     }
 
-    // Feedback per errori (localizzato)
+    // Mostra snackbar per errori
     LaunchedEffect(state.errorMessageRes, state.errorMessageArg) {
         if (state.errorMessageRes != null) {
             val msg = if (state.errorMessageArg != null)
@@ -72,7 +84,7 @@ fun EditProfileScreen(
 
     val profileSavedMsg = stringResource(R.string.profile_saved)
 
-    // Feedback per successo
+    // Mostra snackbar per salvataggio riuscito
     LaunchedEffect(state.isSuccess) {
         if (state.isSuccess && state.emailConfirmationSentMessage == null) {
             snackbarHostState.showSnackbar(profileSavedMsg)
@@ -82,7 +94,7 @@ fun EditProfileScreen(
             }
         }
     }
-    // Notifica cambio email (localizzato)
+    // Mostra snackbar per conferma cambio email
     LaunchedEffect(state.emailConfirmationSentMessage, state.emailConfirmationSentArg) {
         if (state.emailConfirmationSentMessage != null && state.emailConfirmationSentArg != null) {
             val msg = context.getString(
@@ -112,7 +124,7 @@ fun EditProfileScreen(
         ) {
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Profile Avatar (sempre gestito da ProfileIcon)
+            // Avatar utente, cliccabile per cambiare foto
             ProfileIcon(
                 imageUrl = state.newProfileImageUri?.toString() ?: state.image,
                 isClickable = true,
@@ -122,7 +134,7 @@ fun EditProfileScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Change Image Button
+            // Bottone per cambiare foto
             TextButton(
                 onClick = { showImagePicker = true },
                 enabled = !state.isUploadingImage && !state.isSaving && !state.isLoading,
@@ -142,7 +154,7 @@ fun EditProfileScreen(
                 )
             }
 
-            // Dialog scelta immagine
+            // Dialog scelta immagine (camera/galleria)
             if (showImagePicker) {
                 AlertDialog(
                     onDismissRequest = { showImagePicker = false },
@@ -187,7 +199,7 @@ fun EditProfileScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                // Username Field
+                // Campo username
                 OutlinedTextField(
                     value = state.username,
                     onValueChange = { actions.setUsername(it) },
@@ -210,7 +222,7 @@ fun EditProfileScreen(
                     }
                 )
 
-                // First Name Field
+                // Campo nome
                 OutlinedTextField(
                     value = state.firstName,
                     onValueChange = { actions.setFirstName(it) },
@@ -233,7 +245,7 @@ fun EditProfileScreen(
                     }
                 )
 
-                // Last Name Field
+                // Campo cognome
                 OutlinedTextField(
                     value = state.lastName,
                     onValueChange = { actions.setLastName(it) },
@@ -256,7 +268,7 @@ fun EditProfileScreen(
                     }
                 )
 
-                // Email Field
+                // Campo email
                 OutlinedTextField(
                     value = state.email,
                     onValueChange = { actions.setEmail(it) },
@@ -283,7 +295,7 @@ fun EditProfileScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Save Changes Button
+            // Bottone di salvataggio
             FilledTonalButton(
                 onClick = { actions.saveChanges(context) },
                 modifier = Modifier
