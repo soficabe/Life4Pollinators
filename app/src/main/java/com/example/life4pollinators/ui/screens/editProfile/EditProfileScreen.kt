@@ -133,7 +133,7 @@ fun EditProfileScreen(
                 showLoader = state.isLoading || state.isUploadingImage
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
             // Bottone per cambiare foto
             TextButton(
@@ -194,10 +194,10 @@ fun EditProfileScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
             Column(
-                verticalArrangement = Arrangement.spacedBy(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 // Username Field
@@ -310,7 +310,7 @@ fun EditProfileScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             // Bottone di salvataggio
             FilledTonalButton(
@@ -346,7 +346,7 @@ fun EditProfileScreen(
                 CircularProgressIndicator()
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }

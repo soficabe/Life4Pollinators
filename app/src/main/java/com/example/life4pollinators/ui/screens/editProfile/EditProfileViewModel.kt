@@ -16,10 +16,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import com.example.life4pollinators.R
 
-/**
- * Stato della schermata di modifica profilo.
- * Include errori per campo per validazione lato client.
- */
 data class EditProfileState(
     val user: User? = null,
     val username: String = "",
@@ -41,9 +37,6 @@ data class EditProfileState(
     val lastNameError: Int? = null,
     val emailError: Int? = null
 ) {
-    /**
-     * True se almeno un campo è stato modificato rispetto ai dati originali.
-     */
     val hasChanges: Boolean
         get() = user?.let {
             username != it.username ||
@@ -54,10 +47,6 @@ data class EditProfileState(
         } ?: false
 }
 
-/**
- * Azioni disponibili nella schermata di modifica profilo.
- * Permettono di aggiornare i campi, resettare ai dati originali, gestire l'immagine e salvare le modifiche.
- */
 interface EditProfileActions {
     fun setUsername(username: String)
     fun setFirstName(firstName: String)
@@ -74,11 +63,6 @@ interface EditProfileActions {
     fun onProfileImageSelected(uri: Uri, context: Context)
 }
 
-/**
- * ViewModel per la schermata di editing profilo.
- * Gestisce il caricamento e la validazione dei dati, la logica di salvataggio e l'upload dell'immagine profilo.
- * Effettua la validazione lato client.
- */
 class EditProfileViewModel(
     private val authRepository: AuthRepository,
     private val userRepository: UserRepository,
@@ -144,7 +128,6 @@ class EditProfileViewModel(
 
         override fun saveChanges(context: Context) {
             val currentState = _state.value
-            // Reset errori precedenti
             _state.update {
                 it.copy(
                     errorMessageRes = null,
@@ -156,7 +139,6 @@ class EditProfileViewModel(
                 )
             }
 
-            // Validazione lato client
             var hasError = false
             if (currentState.username.isBlank()) {
                 _state.update { it.copy(usernameError = R.string.requiredFields_error) }
@@ -195,7 +177,6 @@ class EditProfileViewModel(
         }
 
         override fun onProfileImageSelected(uri: Uri, context: Context) {
-            // Salva solo l'uri della foto scelta/scattata (già salvata in galleria)
             _state.update { it.copy(newProfileImageUri = uri, errorMessageRes = null, errorMessageArg = null) }
         }
     }
@@ -204,9 +185,6 @@ class EditProfileViewModel(
         viewModelScope.launch { loadUserDataInternal() }
     }
 
-    /**
-     * Carica i dati utente autenticato dal repository.
-     */
     private suspend fun loadUserDataInternal() {
         _state.update { it.copy(isLoading = true, errorMessageRes = null, errorMessageArg = null) }
         try {
@@ -241,8 +219,10 @@ class EditProfileViewModel(
     }
 
     /**
-     * Salva tutti i dati modificati e aggiorna il profilo lato backend (inclusa eventuale immagine profilo).
+     * Salva tutti i dati modificati e aggiorna il profilo lato backend.
      * Gestisce anche la validazione dei campi e la gestione degli errori.
+     * l'immagine viene caricata su Supabase SOLO dopo che la validazione e l'update
+     * dei dati testuali (username, firstName, lastName) hanno avuto successo.
      */
     private fun saveUserProfile(context: Context) {
         viewModelScope.launch {
@@ -257,7 +237,7 @@ class EditProfileViewModel(
                 val authUser = authRepository.getAuthUser()
                 val userId = authUser.id
 
-                // Gestione cambio email (se modificata)
+                // Cambio email (se modificata)
                 if (originalUser != null && currentState.email != originalUser.email) {
                     when (authRepository.updateUserEmail(currentState.email)) {
                         is EditProfileResult.Success -> {
@@ -302,45 +282,55 @@ class EditProfileViewModel(
                     }
                 }
 
-                // PATCH: upload immagine SOLO se nuova selezionata, e aggiungi query param per invalidare la cache
-                var imageUrl: String? = null
-                val newImageUri = currentState.newProfileImageUri
-                if (newImageUri != null) {
-                    imageUrl = imageRepository.uploadProfileImage(userId, newImageUri, context)
-                    if (imageUrl == null) {
-                        _state.update { it.copy(isSaving = false, errorMessageRes = R.string.image_upload_error) }
-                        return@launch
-                    }
-                    // Forza cache busting aggiungendo timestamp all'URL
-                    imageUrl = "$imageUrl?t=${System.currentTimeMillis()}"
-                }
-
-                val updatedImage = imageUrl ?: currentState.image
-
+                // PATCH: Aggiorna PRIMA i dati testuali (username, firstName, lastName), senza immagine!
                 val userUpdateResult = userRepository.updateUserProfile(
                     userId = userId,
                     username = currentState.username,
                     firstName = currentState.firstName,
                     lastName = currentState.lastName,
-                    image = updatedImage
+                    image = null // NON aggiornare ancora l'immagine!
                 )
 
                 when (userUpdateResult) {
                     is UpdateUserProfileResult.Success -> {
+                        // PATCH: Ora, SOLO se i dati sono ok, carica la foto se serve, (aggiunta query param per invalidare la cache)
+                        var imageUrl: String? = currentState.image
+                        val newImageUri = currentState.newProfileImageUri
+                        if (newImageUri != null) {
+                            val uploadedUrl = imageRepository.uploadProfileImage(userId, newImageUri, context)
+                            if (uploadedUrl != null) {
+                                // Aggiorna il campo image nel backend
+                                val imageUpdateResult = userRepository.updateUserProfile(
+                                    userId = userId,
+                                    username = currentState.username,
+                                    firstName = currentState.firstName,
+                                    lastName = currentState.lastName,
+                                    image = "$uploadedUrl?t=${System.currentTimeMillis()}"
+                                )
+                                // Forza cache busting aggiungendo timestamp all'URL
+                                if (imageUpdateResult is UpdateUserProfileResult.Success) {
+                                    imageUrl = "$uploadedUrl?t=${System.currentTimeMillis()}"
+                                }
+                            } else {
+                                _state.update { it.copy(isSaving = false, errorMessageRes = R.string.image_upload_error) }
+                                return@launch
+                            }
+                        }
+
                         val updatedUser = originalUser!!.copy(
                             username = currentState.username,
                             firstName = currentState.firstName,
                             lastName = currentState.lastName,
                             email = currentState.email,
-                            image = updatedImage
+                            image = imageUrl
                         )
                         _state.update {
                             it.copy(
                                 isSaving = false,
                                 isSuccess = true,
                                 user = updatedUser,
-                                image = updatedImage,
-                                newProfileImageUri = null // PATCH: resetta anche questo
+                                image = imageUrl,
+                                newProfileImageUri = null // resetta l'uri locale
                             )
                         }
                     }
