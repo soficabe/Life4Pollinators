@@ -40,7 +40,7 @@ class ImageRepository(private val storage: Storage) {
             uri,
             context,
             bucket = "profile-images",
-            fileName = "user_${userId}_profile.jpg"
+            fileName = "${userId}/profile_image.jpg"
         )
 
     // In futuro:
