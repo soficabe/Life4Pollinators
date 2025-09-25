@@ -9,6 +9,7 @@ import com.example.life4pollinators.data.repositories.SettingsRepository
 import com.example.life4pollinators.data.repositories.UserRepository
 import com.example.life4pollinators.ui.AuthViewModel
 import com.example.life4pollinators.ui.screens.editProfile.EditProfileViewModel
+import com.example.life4pollinators.ui.screens.plants.PlantDetailViewModel
 import com.example.life4pollinators.ui.screens.plants.PlantsGeneralInfoViewModel
 import com.example.life4pollinators.ui.screens.plants.PlantsListViewModel
 import com.example.life4pollinators.ui.screens.profile.ProfileViewModel
@@ -83,4 +84,5 @@ val appModule = module {
     viewModel { EditProfileViewModel(get(), get(), get()) }
     viewModel { PlantsListViewModel(get()) }
     viewModel { PlantsGeneralInfoViewModel(get()) }
+    viewModel { PlantDetailViewModel(get(), get()) }
 }

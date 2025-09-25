@@ -11,6 +11,8 @@ import com.example.life4pollinators.ui.AuthViewModel
 import com.example.life4pollinators.ui.screens.editProfile.EditProfileScreen
 import com.example.life4pollinators.ui.screens.editProfile.EditProfileViewModel
 import com.example.life4pollinators.ui.screens.home.HomeScreen
+import com.example.life4pollinators.ui.screens.plants.PlantDetailScreen
+import com.example.life4pollinators.ui.screens.plants.PlantDetailViewModel
 import com.example.life4pollinators.ui.screens.plants.PlantGeneralInfoScreen
 import com.example.life4pollinators.ui.screens.plants.PlantsGeneralInfoViewModel
 import com.example.life4pollinators.ui.screens.plants.PlantsListScreen
@@ -49,6 +51,9 @@ sealed interface L4PRoute {
 
     @Serializable
     data object PlantsGeneralInfo : L4PRoute
+
+    @Serializable
+    data class PlantDetail(val plantId: String) : L4PRoute
 
     @Serializable
     data object Profile : L4PRoute
@@ -118,6 +123,12 @@ fun L4PNavGraph(
             val plantsGeneralInfoVM = koinViewModel<PlantsGeneralInfoViewModel>()
             val plantsGeneralInfoState by plantsGeneralInfoVM.state.collectAsStateWithLifecycle()
             PlantGeneralInfoScreen(plantsGeneralInfoState, isAuthenticated, navController)
+        }
+
+        composable<L4PRoute.PlantDetail> {
+            val plantDetailViewModel = koinViewModel<PlantDetailViewModel>()
+            val plantDetailState by plantDetailViewModel.state.collectAsStateWithLifecycle()
+            PlantDetailScreen(plantDetailState, isAuthenticated, navController)
         }
 
         // Schermata profilo utente

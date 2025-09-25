@@ -114,4 +114,10 @@
     <string name="passwords_not_match">Le password non corrispondono</string>
     <string name="current_password_wrong">La password attuale non è corretta</string>
     <string name="generic_change_psw_error">Cambio password fallito. Riprova.</string>
+
+    <!-- Plants -->
+    <string name="most_common_genera">Generi più comuni</string>
+    <string name="pollinator_groups">Gruppi di impollinatori da cui sono visitati più spesso</string>
+    <string name="diverse_plants">Questa pianta è eterogenea (specie diverse)</string>
+    <string name="invasive_plants">Pianta invasiva</string>
 </resources>

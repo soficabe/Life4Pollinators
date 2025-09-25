@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -29,12 +30,13 @@ import com.example.life4pollinators.ui.theme.AppBarGreen
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppBar(
-    navController: NavHostController
+    navController: NavHostController,
+    personalizedTitle: String? = null
 ) {
     val backStackEntry by navController.currentBackStackEntryAsState()
 
-    // Determina il titolo dell'AppBar in base alla rotta attuale
-    val title = when {
+    // Usa il titolo personalizzato se fornito, altrimenti quello di default
+    val title = personalizedTitle ?: when {
         backStackEntry?.destination?.hasRoute<L4PRoute.Home>() == true ->
             stringResource(R.string.title_learn)
         backStackEntry?.destination?.hasRoute<L4PRoute.Profile>() == true ->
@@ -54,11 +56,11 @@ fun AppBar(
         title = {
             Text(
                 title,
-                fontWeight = FontWeight.Medium
+                fontWeight = FontWeight.Medium,
+                textAlign = TextAlign.Center
             )
         },
         navigationIcon = {
-            // Mostra il pulsante back solo se non siamo in Home e c'è una schermata precedente
             if(title != stringResource(R.string.title_learn) && navController.previousBackStackEntry != null) {
                 IconButton(onClick = {navController.navigateUp()}) {
                     Icon(Icons.AutoMirrored.Outlined.ArrowBack, "Go Back")
@@ -66,7 +68,6 @@ fun AppBar(
             }
         },
         actions = {
-            // Mostra il pulsante settings solo se non siamo già su Settings
             if(title != stringResource(R.string.title_settings)) {
                 IconButton(onClick = {navController.navigate(L4PRoute.Settings)}) {
                     Icon(Icons.Outlined.Settings, "Settings")

@@ -1,6 +1,7 @@
 package com.example.life4pollinators.ui.screens.plants
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
@@ -74,7 +75,14 @@ fun PlantsListScreen(
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         items(state.plants) { plant ->
-                            PlantCard(plant = plant)
+                            PlantCard(
+                                plant = plant,
+                                onClick = {
+                                    navController.navigate(
+                                        L4PRoute.PlantDetail(plantId = plant.id)
+                                    )
+                                }
+                            )
                         }
                     }
                 }
@@ -85,12 +93,14 @@ fun PlantsListScreen(
 
 @Composable
 fun PlantCard(
-    plant: Plant
+    plant: Plant,
+    onClick: () -> Unit
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
+            .padding(vertical = 8.dp)
+            .clickable { onClick() },
         elevation = CardDefaults.cardElevation(4.dp),
         shape = RoundedCornerShape(12.dp)
     ) {
