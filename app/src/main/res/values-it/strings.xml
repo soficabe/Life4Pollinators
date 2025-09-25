@@ -8,6 +8,8 @@
     <string name="title_edit_profile">Modifica Profilo</string>
     <string name="title_settings">Impostazioni</string>
     <string name="title_sightings">Avvistamenti</string>
+    <string name="title_plants_list">Piante</string>
+    <string name="title_plants_general_info">Info sulle Piante</string>
     <string name="unknown_screen">Schermata Sconosciuta</string>
 
     <!-- SignIn -->

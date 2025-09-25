@@ -43,6 +43,10 @@ fun AppBar(
             stringResource(R.string.title_edit_profile)
         backStackEntry?.destination?.hasRoute<L4PRoute.Settings>() == true ->
             stringResource(R.string.title_settings)
+        backStackEntry?.destination?.hasRoute<L4PRoute.PlantsList>() == true ->
+            stringResource(R.string.title_plants_list)
+        backStackEntry?.destination?.hasRoute<L4PRoute.PlantsGeneralInfo>() == true ->
+            stringResource(R.string.title_plants_general_info)
         else -> stringResource(R.string.unknown_screen)
     }
 

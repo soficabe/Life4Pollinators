@@ -4,10 +4,13 @@ import android.content.Context
 import androidx.datastore.preferences.preferencesDataStore
 import com.example.life4pollinators.data.repositories.AuthRepository
 import com.example.life4pollinators.data.repositories.ImageRepository
+import com.example.life4pollinators.data.repositories.PlantsRepository
 import com.example.life4pollinators.data.repositories.SettingsRepository
 import com.example.life4pollinators.data.repositories.UserRepository
 import com.example.life4pollinators.ui.AuthViewModel
 import com.example.life4pollinators.ui.screens.editProfile.EditProfileViewModel
+import com.example.life4pollinators.ui.screens.plants.PlantsGeneralInfoViewModel
+import com.example.life4pollinators.ui.screens.plants.PlantsListViewModel
 import com.example.life4pollinators.ui.screens.profile.ProfileViewModel
 import com.example.life4pollinators.ui.screens.settings.SettingsViewModel
 import com.example.life4pollinators.ui.screens.signIn.SignInViewModel
@@ -69,6 +72,7 @@ val appModule = module {
     single { UserRepository(get()) }
     single { SettingsRepository(get()) }
     single { ImageRepository(get()) }
+    single { PlantsRepository(get()) }
 
     // ViewModels
     viewModel { AuthViewModel(get()) }
@@ -77,4 +81,6 @@ val appModule = module {
     viewModel { SignInViewModel(get()) }
     viewModel { ProfileViewModel(get(), get()) }
     viewModel { EditProfileViewModel(get(), get(), get()) }
+    viewModel { PlantsListViewModel(get()) }
+    viewModel { PlantsGeneralInfoViewModel(get()) }
 }

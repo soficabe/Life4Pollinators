@@ -3,13 +3,12 @@ package com.example.life4pollinators.ui.screens.home
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -18,6 +17,8 @@ import com.example.life4pollinators.data.models.NavBarTab
 import com.example.life4pollinators.ui.composables.AppBar
 import com.example.life4pollinators.ui.composables.BottomNavBar
 import com.example.life4pollinators.ui.composables.SectionCard
+import com.example.life4pollinators.ui.composables.SectionCardSize
+import com.example.life4pollinators.ui.navigation.L4PRoute
 
 @Composable
 fun HomeScreen(
@@ -51,16 +52,18 @@ fun HomeScreen(
             )
             SectionCard(
                 title = stringResource(R.string.plants),
-                imageRes = Icons.Outlined.Image, // usa la tua risorsa
+                imageRes = painterResource(R.drawable.plants),
                 backgroundColor = MaterialTheme.colorScheme.primaryContainer,
-                onClick = { /*TODO*/ }
+                onClick = { navController.navigate(L4PRoute.PlantsList) },
+                cardSize = SectionCardSize.Large
             )
             Spacer(Modifier.height(8.dp))
             SectionCard(
                 title = stringResource(R.string.insects),
-                imageRes = Icons.Outlined.Image, // usa la tua risorsa
+                imageRes = painterResource(R.drawable.insects),
                 backgroundColor = MaterialTheme.colorScheme.primaryContainer,
-                onClick = { /*TODO*/ }
+                onClick = { /*TODO*/ },
+                cardSize = SectionCardSize.Large
             )
             Spacer(Modifier.height(24.dp))
             Text(
@@ -70,16 +73,18 @@ fun HomeScreen(
             )
             SectionCard(
                 title = stringResource(R.string.plants),
-                imageRes = Icons.Outlined.Image,
+                imageRes = painterResource(R.drawable.plants),
                 backgroundColor = MaterialTheme.colorScheme.surfaceContainer,
-                onClick = { /*TODO*/ }
+                onClick = { /*TODO*/ },
+                cardSize = SectionCardSize.Small
             )
             Spacer(Modifier.height(8.dp))
             SectionCard(
                 title = stringResource(R.string.insects),
-                imageRes = Icons.Outlined.Image,
+                imageRes = painterResource(R.drawable.insects),
                 backgroundColor = MaterialTheme.colorScheme.surfaceContainer,
-                onClick = { /*TODO*/ }
+                onClick = { /*TODO*/ },
+                cardSize = SectionCardSize.Small
             )
             Spacer(Modifier.height(8.dp))
         }
