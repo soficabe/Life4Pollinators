@@ -1,6 +1,7 @@
 package com.example.life4pollinators.data.repositories
 
 import android.util.Log
+import com.example.life4pollinators.data.database.entities.Insect
 import com.example.life4pollinators.data.database.entities.InsectGroup
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
@@ -18,6 +19,36 @@ class InsectsRepository (
         } catch (e: Exception) {
             Log.e("InsectsRepository", "Error fetching insect groups", e)
             emptyList()
+        }
+    }
+
+    suspend fun getInsectsByGroup(groupId: String): List<Insect> {
+        return try {
+            insectsTable.select {
+                filter { Insect::group eq groupId }
+            }.decodeList<Insect>().sortedBy { it.name }
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    suspend fun getInsectById(insectId: String): Insect? {
+        return try {
+            insectsTable.select {
+                filter { Insect::id eq insectId }
+            }.decodeList<Insect>().firstOrNull()
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    suspend fun getInsectGroupById(groupId: String): InsectGroup? {
+        return try {
+            insectGroupsTable.select {
+                filter { InsectGroup::id eq groupId }
+            }.decodeList<InsectGroup>().firstOrNull()
+        } catch (e: Exception) {
+            null
         }
     }
 }

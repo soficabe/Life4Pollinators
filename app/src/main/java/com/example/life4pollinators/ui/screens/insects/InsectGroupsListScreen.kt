@@ -89,7 +89,10 @@ fun InsectGroupsListScreen(
                         items(state.insectGroups) { insectGroup ->
                             InsectGroupCard(
                                 insectGroup = insectGroup,
-                                onClick = {}
+                                onClick = {
+                                    navController
+                                        .navigate(L4PRoute.InsectsList(insectGroup.id))
+                                }
                             )
                         }
                     }
