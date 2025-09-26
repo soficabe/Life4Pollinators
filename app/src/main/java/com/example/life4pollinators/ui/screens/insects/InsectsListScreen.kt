@@ -15,6 +15,7 @@ import com.example.life4pollinators.data.models.NavBarTab
 import com.example.life4pollinators.ui.composables.AppBar
 import com.example.life4pollinators.ui.composables.BottomNavBar
 import com.example.life4pollinators.ui.composables.InsectCard
+import com.example.life4pollinators.ui.navigation.L4PRoute
 import java.util.Locale
 
 @Composable
@@ -24,12 +25,19 @@ fun InsectsListScreen(
     navController: NavHostController
 ) {
     val locale = Locale.getDefault().language
+    val groupId = state.group?.id
     val groupName = state.group?.let { if (locale == "it") it.nameIt else it.nameEn } ?: ""
 
     Scaffold(
         topBar = { AppBar(navController, personalizedTitle = groupName) },
         floatingActionButton = {
-            FloatingActionButton(onClick = {  }) {
+            FloatingActionButton(
+                onClick = {
+                    navController.navigate(
+                        groupId?.let { L4PRoute.InsectGroupInfo(it) } ?: ""
+                    )
+                }
+            ) {
                 Icon(Icons.Outlined.Info, contentDescription = "Info")
             }
         },

@@ -11,6 +11,8 @@ import com.example.life4pollinators.ui.AuthViewModel
 import com.example.life4pollinators.ui.screens.editProfile.EditProfileScreen
 import com.example.life4pollinators.ui.screens.editProfile.EditProfileViewModel
 import com.example.life4pollinators.ui.screens.home.HomeScreen
+import com.example.life4pollinators.ui.screens.insects.InsectGroupInfoScreen
+import com.example.life4pollinators.ui.screens.insects.InsectGroupInfoViewModel
 import com.example.life4pollinators.ui.screens.insects.InsectGroupsListScreen
 import com.example.life4pollinators.ui.screens.insects.InsectGroupsListViewModel
 import com.example.life4pollinators.ui.screens.insects.InsectsGeneralInfoScreen
@@ -165,6 +167,12 @@ fun L4PNavGraph(
             val insectsListVM = koinViewModel<InsectsListViewModel>()
             val insectsListState by insectsListVM.state.collectAsStateWithLifecycle()
             InsectsListScreen(insectsListState, isAuthenticated, navController)
+        }
+
+        composable<L4PRoute.InsectGroupInfo> {
+            val insectGroupInfoVM = koinViewModel<InsectGroupInfoViewModel>()
+            val insectGroupInfoState by insectGroupInfoVM.state.collectAsStateWithLifecycle()
+            InsectGroupInfoScreen(insectGroupInfoState, isAuthenticated, navController)
         }
 
         // Schermata profilo utente
