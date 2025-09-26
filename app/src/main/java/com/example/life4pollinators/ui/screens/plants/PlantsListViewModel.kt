@@ -2,6 +2,7 @@ package com.example.life4pollinators.ui.screens.plants
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.life4pollinators.R
 import com.example.life4pollinators.data.database.entities.Plant
 import com.example.life4pollinators.data.repositories.PlantsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,7 +32,7 @@ class PlantsListViewModel(
                 _state.value = PlantsListState(
                     plants = emptyList(),
                     isLoading = false,
-                    error = "Errore di caricamento"
+                    error = R.string.loading_error.toString()
                 )
             }
         }

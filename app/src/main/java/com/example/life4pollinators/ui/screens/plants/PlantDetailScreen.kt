@@ -107,7 +107,7 @@ fun PlantDetailScreen(
 
                     if(showZoom) {
                         ZoomOverlayImage(
-                            model = plant.imageUrl,
+                            imageUrl = plant.imageUrl,
                             contentDescription = plantName,
                             onClose = { showZoom = false }
                         )

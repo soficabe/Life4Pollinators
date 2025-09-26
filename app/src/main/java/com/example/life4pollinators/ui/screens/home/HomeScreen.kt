@@ -62,7 +62,7 @@ fun HomeScreen(
                 title = stringResource(R.string.insects),
                 imageRes = painterResource(R.drawable.insects),
                 backgroundColor = MaterialTheme.colorScheme.primaryContainer,
-                onClick = { /*TODO*/ },
+                onClick = { navController.navigate(L4PRoute.InsectGroupsList) },
                 cardSize = SectionCardSize.Large
             )
             Spacer(Modifier.height(24.dp))

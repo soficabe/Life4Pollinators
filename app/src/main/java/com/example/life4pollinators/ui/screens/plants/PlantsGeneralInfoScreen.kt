@@ -118,7 +118,7 @@ fun PlantGeneralInfoScreen(
                     // Layer 2: overlay MODALE con immagine zoommabile
                     if (showZoom) {
                         ZoomOverlayImage(
-                            model = imageUrl,
+                            imageUrl = imageUrl,
                             contentDescription = title,
                             onClose = { showZoom = false }
                         )

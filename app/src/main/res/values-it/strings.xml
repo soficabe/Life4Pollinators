@@ -10,6 +10,8 @@
     <string name="title_sightings">Avvistamenti</string>
     <string name="title_plants_list">Piante</string>
     <string name="title_plants_general_info">Info sulle Piante</string>
+    <string name="title_insect_groups">Insetti</string>
+    <string name="title_insects_general_info">Info sugli Insetti</string>
     <string name="unknown_screen">Schermata Sconosciuta</string>
 
     <!-- SignIn -->
@@ -120,4 +122,5 @@
     <string name="pollinator_groups">Gruppi di impollinatori da cui sono visitati più spesso</string>
     <string name="diverse_plants">Questa pianta è eterogenea (specie diverse)</string>
     <string name="invasive_plants">Pianta invasiva</string>
+    <string name="loading_error">Errore di caricamento</string>
 </resources>

@@ -1,5 +1,6 @@
 package com.example.life4pollinators.ui.composables
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectTransformGestures
@@ -16,12 +17,22 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import coil.compose.AsyncImage
 
+/**
+ * Composable generico per mostrare un'immagine zoommabile, sia da risorsa locale che da URL remoto.
+ *
+ * @param imageUrl se specificato, carica l'immagine da URL remoto
+ * @param imageRes se specificato, carica l'immagine da drawable locale (es: R.drawable.img)
+ * @param contentDescription descrizione per accessibilità
+ * @param onClose callback per la chiusura dell'overlay (tap su sfondo)
+ */
 @Composable
 fun ZoomOverlayImage(
-    model: Any?,
-    contentDescription: String?,
+    imageUrl: String? = null,
+    imageRes: Int? = null,
+    contentDescription: String? = null,
     onClose: () -> Unit,
     minScale: Float = 1f,
     maxScale: Float = 8f,
@@ -46,25 +57,51 @@ fun ZoomOverlayImage(
                 )
             }
     ) {
-        AsyncImage(
-            model = model,
-            contentDescription = contentDescription,
-            modifier = Modifier
-                .align(Alignment.Center)
-                .graphicsLayer(
-                    scaleX = scale,
-                    scaleY = scale,
-                    translationX = offsetX,
-                    translationY = offsetY
+        when {
+            imageUrl != null -> {
+                AsyncImage(
+                    model = imageUrl,
+                    contentDescription = contentDescription,
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .graphicsLayer(
+                            scaleX = scale,
+                            scaleY = scale,
+                            translationX = offsetX,
+                            translationY = offsetY
+                        )
+                        .pointerInput(Unit) {
+                            detectTransformGestures { _, pan, zoom, _ ->
+                                scale = (scale * zoom).coerceIn(minScale, maxScale)
+                                offsetX += pan.x
+                                offsetY += pan.y
+                            }
+                        },
+                    contentScale = contentScale
                 )
-                .pointerInput(Unit) {
-                    detectTransformGestures { _, pan, zoom, _ ->
-                        scale = (scale * zoom).coerceIn(minScale, maxScale)
-                        offsetX += pan.x
-                        offsetY += pan.y
-                    }
-                },
-            contentScale = contentScale
-        )
+            }
+            imageRes != null -> {
+                Image(
+                    painter = painterResource(id = imageRes),
+                    contentDescription = contentDescription,
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .graphicsLayer(
+                            scaleX = scale,
+                            scaleY = scale,
+                            translationX = offsetX,
+                            translationY = offsetY
+                        )
+                        .pointerInput(Unit) {
+                            detectTransformGestures { _, pan, zoom, _ ->
+                                scale = (scale * zoom).coerceIn(minScale, maxScale)
+                                offsetX += pan.x
+                                offsetY += pan.y
+                            }
+                        },
+                    contentScale = contentScale
+                )
+            }
+        }
     }
 }

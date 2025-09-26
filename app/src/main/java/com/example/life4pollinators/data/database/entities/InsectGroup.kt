@@ -24,5 +24,8 @@ data class InsectGroup(
     val infoEn: String?,
 
     @SerialName("info_it")
-    val infoIt: String?
+    val infoIt: String?,
+
+    @SerialName("group_image_url")
+    val groupImageUrl: String?
 )

@@ -9,6 +9,8 @@
     <string name="title_sightings">Sightings</string>
     <string name="title_plants_list">Plants</string>
     <string name="title_plants_general_info">Plants Info</string>
+    <string name="title_insect_groups">Insects</string>
+    <string name="title_insects_general_info">Insects Info</string>
     <string name="unknown_screen">Unknown Screen</string>
 
     <!-- SignIn -->
@@ -119,4 +121,6 @@
     <string name="pollinator_groups">Pollinator groups that visit it the most</string>
     <string name="diverse_plants">This plant is heterogeneous (diverse species)</string>
     <string name="invasive_plants">Invasive plant</string>
+    <string name="loading_error">Loading Error</string>
+
 </resources>

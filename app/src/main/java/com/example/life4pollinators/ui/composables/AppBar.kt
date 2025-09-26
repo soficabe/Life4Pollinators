@@ -49,6 +49,10 @@ fun AppBar(
             stringResource(R.string.title_plants_list)
         backStackEntry?.destination?.hasRoute<L4PRoute.PlantsGeneralInfo>() == true ->
             stringResource(R.string.title_plants_general_info)
+        backStackEntry?.destination?.hasRoute<L4PRoute.InsectGroupsList>() == true ->
+            stringResource(R.string.title_insect_groups)
+        backStackEntry?.destination?.hasRoute<L4PRoute.InsectsGeneralInfo>() == true ->
+            stringResource(R.string.title_insects_general_info)
         else -> stringResource(R.string.unknown_screen)
     }
 

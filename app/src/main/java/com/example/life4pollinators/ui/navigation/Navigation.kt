@@ -11,6 +11,9 @@ import com.example.life4pollinators.ui.AuthViewModel
 import com.example.life4pollinators.ui.screens.editProfile.EditProfileScreen
 import com.example.life4pollinators.ui.screens.editProfile.EditProfileViewModel
 import com.example.life4pollinators.ui.screens.home.HomeScreen
+import com.example.life4pollinators.ui.screens.insects.InsectGroupsListScreen
+import com.example.life4pollinators.ui.screens.insects.InsectGroupsListViewModel
+import com.example.life4pollinators.ui.screens.insects.InsectsGeneralInfoScreen
 import com.example.life4pollinators.ui.screens.plants.PlantDetailScreen
 import com.example.life4pollinators.ui.screens.plants.PlantDetailViewModel
 import com.example.life4pollinators.ui.screens.plants.PlantGeneralInfoScreen
@@ -54,6 +57,12 @@ sealed interface L4PRoute {
 
     @Serializable
     data class PlantDetail(val plantId: String) : L4PRoute
+
+    @Serializable
+    data object InsectGroupsList : L4PRoute
+
+    @Serializable
+    data object InsectsGeneralInfo: L4PRoute
 
     @Serializable
     data object Profile : L4PRoute
@@ -129,6 +138,16 @@ fun L4PNavGraph(
             val plantDetailViewModel = koinViewModel<PlantDetailViewModel>()
             val plantDetailState by plantDetailViewModel.state.collectAsStateWithLifecycle()
             PlantDetailScreen(plantDetailState, isAuthenticated, navController)
+        }
+
+        composable<L4PRoute.InsectGroupsList> {
+            val insectGroupsListVM = koinViewModel<InsectGroupsListViewModel>()
+            val insectGroupsListState by insectGroupsListVM.state.collectAsStateWithLifecycle()
+            InsectGroupsListScreen(insectGroupsListState, isAuthenticated, navController)
+        }
+
+        composable<L4PRoute.InsectsGeneralInfo> {
+            InsectsGeneralInfoScreen(isAuthenticated, navController)
         }
 
         // Schermata profilo utente
