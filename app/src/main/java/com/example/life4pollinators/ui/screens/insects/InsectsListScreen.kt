@@ -71,9 +71,9 @@ fun InsectsListScreen(
                             InsectCard(
                                 insect = insect,
                                 onClick = {
-//                                    navController.navigate(
-//                                        L4PRoute.InsectDetail(insect.id)
-//                                    )
+                                    navController.navigate(
+                                        L4PRoute.InsectDetail(insect.id)
+                                    )
                                 }
                             )
                         }
