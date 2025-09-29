@@ -27,5 +27,5 @@ data class Insect (
     val infoIt: String?,
 
     @SerialName("insect_image")
-    val insectImage: String?,
+    val insectImage: String?
 )
