@@ -2,7 +2,9 @@ package com.example.life4pollinators.ui.screens.quiz
 
 import android.net.Uri
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Photo
 import androidx.compose.material.icons.outlined.PhotoCamera
@@ -10,10 +12,17 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
+import com.example.life4pollinators.R
+import com.example.life4pollinators.data.models.NavBarTab
+import com.example.life4pollinators.ui.composables.AppBar
+import com.example.life4pollinators.ui.composables.BottomNavBar
 import com.example.life4pollinators.ui.navigation.L4PRoute
 import com.example.life4pollinators.utils.rememberCameraLauncher
 import com.example.life4pollinators.utils.rememberGalleryLauncher
@@ -22,14 +31,13 @@ import com.example.life4pollinators.utils.rememberGalleryLauncher
 fun QuizStartScreen(
     state: QuizState,
     actions: QuizActions,
+    isAuthenticated: Boolean,
     navController: NavHostController
 ) {
     val context = LocalContext.current
     var showImagePicker by remember { mutableStateOf(false) }
     var localPhoto by remember { mutableStateOf<Uri?>(null) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
-
-    // PATCH: qui fuori!
     var quizStarted by remember { mutableStateOf(false) }
 
     val launchCamera = rememberCameraLauncher(
@@ -43,94 +51,214 @@ fun QuizStartScreen(
             showImagePicker = false
         }
     )
+
     val launchGallery = rememberGalleryLauncher { uri ->
         localPhoto = uri
         showImagePicker = false
         errorMessage = null
     }
 
-    val label = when (state.quizType) {
-        "plant" -> "Scatta o carica foto della pianta"
-        "insect" -> "Scatta o carica foto dell'insetto"
-        else -> "Scatta o carica foto"
+    val titleRes = when (state.quizType) {
+        "plant" -> R.string.quiz_start_title_plant
+        "insect" -> R.string.quiz_start_title_insect
+        else -> R.string.quiz_start_title_default
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(label, style = MaterialTheme.typography.titleLarge)
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Button(onClick = { showImagePicker = true }) {
-            Text("Carica o scatta foto")
+    Scaffold (
+        topBar = {
+            AppBar(
+                navController = navController,
+                personalizedTitle = "Quiz Start"
+            )
+        },
+        bottomBar = {
+            BottomNavBar(
+                isAuthenticated = isAuthenticated,
+                selectedTab = NavBarTab.Home,
+                navController = navController
+            )
         }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.weight(1f)
+            ) {
+                Spacer(modifier = Modifier.height(32.dp))
 
-        if (showImagePicker) {
-            AlertDialog(
-                onDismissRequest = { showImagePicker = false },
-                title = { Text("Scegli una foto") },
-                text = {
-                    Column {
-                        Button(
-                            onClick = { launchCamera() },
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text("Scatta foto")
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Icon(imageVector = Icons.Outlined.PhotoCamera, contentDescription = "Camera")
-                        }
-                        Spacer(Modifier.height(8.dp))
-                        Button(
-                            onClick = { launchGallery() },
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text("Galleria")
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Icon(imageVector = Icons.Outlined.Photo, contentDescription = "Gallery")
-                        }
+                Text(
+                    text = stringResource(titleRes),
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                // Photo display area
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(1f)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (localPhoto != null) {
+                        Image(
+                            painter = rememberAsyncImagePainter(localPhoto),
+                            contentDescription = stringResource(R.string.quiz_selected_photo),
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Outlined.PhotoCamera,
+                            contentDescription = null,
+                            modifier = Modifier.size(64.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
+                        )
                     }
-                },
-                confirmButton = {},
-                dismissButton = {
-                    TextButton(onClick = { showImagePicker = false }) { Text("Annulla") }
                 }
-            )
-        }
 
-        Spacer(modifier = Modifier.height(24.dp))
-
-        localPhoto?.let { photoUri ->
-            Image(
-                painter = rememberAsyncImagePainter(photoUri),
-                contentDescription = "Foto selezionata",
-                modifier = Modifier
-                    .size(220.dp)
-                    .padding(8.dp)
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Button(onClick = {
-                actions.startQuiz(photoUri.toString())
-                quizStarted = true
-            }) {
-                Text("Inizia il quiz")
-            }
-
-            // PATCH: Naviga solo quando la domanda è pronta!
-            LaunchedEffect(state.step, state.loading, quizStarted) {
-                if (quizStarted && state.step == QuizStep.Question && !state.loading) {
-                    navController.navigate(L4PRoute.QuizQuestion)
-                    quizStarted = false // evita navigazioni ripetute
+                errorMessage?.let {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = it,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
                 }
             }
-        }
 
-        errorMessage?.let {
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(it, color = MaterialTheme.colorScheme.error)
+            // Bottom buttons
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                if (localPhoto == null) {
+                    Button(
+                        onClick = { showImagePicker = true },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.quiz_upload_button),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+                } else {
+                    Button(
+                        onClick = {
+                            actions.startQuiz(localPhoto.toString())
+                            quizStarted = true
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.quiz_start_button),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    OutlinedButton(
+                        onClick = { showImagePicker = true },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.quiz_upload_button),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    // Image picker dialog
+    if (showImagePicker) {
+        AlertDialog(
+            onDismissRequest = { showImagePicker = false },
+            title = {
+                Text(
+                    text = stringResource(R.string.quiz_choose_photo),
+                    style = MaterialTheme.typography.titleLarge
+                )
+            },
+            text = {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Button(
+                        onClick = { launchCamera() },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.PhotoCamera,
+                            contentDescription = null,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            text = stringResource(R.string.quiz_take_photo),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+
+                    OutlinedButton(
+                        onClick = { launchGallery() },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Photo,
+                            contentDescription = null,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            text = stringResource(R.string.quiz_gallery),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+                }
+            },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(onClick = { showImagePicker = false }) {
+                    Text(stringResource(R.string.quiz_cancel))
+                }
+            }
+        )
+    }
+
+    // Navigate when quiz is ready
+    LaunchedEffect(state.step, state.loading, quizStarted) {
+        if (quizStarted && state.step == QuizStep.Question && !state.loading) {
+            navController.navigate(L4PRoute.QuizQuestion)
+            quizStarted = false
         }
     }
 }

@@ -14,6 +14,14 @@ sealed class QuizStep {
     data object Result : QuizStep()
 }
 
+data class TargetWithDetails(
+    val target: QuizAnswerTarget,
+    val name: String? = "",
+    val nameEn: String? = "",
+    val nameIt: String? = "",
+    val imageUrl: String? = null
+)
+
 data class QuizState(
     val quizType: String = "", // "plant", "insect", ...
     val step: QuizStep = QuizStep.Start,
@@ -21,8 +29,8 @@ data class QuizState(
     val currentQuestion: QuizQuestion? = null,
     val answers: List<QuizAnswer> = emptyList(),
     val selectedAnswer: QuizAnswer? = null,
-    val possibleTargets: List<QuizAnswerTarget> = emptyList(),
-    val selectedTarget: QuizAnswerTarget? = null,
+    val possibleTargets: List<TargetWithDetails> = emptyList(),
+    val selectedTarget: TargetWithDetails? = null,
     val loading: Boolean = false,
     val error: String? = null
 )
@@ -31,7 +39,7 @@ interface QuizActions {
     fun setQuizType(type: String)
     fun startQuiz(photoUrl: String?)
     fun answerQuestion(answer: QuizAnswer)
-    fun selectTarget(target: QuizAnswerTarget)
+    fun selectTarget(target: TargetWithDetails)
     fun resetQuiz()
 }
 
@@ -71,6 +79,7 @@ class QuizViewModel(
                 }
             }
         }
+
         override fun answerQuestion(answer: QuizAnswer) {
             viewModelScope.launch {
                 println("Answer selected: $answer")
@@ -90,20 +99,22 @@ class QuizViewModel(
                     }
                 } else {
                     val targets = repository.getTargets(answer.id)
-                    if (targets.size == 1) {
+                    val targetsWithDetails = loadTargetDetails(targets)
+
+                    if (targetsWithDetails.size == 1) {
                         _state.update {
                             it.copy(
                                 step = QuizStep.Result,
-                                possibleTargets = targets,
-                                selectedTarget = targets.first(),
+                                possibleTargets = targetsWithDetails,
+                                selectedTarget = targetsWithDetails.first(),
                                 loading = false
                             )
                         }
-                    } else if (targets.size > 1) {
+                    } else if (targetsWithDetails.size > 1) {
                         _state.update {
                             it.copy(
                                 step = QuizStep.TargetSelection,
-                                possibleTargets = targets,
+                                possibleTargets = targetsWithDetails,
                                 selectedTarget = null,
                                 loading = false
                             )
@@ -122,7 +133,8 @@ class QuizViewModel(
                 }
             }
         }
-        override fun selectTarget(target: QuizAnswerTarget) {
+
+        override fun selectTarget(target: TargetWithDetails) {
             _state.update {
                 it.copy(
                     selectedTarget = target,
@@ -130,6 +142,7 @@ class QuizViewModel(
                 )
             }
         }
+
         override fun resetQuiz() {
             _state.value = _state.value.copy(
                 step = QuizStep.Start,
@@ -142,6 +155,35 @@ class QuizViewModel(
                 loading = false,
                 error = null
             )
+        }
+    }
+
+    private suspend fun loadTargetDetails(targets: List<QuizAnswerTarget>): List<TargetWithDetails> {
+        return targets.mapNotNull { target ->
+            when (target.targetType) {
+                "plant" -> {
+                    val plant = repository.getPlant(target.targetId)
+                    plant?.let {
+                        TargetWithDetails(
+                            target = target,
+                            nameEn = it.nameEn, // userà il locale negli screen,
+                            nameIt = it.nameIt,
+                            imageUrl = it.imageUrl
+                        )
+                    }
+                }
+                "insect" -> {
+                    val insect = repository.getInsect(target.targetId)
+                    insect?.let {
+                        TargetWithDetails(
+                            target = target,
+                            name = it.name,
+                            imageUrl = insect.insectImage
+                        )
+                    }
+                }
+                else -> null
+            }
         }
     }
 }

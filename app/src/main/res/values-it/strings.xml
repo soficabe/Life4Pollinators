@@ -123,4 +123,29 @@
     <string name="diverse_plants">Questa pianta è eterogenea (specie diverse)</string>
     <string name="invasive_plants">Pianta invasiva</string>
     <string name="loading_error">Errore di caricamento</string>
+
+    <!-- Quiz Start Screen -->
+    <string name="quiz_start_title_plant">Scatta o carica una foto della pianta</string>
+    <string name="quiz_start_title_insect">Scatta o carica una foto dell\'insetto</string>
+    <string name="quiz_start_title_default">Scatta o carica una foto</string>
+    <string name="quiz_upload_button">Carica o scatta foto</string>
+    <string name="quiz_choose_photo">Scegli una foto</string>
+    <string name="quiz_take_photo">Scatta foto</string>
+    <string name="quiz_gallery">Galleria</string>
+    <string name="quiz_cancel">Annulla</string>
+    <string name="quiz_start_button">Inizia il quiz</string>
+    <string name="quiz_selected_photo">Foto selezionata</string>
+
+    <!-- Quiz Question Screen -->
+    <string name="quiz_your_photo">La tua foto</string>
+
+    <!-- Quiz Target Selection Screen -->
+    <string name="quiz_select_match">Seleziona la corrispondenza corretta:</string>
+
+    <!-- Quiz Result Screen -->
+    <string name="quiz_result_identified">Identificato come:</string>
+    <string name="quiz_result_no_classification">Nessuna classificazione trovata</string>
+    <string name="quiz_try_again">Riprova</string>
+    <string name="quiz_restart">Ricomincia il quiz</string>
+    <string name="quiz_identified_photo">Esemplare identificato</string>
 </resources>

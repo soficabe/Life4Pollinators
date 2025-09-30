@@ -123,4 +123,28 @@
     <string name="invasive_plants">Invasive plant</string>
     <string name="loading_error">Loading Error</string>
 
+    <!-- Quiz Start Screen -->
+    <string name="quiz_start_title_plant">Take a photo of the plant or upload it</string>
+    <string name="quiz_start_title_insect">Take a photo of the insect or upload it</string>
+    <string name="quiz_start_title_default">Take or upload a photo</string>
+    <string name="quiz_upload_button">Upload or take photo</string>
+    <string name="quiz_choose_photo">Choose a photo</string>
+    <string name="quiz_take_photo">Take photo</string>
+    <string name="quiz_gallery">Gallery</string>
+    <string name="quiz_cancel">Cancel</string>
+    <string name="quiz_start_button">Start quiz</string>
+    <string name="quiz_selected_photo">Selected photo</string>
+
+    <!-- Quiz Question Screen -->
+    <string name="quiz_your_photo">Your photo</string>
+
+    <!-- Quiz Target Selection Screen -->
+    <string name="quiz_select_match">Select the correct match:</string>
+
+    <!-- Quiz Result Screen -->
+    <string name="quiz_result_identified">Identified as:</string>
+    <string name="quiz_result_no_classification">No classification found</string>
+    <string name="quiz_try_again">Try again</string>
+    <string name="quiz_restart">Restart quiz</string>
+    <string name="quiz_identified_photo">Identified specimen</string>
 </resources>

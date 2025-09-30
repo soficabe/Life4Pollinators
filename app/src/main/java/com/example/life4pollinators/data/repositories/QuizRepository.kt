@@ -73,4 +73,34 @@ class QuizRepository(
             else -> null
         }
     }
+
+    // Recupera una pianta per ID
+    suspend fun getPlant(plantId: String): Plant? {
+        return plantTable.select {
+            filter { Plant::id eq plantId }
+        }.decodeList<Plant>().firstOrNull()
+    }
+
+    // Recupera un insetto per ID
+    suspend fun getInsect(insectId: String): Insect? {
+        return insectTable.select {
+            filter { Insect::id eq insectId }
+        }.decodeList<Insect>().firstOrNull()
+    }
+
+    // Recupera più piante per lista di ID
+    suspend fun getPlants(plantIds: List<String>): List<Plant> {
+        if (plantIds.isEmpty()) return emptyList()
+        return plantTable.select {
+            filter { Plant::id isIn plantIds }
+        }.decodeList<Plant>()
+    }
+
+    // Recupera più insetti per lista di ID
+    suspend fun getInsects(insectIds: List<String>): List<Insect> {
+        if (insectIds.isEmpty()) return emptyList()
+        return insectTable.select {
+            filter { Insect::id isIn insectIds }
+        }.decodeList<Insect>()
+    }
 }

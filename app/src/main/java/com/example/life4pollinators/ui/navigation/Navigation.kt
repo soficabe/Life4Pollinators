@@ -188,22 +188,22 @@ fun L4PNavGraph(
                 quizViewModel.actions.setQuizType(type)
             }
             val quizState by quizViewModel.state.collectAsStateWithLifecycle()
-            QuizStartScreen(quizState, quizViewModel.actions, navController)
+            QuizStartScreen(quizState, quizViewModel.actions, isAuthenticated, navController)
         }
 
         composable<L4PRoute.QuizQuestion> {
             val quizState by quizViewModel.state.collectAsStateWithLifecycle()
-            QuizQuestionScreen(quizState, quizViewModel.actions, navController)
+            QuizQuestionScreen(quizState, quizViewModel.actions, isAuthenticated, navController)
         }
 
         composable<L4PRoute.QuizTargetSelection> {
             val quizState by quizViewModel.state.collectAsStateWithLifecycle()
-            QuizTargetSelectionScreen(quizState, quizViewModel.actions, navController)
+            QuizTargetSelectionScreen(quizState, quizViewModel.actions, isAuthenticated, navController)
         }
 
         composable<L4PRoute.QuizResult> {
             val quizState by quizViewModel.state.collectAsStateWithLifecycle()
-            QuizResultScreen(quizState, quizViewModel.actions, navController)
+            QuizResultScreen(quizState, quizViewModel.actions, isAuthenticated, navController)
         }
 
         composable<L4PRoute.Profile> {
