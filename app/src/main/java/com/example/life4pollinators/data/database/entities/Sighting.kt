@@ -13,7 +13,7 @@ data class Sighting(
     val userId: String,
 
     @SerialName("image_url")
-    val imageUrl: String?,
+    val imageUrl: String? = null,
 
     @SerialName("target_id")
     val targetId: String,

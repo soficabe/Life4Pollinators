@@ -18,8 +18,8 @@ data class QuizAnswer(
     val answerTextIt: String,
 
     @SerialName("image_url")
-    val imageUrl: String?,
+    val imageUrl: String? = null,
 
-    @SerialName("next_question")
-    val nextQuestion: String?
+    @SerialName("next_question_id")
+    val nextQuestion: String? = null
 )

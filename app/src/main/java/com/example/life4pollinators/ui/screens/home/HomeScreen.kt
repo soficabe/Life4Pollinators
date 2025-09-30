@@ -75,7 +75,7 @@ fun HomeScreen(
                 title = stringResource(R.string.plants),
                 imageRes = painterResource(R.drawable.plants),
                 backgroundColor = MaterialTheme.colorScheme.surfaceContainer,
-                onClick = { /*TODO*/ },
+                onClick = { navController.navigate("quizStart/plant") },
                 cardSize = SectionCardSize.Small
             )
             Spacer(Modifier.height(8.dp))

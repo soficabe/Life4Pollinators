@@ -15,7 +15,7 @@ data class Plant(
     val nameIt: String,
 
     @SerialName("image_url")
-    val imageUrl: String?,
+    val imageUrl: String? = null,
 
     @SerialName("common_genera")
     val commonGenera: String,
@@ -27,8 +27,8 @@ data class Plant(
     val isDiverse: Boolean,
 
     @SerialName("info_en")
-    val infoEn: String?,
+    val infoEn: String? = null,
 
     @SerialName("info_it")
-    val infoIt: String?
+    val infoIt: String? = null
 )

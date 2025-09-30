@@ -16,16 +16,21 @@ class QuizRepository(
 
     // Recupera il quiz per tipo ("plant", "insect", ecc)
     suspend fun getQuiz(type: String): Quiz? {
-        return quizTable.select {
+        println("Cerco quiz type: '$type'")
+        val quiz = quizTable.select {
             filter { Quiz::type eq type }
-        }.decodeList<Quiz>().firstOrNull()
+        }.decodeList<Quiz>()
+        println("Quiz trovati: $quiz")
+        return quiz.firstOrNull()
     }
 
     // Recupera la domanda root dal quiz
     suspend fun getRootQuestion(rootQuestionId: String): QuizQuestion? {
-        return questionTable.select {
+        val result = questionTable.select {
             filter { QuizQuestion::id eq rootQuestionId }
-        }.decodeList<QuizQuestion>().firstOrNull()
+        }.decodeList<QuizQuestion>()
+        println("Result for getRootQuestion($rootQuestionId): $result")
+        return result.firstOrNull()
     }
 
     // Recupera tutte le risposte per una domanda

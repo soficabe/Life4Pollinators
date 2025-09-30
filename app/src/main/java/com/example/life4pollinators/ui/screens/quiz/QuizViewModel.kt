@@ -1,23 +1,22 @@
-package com.example.life4pollinators.ui.screens.plantQuiz
+package com.example.life4pollinators.ui.screens.quiz
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.life4pollinators.data.database.entities.*
 import com.example.life4pollinators.data.repositories.QuizRepository
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
-sealed class PlantQuizStep {
-    data object Start : PlantQuizStep()
-    data object Question : PlantQuizStep()
-    data object TargetSelection : PlantQuizStep()
-    data object Result : PlantQuizStep()
+sealed class QuizStep {
+    data object Start : QuizStep()
+    data object Question : QuizStep()
+    data object TargetSelection : QuizStep()
+    data object Result : QuizStep()
 }
 
-data class PlantQuizState(
-    val step: PlantQuizStep = PlantQuizStep.Start,
+data class QuizState(
+    val quizType: String = "", // "plant", "insect", ...
+    val step: QuizStep = QuizStep.Start,
     val photoUrl: String? = null,
     val currentQuestion: QuizQuestion? = null,
     val answers: List<QuizAnswer> = emptyList(),
@@ -28,7 +27,8 @@ data class PlantQuizState(
     val error: String? = null
 )
 
-interface PlantQuizActions {
+interface QuizActions {
+    fun setQuizType(type: String)
     fun startQuiz(photoUrl: String?)
     fun answerQuestion(answer: QuizAnswer)
     fun selectTarget(target: QuizAnswerTarget)
@@ -38,22 +38,29 @@ interface PlantQuizActions {
 class QuizViewModel(
     private val repository: QuizRepository
 ) : ViewModel() {
-    private val _state = MutableStateFlow(PlantQuizState())
+    private val _state = MutableStateFlow(QuizState())
     val state = _state.asStateFlow()
 
-    private var quizType: String = "plant"
+    val actions = object : QuizActions {
+        override fun setQuizType(type: String) {
+            _state.update { it.copy(quizType = type) }
+        }
 
-    val actions = object : PlantQuizActions {
         override fun startQuiz(photoUrl: String?) {
+            val type = _state.value.quizType
             viewModelScope.launch {
-                _state.update { it.copy(step = PlantQuizStep.Start, photoUrl = photoUrl, loading = true) }
-                val quiz = repository.getQuiz(quizType)
-                val rootQuestion = quiz?.rootQuestion?.let { repository.getRootQuestion(it) }
+                _state.update { it.copy(step = QuizStep.Start, photoUrl = photoUrl, loading = true) }
+                val quiz = repository.getQuiz(type)
+                println("QUIZ: $quiz")
+                val rootId = quiz?.rootQuestionId
+                println("Root Question Id: $rootId")
+                val rootQuestion = rootId?.let { repository.getRootQuestion(it) }
+                println("Root Question loaded: $rootQuestion")
                 if (rootQuestion != null) {
                     val answers = repository.getAnswers(rootQuestion.id)
                     _state.update {
                         it.copy(
-                            step = PlantQuizStep.Question,
+                            step = QuizStep.Question,
                             currentQuestion = rootQuestion,
                             answers = answers,
                             loading = false
@@ -66,8 +73,11 @@ class QuizViewModel(
         }
         override fun answerQuestion(answer: QuizAnswer) {
             viewModelScope.launch {
+                println("Answer selected: $answer")
+                println("Answer.nextQuestion: ${answer.nextQuestion}")
                 _state.update { it.copy(loading = true, selectedAnswer = answer) }
-                val nextQuestion = answer.nextQuestion?.let { repository.getRootQuestion(it) }
+                val nextQuestion = repository.getNextQuestion(answer)
+                println("Next question loaded: $nextQuestion")
                 if (nextQuestion != null) {
                     val answers = repository.getAnswers(nextQuestion.id)
                     _state.update {
@@ -83,7 +93,7 @@ class QuizViewModel(
                     if (targets.size == 1) {
                         _state.update {
                             it.copy(
-                                step = PlantQuizStep.Result,
+                                step = QuizStep.Result,
                                 possibleTargets = targets,
                                 selectedTarget = targets.first(),
                                 loading = false
@@ -92,7 +102,7 @@ class QuizViewModel(
                     } else if (targets.size > 1) {
                         _state.update {
                             it.copy(
-                                step = PlantQuizStep.TargetSelection,
+                                step = QuizStep.TargetSelection,
                                 possibleTargets = targets,
                                 selectedTarget = null,
                                 loading = false
@@ -101,7 +111,7 @@ class QuizViewModel(
                     } else {
                         _state.update {
                             it.copy(
-                                step = PlantQuizStep.Result,
+                                step = QuizStep.Result,
                                 possibleTargets = emptyList(),
                                 selectedTarget = null,
                                 loading = false,
@@ -116,12 +126,22 @@ class QuizViewModel(
             _state.update {
                 it.copy(
                     selectedTarget = target,
-                    step = PlantQuizStep.Result
+                    step = QuizStep.Result
                 )
             }
         }
         override fun resetQuiz() {
-            _state.value = PlantQuizState()
+            _state.value = _state.value.copy(
+                step = QuizStep.Start,
+                photoUrl = null,
+                currentQuestion = null,
+                answers = emptyList(),
+                selectedAnswer = null,
+                possibleTargets = emptyList(),
+                selectedTarget = null,
+                loading = false,
+                error = null
+            )
         }
     }
 }

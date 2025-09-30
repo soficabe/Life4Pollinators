@@ -18,14 +18,14 @@ data class Insect (
     val imageEn: String?,
 
     @SerialName("image_it")
-    val imageIt: String?,
+    val imageIt: String? = null,
 
     @SerialName("info_en")
-    val infoEn: String?,
+    val infoEn: String? = null,
 
     @SerialName("info_it")
-    val infoIt: String?,
+    val infoIt: String? = null,
 
     @SerialName("insect_image")
-    val insectImage: String?
+    val insectImage: String? = null
 )

@@ -18,5 +18,5 @@ data class QuizQuestion(
     val questionTextIt: String,
 
     @SerialName("image_url")
-    val imageUrl: String?
+    val imageUrl: String? = null
 )

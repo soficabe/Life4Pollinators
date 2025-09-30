@@ -14,21 +14,23 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
-import com.example.life4pollinators.ui.screens.plantQuiz.PlantQuizActions
-import com.example.life4pollinators.ui.screens.plantQuiz.PlantQuizState
+import com.example.life4pollinators.ui.navigation.L4PRoute
 import com.example.life4pollinators.utils.rememberCameraLauncher
 import com.example.life4pollinators.utils.rememberGalleryLauncher
 
 @Composable
 fun QuizStartScreen(
-    state: PlantQuizState,
-    actions: PlantQuizActions,
+    state: QuizState,
+    actions: QuizActions,
     navController: NavHostController
 ) {
     val context = LocalContext.current
     var showImagePicker by remember { mutableStateOf(false) }
     var localPhoto by remember { mutableStateOf<Uri?>(null) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    // PATCH: qui fuori!
+    var quizStarted by remember { mutableStateOf(false) }
 
     val launchCamera = rememberCameraLauncher(
         onPhotoReady = { uri ->
@@ -37,16 +39,20 @@ fun QuizStartScreen(
             errorMessage = null
         },
         onError = { resId ->
-            // Puoi tradurre il resId in stringa se vuoi
             errorMessage = context.getString(resId)
             showImagePicker = false
         }
     )
-
     val launchGallery = rememberGalleryLauncher { uri ->
         localPhoto = uri
         showImagePicker = false
         errorMessage = null
+    }
+
+    val label = when (state.quizType) {
+        "plant" -> "Scatta o carica foto della pianta"
+        "insect" -> "Scatta o carica foto dell'insetto"
+        else -> "Scatta o carica foto"
     }
 
     Column(
@@ -55,7 +61,7 @@ fun QuizStartScreen(
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Scatta una foto della pianta o caricane una", style = MaterialTheme.typography.titleLarge)
+        Text(label, style = MaterialTheme.typography.titleLarge)
         Spacer(modifier = Modifier.height(24.dp))
 
         Button(onClick = { showImagePicker = true }) {
@@ -105,11 +111,20 @@ fun QuizStartScreen(
                     .padding(8.dp)
             )
             Spacer(modifier = Modifier.height(16.dp))
+
             Button(onClick = {
                 actions.startQuiz(photoUri.toString())
-                navController.navigate("plantQuizQuestion")
+                quizStarted = true
             }) {
                 Text("Inizia il quiz")
+            }
+
+            // PATCH: Naviga solo quando la domanda è pronta!
+            LaunchedEffect(state.step, state.loading, quizStarted) {
+                if (quizStarted && state.step == QuizStep.Question && !state.loading) {
+                    navController.navigate(L4PRoute.QuizQuestion)
+                    quizStarted = false // evita navigazioni ripetute
+                }
             }
         }
 

@@ -1,6 +1,7 @@
 package com.example.life4pollinators.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -28,6 +29,11 @@ import com.example.life4pollinators.ui.screens.plants.PlantsListScreen
 import com.example.life4pollinators.ui.screens.plants.PlantsListViewModel
 import com.example.life4pollinators.ui.screens.profile.ProfileScreen
 import com.example.life4pollinators.ui.screens.profile.ProfileViewModel
+import com.example.life4pollinators.ui.screens.quiz.QuizQuestionScreen
+import com.example.life4pollinators.ui.screens.quiz.QuizResultScreen
+import com.example.life4pollinators.ui.screens.quiz.QuizStartScreen
+import com.example.life4pollinators.ui.screens.quiz.QuizTargetSelectionScreen
+import com.example.life4pollinators.ui.screens.quiz.QuizViewModel
 import com.example.life4pollinators.ui.screens.settings.SettingsScreen
 import com.example.life4pollinators.ui.screens.settings.SettingsState
 import com.example.life4pollinators.ui.screens.settings.SettingsViewModel
@@ -38,10 +44,6 @@ import com.example.life4pollinators.ui.screens.signUp.SignUpViewModel
 import kotlinx.serialization.Serializable
 import org.koin.androidx.compose.koinViewModel
 
-/**
- * Rappresenta tutte le possibili destinazioni della navigation dell'app.
- * Ogni schermata ha un oggetto dedicato per una navigation type-safe.
- */
 sealed interface L4PRoute {
     @Serializable
     data object SignUp : L4PRoute
@@ -80,21 +82,21 @@ sealed interface L4PRoute {
     data class InsectDetail(val insectId: String) : L4PRoute
 
     @Serializable
+    data object QuizQuestion : L4PRoute
+
+    @Serializable
+    data object QuizTargetSelection : L4PRoute
+
+    @Serializable
+    data object QuizResult : L4PRoute
+
+    @Serializable
     data object Profile : L4PRoute
 
     @Serializable
     data object EditProfile : L4PRoute
 }
 
-/**
- * Definisce il grafo di navigazione dell'app.
- * Associa a ogni destinazione la composable screen corrispondente.
- *
- * @param modifier Modifier Compose opzionale.
- * @param navController Controller di navigazione principale.
- * @param settingsViewModel ViewModel per la schermata Settings.
- * @param settingsState Stato della schermata Settings.
- */
 @Composable
 fun L4PNavGraph(
     modifier: Modifier = Modifier,
@@ -102,37 +104,33 @@ fun L4PNavGraph(
     settingsViewModel: SettingsViewModel,
     settingsState: SettingsState
 ){
-    // ViewModel per l'autenticazione, usato per gestire l'accesso globale
     val authViewModel = koinViewModel<AuthViewModel>()
     val isAuthenticated by authViewModel.isAuthenticated.collectAsStateWithLifecycle()
 
-    //Composable utilizzato per l'implementazione vera e propria del grafico di navigazione
-    // Definisce le schermate raggiungibili tramite navigation
+    // PATCH: Crea il QuizViewModel qui per condividerlo tra tutte le schermate del quiz
+    val quizViewModel = koinViewModel<QuizViewModel>()
+
     NavHost(
         navController = navController,
         startDestination = L4PRoute.Home,
         modifier = modifier
     ){
-        // Schermata di registrazione
         composable<L4PRoute.SignUp> {
             val signUpVM = koinViewModel<SignUpViewModel>()
             val signUpState by signUpVM.state.collectAsStateWithLifecycle()
             SignUpScreen(signUpState, signUpVM.actions, navController)
         }
 
-        // Schermata di login
         composable<L4PRoute.SignIn> {
             val signInVM = koinViewModel<SignInViewModel>()
             val signInState by signInVM.state.collectAsStateWithLifecycle()
             SignInScreen(signInState, signInVM.actions, navController)
         }
 
-        // Schermata principale (home)
         composable<L4PRoute.Home> {
             HomeScreen(isAuthenticated, navController)
         }
 
-        // Schermata impostazioni
         composable<L4PRoute.Settings> {
             SettingsScreen(settingsState, settingsViewModel.actions, isAuthenticated, navController)
         }
@@ -183,14 +181,37 @@ fun L4PNavGraph(
             InsectDetailScreen(insectDetailState, isAuthenticated, navController)
         }
 
-        // Schermata profilo utente
+        // PATCH: Usa quizViewModel condiviso invece di creare nuove istanze
+        composable("quizStart/{type}") { backStackEntry ->
+            val type = backStackEntry.arguments?.getString("type") ?: "plant"
+            LaunchedEffect(type) {
+                quizViewModel.actions.setQuizType(type)
+            }
+            val quizState by quizViewModel.state.collectAsStateWithLifecycle()
+            QuizStartScreen(quizState, quizViewModel.actions, navController)
+        }
+
+        composable<L4PRoute.QuizQuestion> {
+            val quizState by quizViewModel.state.collectAsStateWithLifecycle()
+            QuizQuestionScreen(quizState, quizViewModel.actions, navController)
+        }
+
+        composable<L4PRoute.QuizTargetSelection> {
+            val quizState by quizViewModel.state.collectAsStateWithLifecycle()
+            QuizTargetSelectionScreen(quizState, quizViewModel.actions, navController)
+        }
+
+        composable<L4PRoute.QuizResult> {
+            val quizState by quizViewModel.state.collectAsStateWithLifecycle()
+            QuizResultScreen(quizState, quizViewModel.actions, navController)
+        }
+
         composable<L4PRoute.Profile> {
             val profileVM = koinViewModel<ProfileViewModel>()
             val profileState by profileVM.state.collectAsStateWithLifecycle()
             ProfileScreen(profileState, profileVM.actions, navController)
         }
 
-        // Schermata modifica profilo
         composable<L4PRoute.EditProfile> {
             val editProfileVM = koinViewModel<EditProfileViewModel>()
             val editProfileState by editProfileVM.state.collectAsStateWithLifecycle()

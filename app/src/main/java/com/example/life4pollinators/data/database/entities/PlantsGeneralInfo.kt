@@ -15,14 +15,14 @@ data class PlantsGeneralInfo(
     val nameIt: String,
 
     @SerialName("image_url_en")
-    val imageUrlEn: String?,
+    val imageUrlEn: String? = null,
 
     @SerialName("image_url_it")
-    val imageUrlIt: String?,
+    val imageUrlIt: String? = null,
 
     @SerialName("info_en")
-    val infoEn: String?,
+    val infoEn: String? = null,
 
     @SerialName("info_it")
-    val infoIt: String?
+    val infoIt: String? = null
 )

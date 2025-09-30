@@ -6,6 +6,7 @@ import com.example.life4pollinators.data.repositories.AuthRepository
 import com.example.life4pollinators.data.repositories.ImageRepository
 import com.example.life4pollinators.data.repositories.InsectsRepository
 import com.example.life4pollinators.data.repositories.PlantsRepository
+import com.example.life4pollinators.data.repositories.QuizRepository
 import com.example.life4pollinators.data.repositories.SettingsRepository
 import com.example.life4pollinators.data.repositories.UserRepository
 import com.example.life4pollinators.ui.AuthViewModel
@@ -18,6 +19,7 @@ import com.example.life4pollinators.ui.screens.plants.PlantDetailViewModel
 import com.example.life4pollinators.ui.screens.plants.PlantsGeneralInfoViewModel
 import com.example.life4pollinators.ui.screens.plants.PlantsListViewModel
 import com.example.life4pollinators.ui.screens.profile.ProfileViewModel
+import com.example.life4pollinators.ui.screens.quiz.QuizViewModel
 import com.example.life4pollinators.ui.screens.settings.SettingsViewModel
 import com.example.life4pollinators.ui.screens.signIn.SignInViewModel
 import com.example.life4pollinators.ui.screens.signUp.SignUpViewModel
@@ -80,6 +82,7 @@ val appModule = module {
     single { ImageRepository(get()) }
     single { PlantsRepository(get()) }
     single { InsectsRepository(get()) }
+    single { QuizRepository(get()) }
 
     // ViewModels
     viewModel { AuthViewModel(get()) }
@@ -95,4 +98,5 @@ val appModule = module {
     viewModel { InsectsListViewModel(get(), get()) }
     viewModel { InsectGroupInfoViewModel(get(), get()) }
     viewModel { InsectDetailViewModel(get(), get()) }
+    viewModel { QuizViewModel(get()) }
 }

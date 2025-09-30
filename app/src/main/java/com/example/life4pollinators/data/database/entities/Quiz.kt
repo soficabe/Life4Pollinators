@@ -11,6 +11,6 @@ data class Quiz(
     @SerialName("type")
     val type: String,
 
-    @SerialName("root_question")
-    val rootQuestion: String,
+    @SerialName("root_question_id")
+    val rootQuestionId: String
 )
