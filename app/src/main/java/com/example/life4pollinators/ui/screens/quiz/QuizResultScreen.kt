@@ -96,39 +96,6 @@ fun QuizResultScreen(
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // User's photo
-                state.photoUrl?.let { photoUrl ->
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                    ) {
-                        Column {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .aspectRatio(1f)
-                                    .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
-                            ) {
-                                Image(
-                                    painter = rememberAsyncImagePainter(Uri.parse(photoUrl)),
-                                    contentDescription = stringResource(R.string.quiz_your_photo),
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentScale = ContentScale.Crop
-                                )
-                            }
-                            Text(
-                                text = stringResource(R.string.quiz_your_photo),
-                                style = MaterialTheme.typography.labelLarge,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(16.dp)
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
                 // Target's photo
                 state.selectedTarget.imageUrl?.let { imageUrl ->
                     Card(
@@ -140,14 +107,15 @@ fun QuizResultScreen(
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .aspectRatio(1f)
-                                    .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+                                    .height(300.dp)
+                                    .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)),
+                                contentAlignment = Alignment.Center
                             ) {
                                 Image(
                                     painter = rememberAsyncImagePainter(imageUrl),
                                     contentDescription = stringResource(R.string.quiz_identified_photo),
                                     modifier = Modifier.fillMaxSize(),
-                                    contentScale = ContentScale.Crop
+                                    contentScale = ContentScale.Fit
                                 )
                             }
                             Text(

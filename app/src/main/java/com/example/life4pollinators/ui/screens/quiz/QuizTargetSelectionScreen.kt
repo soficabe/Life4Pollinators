@@ -67,7 +67,7 @@ fun QuizTargetSelectionScreen(
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(180.dp)
+                                .height(240.dp)
                                 .clip(RoundedCornerShape(12.dp))
                         ) {
                             Image(

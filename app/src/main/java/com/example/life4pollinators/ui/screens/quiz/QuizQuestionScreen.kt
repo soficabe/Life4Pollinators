@@ -74,7 +74,7 @@ fun QuizQuestionScreen(
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(180.dp)
+                                .height(240.dp)
                                 .clip(RoundedCornerShape(12.dp))
                         ) {
                             Image(
@@ -136,16 +136,16 @@ fun QuizQuestionScreen(
                                 containerColor = MaterialTheme.colorScheme.surfaceVariant
                             )
                         ) {
-                            Row(
+                            Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(16.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                                    .padding(16.dp)
                             ) {
                                 if (answer.imageUrl != null) {
                                     Box(
                                         modifier = Modifier
-                                            .size(48.dp)
+                                            .fillMaxWidth()
+                                            .height(120.dp)
                                             .clip(RoundedCornerShape(8.dp))
                                             .background(MaterialTheme.colorScheme.surface)
                                     ) {
@@ -153,10 +153,10 @@ fun QuizQuestionScreen(
                                             painter = rememberAsyncImagePainter(answer.imageUrl),
                                             contentDescription = null,
                                             modifier = Modifier.fillMaxSize(),
-                                            contentScale = ContentScale.Crop
+                                            contentScale = ContentScale.Fit
                                         )
                                     }
-                                    Spacer(modifier = Modifier.width(12.dp))
+                                    Spacer(modifier = Modifier.height(12.dp))
                                 }
 
                                 Text(
