@@ -158,7 +158,11 @@ fun QuizStartScreen(
                 } else {
                     Button(
                         onClick = {
-                            actions.startQuiz(localPhoto.toString())
+                            if (state.quizType == "insect") {
+                                actions.loadInsectGroups(localPhoto.toString())
+                            } else {
+                                actions.startQuiz(localPhoto.toString())
+                            }
                             quizStarted = true
                         },
                         modifier = Modifier
@@ -256,9 +260,18 @@ fun QuizStartScreen(
 
     // Navigate when quiz is ready
     LaunchedEffect(state.step, state.loading, quizStarted) {
-        if (quizStarted && state.step == QuizStep.Question && !state.loading) {
-            navController.navigate(L4PRoute.QuizQuestion)
-            quizStarted = false
+        if (quizStarted && !state.loading) {
+            when (state.step) {
+                QuizStep.Question -> {
+                    navController.navigate(L4PRoute.QuizQuestion)
+                    quizStarted = false
+                }
+                QuizStep.InsectTypeSelection -> {
+                    navController.navigate(L4PRoute.QuizInsectTypeSelection)
+                    quizStarted = false
+                }
+                else -> {}
+            }
         }
     }
 }

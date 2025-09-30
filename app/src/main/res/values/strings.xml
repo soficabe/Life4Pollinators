@@ -125,7 +125,7 @@
 
     <!-- Quiz Start Screen -->
     <string name="quiz_start_title_plant">Take a photo of the plant or upload it</string>
-    <string name="quiz_start_title_insect">Take a photo of the insect or upload it</string>
+    <!--<string name="quiz_start_title_insect">Take a photo of the insect or upload it</string>-->
     <string name="quiz_start_title_default">Take or upload a photo</string>
     <string name="quiz_upload_button">Upload or take photo</string>
     <string name="quiz_choose_photo">Choose a photo</string>
@@ -147,4 +147,13 @@
     <string name="quiz_try_again">Try again</string>
     <string name="quiz_restart">Restart quiz</string>
     <string name="quiz_identified_photo">Identified specimen</string>
+
+    <!-- Quiz Insect Type Selection -->
+    <string name="quiz_select_insect_type">Select Insect Type</string>
+    <string name="quiz_which_insect_type">Which type of insect is it?</string>
+    <string name="quiz_start_title_insect">Identify an Insect</string>
+
+
+    <string name="quiz_select_insect">Select Insect</string>
+    <string name="quiz_select_insect_from_list">Select the insect that matches your photo</string>
 </resources>

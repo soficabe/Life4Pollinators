@@ -83,7 +83,7 @@ fun HomeScreen(
                 title = stringResource(R.string.insects),
                 imageRes = painterResource(R.drawable.insects),
                 backgroundColor = MaterialTheme.colorScheme.surfaceContainer,
-                onClick = { /*TODO*/ },
+                onClick = { navController.navigate("quizStart/insect") },
                 cardSize = SectionCardSize.Small
             )
             Spacer(Modifier.height(8.dp))

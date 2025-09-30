@@ -29,6 +29,8 @@ import com.example.life4pollinators.ui.screens.plants.PlantsListScreen
 import com.example.life4pollinators.ui.screens.plants.PlantsListViewModel
 import com.example.life4pollinators.ui.screens.profile.ProfileScreen
 import com.example.life4pollinators.ui.screens.profile.ProfileViewModel
+import com.example.life4pollinators.ui.screens.quiz.QuizInsectTypeSelectionScreen
+import com.example.life4pollinators.ui.screens.quiz.QuizInsectsListScreen
 import com.example.life4pollinators.ui.screens.quiz.QuizQuestionScreen
 import com.example.life4pollinators.ui.screens.quiz.QuizResultScreen
 import com.example.life4pollinators.ui.screens.quiz.QuizStartScreen
@@ -82,6 +84,12 @@ sealed interface L4PRoute {
     data class InsectDetail(val insectId: String) : L4PRoute
 
     @Serializable
+    data object QuizInsectTypeSelection : L4PRoute
+
+    @Serializable
+    data object QuizInsectsList : L4PRoute
+
+    @Serializable
     data object QuizQuestion : L4PRoute
 
     @Serializable
@@ -107,7 +115,7 @@ fun L4PNavGraph(
     val authViewModel = koinViewModel<AuthViewModel>()
     val isAuthenticated by authViewModel.isAuthenticated.collectAsStateWithLifecycle()
 
-    // PATCH: Crea il QuizViewModel qui per condividerlo tra tutte le schermate del quiz
+    // Crea il QuizViewModel qui per condividerlo tra tutte le schermate del quiz
     val quizViewModel = koinViewModel<QuizViewModel>()
 
     NavHost(
@@ -181,7 +189,7 @@ fun L4PNavGraph(
             InsectDetailScreen(insectDetailState, isAuthenticated, navController)
         }
 
-        // PATCH: Usa quizViewModel condiviso invece di creare nuove istanze
+        // Quiz Routes
         composable("quizStart/{type}") { backStackEntry ->
             val type = backStackEntry.arguments?.getString("type") ?: "plant"
             LaunchedEffect(type) {
@@ -189,6 +197,16 @@ fun L4PNavGraph(
             }
             val quizState by quizViewModel.state.collectAsStateWithLifecycle()
             QuizStartScreen(quizState, quizViewModel.actions, isAuthenticated, navController)
+        }
+
+        composable<L4PRoute.QuizInsectTypeSelection> {
+            val quizState by quizViewModel.state.collectAsStateWithLifecycle()
+            QuizInsectTypeSelectionScreen(quizState, quizViewModel.actions, isAuthenticated, navController)
+        }
+
+        composable<L4PRoute.QuizInsectsList> {
+            val quizState by quizViewModel.state.collectAsStateWithLifecycle()
+            QuizInsectsListScreen(quizState, quizViewModel.actions, isAuthenticated, navController)
         }
 
         composable<L4PRoute.QuizQuestion> {
