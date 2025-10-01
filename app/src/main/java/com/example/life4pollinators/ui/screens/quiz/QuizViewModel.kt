@@ -27,6 +27,7 @@ data class TargetWithDetails(
 
 data class QuizState(
     val quizType: String = "", // "plant", "bee", "butterfly", "moth", "wasp", etc.
+    val originalQuizType: String = "", // "plant" o "insect" - il tipo iniziale per il reset
     val step: QuizStep = QuizStep.Start,
     val photoUrl: String? = null,
     val currentQuestion: QuizQuestion? = null,
@@ -62,7 +63,7 @@ class QuizViewModel(
 
     val actions = object : QuizActions {
         override fun setQuizType(type: String) {
-            _state.update { it.copy(quizType = type) }
+            _state.update { it.copy(quizType = type, originalQuizType = type) }
         }
 
         override fun startQuiz(photoUrl: String?) {
@@ -150,6 +151,7 @@ class QuizViewModel(
                             _state.update {
                                 it.copy(
                                     quizType = quizType,
+                                    originalQuizType = "insect", // Mantieni "insect" come tipo originale
                                     step = QuizStep.Question,
                                     currentQuestion = rootQuestion,
                                     answers = answers,
@@ -293,7 +295,7 @@ class QuizViewModel(
                         )
                     }
                 }
-                "moth", "bee", "wasp", "butterfly" -> {
+                "insect", "bee", "wasp", "butterfly", "moth" -> {
                     val insect = quizRepository.getInsect(target.targetId)
                     insect?.let {
                         TargetWithDetails(

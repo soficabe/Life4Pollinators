@@ -133,7 +133,7 @@ fun QuizResultScreen(
                 Button(
                     onClick = {
                         actions.resetQuiz()
-                        navController.navigate("quizStart/${state.quizType}")
+                        navController.navigate("quizStart/${state.originalQuizType}")
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -201,7 +201,7 @@ fun QuizResultScreen(
                 Button(
                     onClick = {
                         actions.resetQuiz()
-                        navController.navigate("quizStart/${state.quizType}")
+                        navController.navigate("quizStart/${state.originalQuizType}")
                     },
                     modifier = Modifier
                         .fillMaxWidth()
