@@ -1,6 +1,7 @@
 package com.example.life4pollinators.ui.screens.quiz
 
 import android.net.Uri
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -24,6 +25,7 @@ import com.example.life4pollinators.R
 import com.example.life4pollinators.data.models.NavBarTab
 import com.example.life4pollinators.ui.composables.AppBar
 import com.example.life4pollinators.ui.composables.BottomNavBar
+import com.example.life4pollinators.ui.navigation.L4PRoute
 import java.util.Locale
 
 @Composable
@@ -35,10 +37,18 @@ fun QuizResultScreen(
 ) {
     val locale = Locale.getDefault().language
 
+    BackHandler {
+        actions.resetQuiz()
+        navController.navigate(L4PRoute.Home) {
+            popUpTo(L4PRoute.Home) { inclusive = false }
+        }
+    }
+
     Scaffold (
         topBar = {
             AppBar(
-                navController = navController
+                navController = navController,
+                showBackButton = false
             )
         },
         bottomBar = {
@@ -132,10 +142,14 @@ fun QuizResultScreen(
 
                 Spacer(modifier = Modifier.height(48.dp))
 
+                // Pulsante per rifare il quiz
                 Button(
                     onClick = {
                         actions.resetQuiz()
-                        navController.navigate("quizStart/${state.originalQuizType}")
+                        navController.navigate("quizStart/${state.originalQuizType}") {
+                            // Pulisce tutto lo stack del quiz
+                            popUpTo(L4PRoute.Home) { inclusive = false }
+                        }
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -204,7 +218,9 @@ fun QuizResultScreen(
                 Button(
                     onClick = {
                         actions.resetQuiz()
-                        navController.navigate("quizStart/${state.originalQuizType}")
+                        navController.navigate("quizStart/${state.originalQuizType}") {
+                            popUpTo(L4PRoute.Home) { inclusive = false }
+                        }
                     },
                     modifier = Modifier
                         .fillMaxWidth()

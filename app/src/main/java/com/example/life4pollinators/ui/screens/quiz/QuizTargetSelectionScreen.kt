@@ -1,6 +1,7 @@
 package com.example.life4pollinators.ui.screens.quiz
 
 import android.net.Uri
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -21,6 +22,7 @@ import com.example.life4pollinators.R
 import com.example.life4pollinators.data.models.NavBarTab
 import com.example.life4pollinators.ui.composables.AppBar
 import com.example.life4pollinators.ui.composables.BottomNavBar
+import com.example.life4pollinators.ui.composables.ExitQuizDialog
 import com.example.life4pollinators.ui.navigation.L4PRoute
 
 import java.util.Locale
@@ -33,11 +35,19 @@ fun QuizTargetSelectionScreen(
     navController: NavHostController
 ) {
     val locale = Locale.getDefault().language
+    var showExitDialog by remember { mutableStateOf(false) }
+
+    // BackHandler con dialog - l'utente ha già completato il quiz,
+    // ma potrebbe voler ripensarci sulla selezione
+    BackHandler {
+        showExitDialog = true
+    }
 
     Scaffold (
         topBar = {
             AppBar(
-                navController = navController
+                navController = navController,
+                showBackButton = false
             )
         },
         bottomBar = {
@@ -165,5 +175,19 @@ fun QuizTargetSelectionScreen(
                 Spacer(modifier = Modifier.height(16.dp))
             }
         }
+    }
+
+    // Dialog di conferma uscita
+    if (showExitDialog) {
+        ExitQuizDialog(
+            onDismiss = { showExitDialog = false },
+            onConfirm = {
+                showExitDialog = false
+                actions.resetQuiz()
+                navController.navigate("quizStart/${state.originalQuizType}") {
+                    popUpTo(L4PRoute.Home) { inclusive = false }
+                }
+            }
+        )
     }
 }

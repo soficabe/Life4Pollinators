@@ -157,4 +157,13 @@
 
     <string name="quiz_select_insect">Select Insect</string>
     <string name="quiz_select_insect_from_list">Select the insect that matches your photo</string>
+
+    <!-- Dialog di uscita dal quiz -->
+    <string name="quiz_exit_title">Exit quiz?</string>
+    <string name="quiz_exit_message">Your progress will be lost if you exit now.</string>
+    <string name="quiz_exit_confirm">Exit</string>
+    <string name="quiz_exit_cancel">Continue Quiz</string>
+
+    <!-- Navigazione -->
+    <string name="back_to_home">Go Back to Home</string>
 </resources>

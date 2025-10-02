@@ -158,4 +158,13 @@
 
     <string name="quiz_select_insect">Seleziona Insetto</string>
     <string name="quiz_select_insect_from_list">Seleziona l\'insetto che corrisponde alla tua foto</string>
+
+    <!-- Dialog di uscita dal quiz -->
+    <string name="quiz_exit_title">Uscire dal quiz?</string>
+    <string name="quiz_exit_message">Il tuo progresso andrà perso se esci ora.</string>
+    <string name="quiz_exit_confirm">Esci</string>
+    <string name="quiz_exit_cancel">Continua quiz</string>
+
+    <!-- Navigazione -->
+    <string name="back_to_home">Torna alla Home</string>
 </resources>
