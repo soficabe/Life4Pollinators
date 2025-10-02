@@ -168,4 +168,9 @@
     <!-- Navigazione -->
     <string name="back_to_home">Torna alla Home</string>
     <string name="quiz_change_photo">Cambia foto</string>
+
+    <string name="quiz_open_with_lens">Apri con Google Lens</string>
+    <string name="quiz_open_with_lens_info">Ora scegli tra le app "Lens" oppure un\'altra app di riconoscimento immagini. Se non vedi Lens, apri la foto con Galleria e usa l\'icona Lens da lì!</string>
+    <string name="quiz_open_with_lens_chooser">Scegli app per riconoscimento</string>
+    <string name="quiz_open_with_lens_continue">Continua</string>
 </resources>

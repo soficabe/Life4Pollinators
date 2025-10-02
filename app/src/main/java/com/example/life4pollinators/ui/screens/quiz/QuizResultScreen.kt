@@ -1,5 +1,6 @@
 package com.example.life4pollinators.ui.screens.quiz
 
+import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
@@ -16,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -34,6 +36,8 @@ fun QuizResultScreen(
     navController: NavHostController
 ) {
     val locale = Locale.getDefault().language
+    val context = LocalContext.current
+    var showLensDialog by remember { mutableStateOf(false) }
 
     BackHandler {
         actions.resetQuiz()
@@ -132,7 +136,24 @@ fun QuizResultScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(48.dp))
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Bottone con dialog info
+                if (state.photoUrl != null) {
+                    Button(
+                        onClick = { showLensDialog = true },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.quiz_open_with_lens),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
 
                 // Pulsante per rifare il quiz
                 Button(
@@ -270,5 +291,42 @@ fun QuizResultScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
         }
+    }
+
+    // Dialog informativa Lens
+    if (showLensDialog && state.photoUrl != null) {
+        AlertDialog(
+            onDismissRequest = { showLensDialog = false },
+            title = {
+                Text(
+                    text = stringResource(R.string.quiz_open_with_lens),
+                    style = MaterialTheme.typography.titleMedium
+                )
+            },
+            text = {
+                Text(
+                    text = stringResource(R.string.quiz_open_with_lens_info),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            },
+            confirmButton = {
+                Button(onClick = {
+                    showLensDialog = false
+                    val intent = Intent(Intent.ACTION_SEND).apply {
+                        type = "image/*"
+                        putExtra(Intent.EXTRA_STREAM, Uri.parse(state.photoUrl))
+                    }
+                    val chooser = Intent.createChooser(intent, context.getString(R.string.quiz_open_with_lens_chooser))
+                    context.startActivity(chooser)
+                }) {
+                    Text(stringResource(R.string.quiz_open_with_lens_continue))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showLensDialog = false }) {
+                    Text(stringResource(R.string.quiz_cancel))
+                }
+            }
+        )
     }
 }
