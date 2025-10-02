@@ -38,7 +38,12 @@ fun QuizStartScreen(
 ) {
     val context = LocalContext.current
     var showImagePicker by remember { mutableStateOf(false) }
-    var localPhoto by remember { mutableStateOf<Uri?>(null) }
+
+    // Inizializza localPhoto con la foto già esistente nello stato
+    var localPhoto by remember(state.photoUrl) {
+        mutableStateOf(state.photoUrl?.let { Uri.parse(it) })
+    }
+
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var quizStarted by remember { mutableStateOf(false) }
 
@@ -181,7 +186,7 @@ fun QuizStartScreen(
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(
-                        text = stringResource(R.string.quiz_upload_button),
+                        text = stringResource(R.string.quiz_change_photo),
                         style = MaterialTheme.typography.bodyLarge
                     )
                 }

@@ -1,6 +1,7 @@
 package com.example.life4pollinators.ui.screens.quiz
 
 import android.net.Uri
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -18,9 +19,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import com.example.life4pollinators.R
-import com.example.life4pollinators.data.models.NavBarTab
 import com.example.life4pollinators.ui.composables.AppBar
-import com.example.life4pollinators.ui.composables.BottomNavBar
+import com.example.life4pollinators.ui.composables.ExitQuizDialog
 import com.example.life4pollinators.ui.navigation.L4PRoute
 import java.util.Locale
 
@@ -28,10 +28,16 @@ import java.util.Locale
 fun QuizInsectTypeSelectionScreen(
     state: QuizState,
     actions: QuizActions,
-    isAuthenticated: Boolean,
     navController: NavHostController
 ) {
     val locale = Locale.getDefault().language
+
+    var showExitDialog by remember { mutableStateOf(false) }
+
+    // Gestione del back button con dialog di conferma
+    BackHandler {
+        showExitDialog = true
+    }
 
     LaunchedEffect(state.step) {
         when (state.step) {
@@ -44,14 +50,9 @@ fun QuizInsectTypeSelectionScreen(
     Scaffold (
         topBar = {
             AppBar(
-                navController = navController
-            )
-        },
-        bottomBar = {
-            BottomNavBar(
-                isAuthenticated = isAuthenticated,
-                selectedTab = NavBarTab.Home,
-                navController = navController
+                navController = navController,
+                showBackButton = false,
+                showSettingsButton = false
             )
         }
     ) { padding ->
@@ -170,5 +171,19 @@ fun QuizInsectTypeSelectionScreen(
                 }
             }
         }
+    }
+
+    // Dialog di conferma uscita
+    if (showExitDialog) {
+        ExitQuizDialog(
+            onDismiss = { showExitDialog = false },
+            onConfirm = {
+                showExitDialog = false
+                actions.resetQuiz()
+                navController.navigate("quizStart/${state.originalQuizType}") {
+                    popUpTo(L4PRoute.Home) { inclusive = false }
+                }
+            }
+        )
     }
 }

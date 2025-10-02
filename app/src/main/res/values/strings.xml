@@ -166,4 +166,5 @@
 
     <!-- Navigazione -->
     <string name="back_to_home">Go Back to Home</string>
+    <string name="quiz_change_photo">Change Photo</string>
 </resources>

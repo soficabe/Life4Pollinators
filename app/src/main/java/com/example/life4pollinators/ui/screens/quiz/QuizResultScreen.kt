@@ -22,9 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import com.example.life4pollinators.R
-import com.example.life4pollinators.data.models.NavBarTab
 import com.example.life4pollinators.ui.composables.AppBar
-import com.example.life4pollinators.ui.composables.BottomNavBar
 import com.example.life4pollinators.ui.navigation.L4PRoute
 import java.util.Locale
 
@@ -48,14 +46,8 @@ fun QuizResultScreen(
         topBar = {
             AppBar(
                 navController = navController,
-                showBackButton = false
-            )
-        },
-        bottomBar = {
-            BottomNavBar(
-                isAuthenticated = isAuthenticated,
-                selectedTab = NavBarTab.Home,
-                navController = navController
+                showBackButton = false,
+                showSettingsButton = false
             )
         }
     ) { padding ->
@@ -145,7 +137,7 @@ fun QuizResultScreen(
                 // Pulsante per rifare il quiz
                 Button(
                     onClick = {
-                        actions.resetQuiz()
+                        actions.resetQuizKeepingPhoto()
                         navController.navigate("quizStart/${state.originalQuizType}") {
                             // Pulisce tutto lo stack del quiz
                             popUpTo(L4PRoute.Home) { inclusive = false }
@@ -158,6 +150,27 @@ fun QuizResultScreen(
                 ) {
                     Text(
                         text = stringResource(R.string.quiz_try_again),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Pulsante per tornare alla home
+                OutlinedButton(
+                    onClick = {
+                        actions.resetQuiz()
+                        navController.navigate(L4PRoute.Home) {
+                            popUpTo(L4PRoute.Home) { inclusive = false }
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.back_to_home),
                         style = MaterialTheme.typography.bodyLarge
                     )
                 }
@@ -217,7 +230,7 @@ fun QuizResultScreen(
 
                 Button(
                     onClick = {
-                        actions.resetQuiz()
+                        actions.resetQuizKeepingPhoto()
                         navController.navigate("quizStart/${state.originalQuizType}") {
                             popUpTo(L4PRoute.Home) { inclusive = false }
                         }
@@ -229,6 +242,27 @@ fun QuizResultScreen(
                 ) {
                     Text(
                         text = stringResource(R.string.quiz_restart),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Pulsante per tornare alla home
+                OutlinedButton(
+                    onClick = {
+                        actions.resetQuiz()
+                        navController.navigate(L4PRoute.Home) {
+                            popUpTo(L4PRoute.Home) { inclusive = false }
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.back_to_home),
                         style = MaterialTheme.typography.bodyLarge
                     )
                 }

@@ -34,7 +34,8 @@ import com.example.life4pollinators.ui.theme.AppBarGreen
 fun AppBar(
     navController: NavHostController,
     personalizedTitle: String? = null,
-    showBackButton: Boolean = true
+    showBackButton: Boolean = true,
+    showSettingsButton: Boolean = true
 ) {
     val backStackEntry by navController.currentBackStackEntryAsState()
 
@@ -85,7 +86,7 @@ fun AppBar(
             }
         },
         actions = {
-            if(title != stringResource(R.string.title_settings)) {
+            if(showSettingsButton && title != stringResource(R.string.title_settings)) {
                 IconButton(onClick = {navController.navigate(L4PRoute.Settings)}) {
                     Icon(Icons.Outlined.Settings, "Settings")
                 }

@@ -167,4 +167,5 @@
 
     <!-- Navigazione -->
     <string name="back_to_home">Torna alla Home</string>
+    <string name="quiz_change_photo">Cambia foto</string>
 </resources>

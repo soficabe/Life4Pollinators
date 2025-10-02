@@ -26,8 +26,8 @@ data class TargetWithDetails(
 )
 
 data class QuizState(
-    val quizType: String = "", // "plant", "bee", "butterfly", "moth", "wasp", etc.
-    val originalQuizType: String = "", // "plant" o "insect" - il tipo iniziale per il reset
+    val quizType: String = "",
+    val originalQuizType: String = "",
     val step: QuizStep = QuizStep.Start,
     val photoUrl: String? = null,
     val currentQuestion: QuizQuestion? = null,
@@ -52,6 +52,7 @@ interface QuizActions {
     fun answerQuestion(answer: QuizAnswer)
     fun selectTarget(target: TargetWithDetails)
     fun resetQuiz()
+    fun resetQuizKeepingPhoto() // NUOVO: reset mantenendo la foto
 }
 
 class QuizViewModel(
@@ -151,7 +152,7 @@ class QuizViewModel(
                             _state.update {
                                 it.copy(
                                     quizType = quizType,
-                                    originalQuizType = "insect", // Mantieni "insect" come tipo originale
+                                    originalQuizType = "insect",
                                     step = QuizStep.Question,
                                     currentQuestion = rootQuestion,
                                     answers = answers,
@@ -278,6 +279,19 @@ class QuizViewModel(
 
         override fun resetQuiz() {
             _state.value = QuizState()
+        }
+
+        // NUOVO: Reset mantenendo foto e tipo quiz originale
+        override fun resetQuizKeepingPhoto() {
+            val currentPhotoUrl = _state.value.photoUrl
+            val currentOriginalQuizType = _state.value.originalQuizType
+
+            _state.value = QuizState(
+                photoUrl = currentPhotoUrl,
+                quizType = currentOriginalQuizType,
+                originalQuizType = currentOriginalQuizType,
+                step = QuizStep.Start
+            )
         }
     }
 

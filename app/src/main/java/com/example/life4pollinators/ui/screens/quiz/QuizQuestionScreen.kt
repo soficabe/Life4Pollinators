@@ -19,9 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import com.example.life4pollinators.R
-import com.example.life4pollinators.data.models.NavBarTab
 import com.example.life4pollinators.ui.composables.AppBar
-import com.example.life4pollinators.ui.composables.BottomNavBar
 import com.example.life4pollinators.ui.composables.ExitQuizDialog
 import com.example.life4pollinators.ui.navigation.L4PRoute
 import java.util.Locale
@@ -30,7 +28,6 @@ import java.util.Locale
 fun QuizQuestionScreen(
     state: QuizState,
     actions: QuizActions,
-    isAuthenticated: Boolean,
     navController: NavHostController
 ) {
     val locale = Locale.getDefault().language
@@ -53,14 +50,8 @@ fun QuizQuestionScreen(
         topBar = {
             AppBar(
                 navController = navController,
-                showBackButton = false
-            )
-        },
-        bottomBar = {
-            BottomNavBar(
-                isAuthenticated = isAuthenticated,
-                selectedTab = NavBarTab.Home,
-                navController = navController
+                showBackButton = false,
+                showSettingsButton = false
             )
         }
     ) { padding ->
