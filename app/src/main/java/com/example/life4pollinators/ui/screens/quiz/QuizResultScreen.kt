@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
@@ -37,8 +38,7 @@ fun QuizResultScreen(
     Scaffold (
         topBar = {
             AppBar(
-                navController = navController,
-                personalizedTitle = "Quiz Result"
+                navController = navController
             )
         },
         bottomBar = {
@@ -54,7 +54,7 @@ fun QuizResultScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .verticalScroll(rememberScrollState())
-                .padding(24.dp),
+                .padding(horizontal = 20.dp, vertical = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             if (state.selectedTarget != null) {
@@ -62,39 +62,41 @@ fun QuizResultScreen(
                 Icon(
                     imageVector = Icons.Outlined.CheckCircle,
                     contentDescription = null,
-                    modifier = Modifier.size(64.dp),
+                    modifier = Modifier.size(56.dp),
                     tint = MaterialTheme.colorScheme.primary
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
                 Text(
                     text = stringResource(R.string.quiz_result_identified),
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onSurface
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    textAlign = TextAlign.Center
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
-                state.selectedTarget.name?.let {
+                // Per insetti: usa name (nome scientifico)
+                // Per piante: usa nameIt/nameEn (nome comune localizzato)
+                val displayName = if (!state.selectedTarget.name.isNullOrEmpty()) {
+                    // Insetto
+                    state.selectedTarget.name
+                } else {
+                    // Pianta
+                    if (locale == "it") state.selectedTarget.nameIt else state.selectedTarget.nameEn
+                }
+
+                displayName?.let {
                     Text(
                         text = it,
-                        style = MaterialTheme.typography.headlineMedium,
-                        color = MaterialTheme.colorScheme.primary
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        textAlign = TextAlign.Center
                     )
                 }
 
-                val name = if (locale == "it") state.selectedTarget.nameIt else state.selectedTarget.nameEn
-
-                name?.let {
-                    Text(
-                        text = it,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
                 // Target's photo
                 state.selectedTarget.imageUrl?.let { imageUrl ->
@@ -107,7 +109,7 @@ fun QuizResultScreen(
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(300.dp)
+                                    .height(260.dp)
                                     .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)),
                                 contentAlignment = Alignment.Center
                             ) {
@@ -120,15 +122,15 @@ fun QuizResultScreen(
                             }
                             Text(
                                 text = stringResource(R.string.quiz_identified_photo),
-                                style = MaterialTheme.typography.labelLarge,
+                                style = MaterialTheme.typography.labelMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(16.dp)
+                                modifier = Modifier.padding(12.dp)
                             )
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(48.dp))
 
                 Button(
                     onClick = {
@@ -137,12 +139,12 @@ fun QuizResultScreen(
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(56.dp),
+                        .height(52.dp),
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(
                         text = stringResource(R.string.quiz_try_again),
-                        style = MaterialTheme.typography.titleMedium
+                        style = MaterialTheme.typography.bodyLarge
                     )
                 }
 
@@ -151,19 +153,20 @@ fun QuizResultScreen(
                 Icon(
                     imageVector = Icons.Outlined.Cancel,
                     contentDescription = null,
-                    modifier = Modifier.size(64.dp),
+                    modifier = Modifier.size(56.dp),
                     tint = MaterialTheme.colorScheme.error
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
                 Text(
                     text = stringResource(R.string.quiz_result_no_classification),
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onSurface
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    textAlign = TextAlign.Center
                 )
 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
                 // Still show user's photo
                 state.photoUrl?.let { photoUrl ->
@@ -176,7 +179,7 @@ fun QuizResultScreen(
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .aspectRatio(1f)
+                                    .height(260.dp)
                                     .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
                             ) {
                                 Image(
@@ -188,15 +191,15 @@ fun QuizResultScreen(
                             }
                             Text(
                                 text = stringResource(R.string.quiz_your_photo),
-                                style = MaterialTheme.typography.labelLarge,
+                                style = MaterialTheme.typography.labelMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(16.dp)
+                                modifier = Modifier.padding(12.dp)
                             )
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
                 Button(
                     onClick = {
@@ -205,15 +208,17 @@ fun QuizResultScreen(
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(56.dp),
+                        .height(52.dp),
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(
                         text = stringResource(R.string.quiz_restart),
-                        style = MaterialTheme.typography.titleMedium
+                        style = MaterialTheme.typography.bodyLarge
                     )
                 }
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }

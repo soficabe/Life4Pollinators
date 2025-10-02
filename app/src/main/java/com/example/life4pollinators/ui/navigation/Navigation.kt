@@ -191,7 +191,7 @@ fun L4PNavGraph(
 
         // Quiz Routes
         composable("quizStart/{type}") { backStackEntry ->
-            val type = backStackEntry.arguments?.getString("type") ?: "plant"
+            val type = backStackEntry.arguments?.getString("type") ?: ""
             LaunchedEffect(type) {
                 quizViewModel.actions.setQuizType(type)
             }

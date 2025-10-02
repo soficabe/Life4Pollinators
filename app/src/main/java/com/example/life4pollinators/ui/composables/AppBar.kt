@@ -53,6 +53,16 @@ fun AppBar(
             stringResource(R.string.title_insect_groups)
         backStackEntry?.destination?.hasRoute<L4PRoute.InsectsGeneralInfo>() == true ->
             stringResource(R.string.title_insects_general_info)
+        backStackEntry?.destination?.hasRoute<L4PRoute.QuizQuestion>() == true ->
+            stringResource(R.string.title_quiz_question)
+        backStackEntry?.destination?.hasRoute<L4PRoute.QuizInsectTypeSelection>() == true ->
+            stringResource(R.string.title_quiz_question)
+        backStackEntry?.destination?.hasRoute<L4PRoute.QuizInsectsList>() == true ->
+            stringResource(R.string.title_quiz_question)
+        backStackEntry?.destination?.hasRoute<L4PRoute.QuizTargetSelection>() == true ->
+            stringResource(R.string.title_quiz_question)
+        backStackEntry?.destination?.hasRoute<L4PRoute.QuizResult>() == true ->
+            stringResource(R.string.title_quiz_result)
         else -> stringResource(R.string.unknown_screen)
     }
 

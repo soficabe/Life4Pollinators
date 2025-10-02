@@ -44,8 +44,7 @@ fun QuizQuestionScreen(
     Scaffold (
         topBar = {
             AppBar(
-                navController = navController,
-                personalizedTitle = "Quiz Question"
+                navController = navController
             )
         },
         bottomBar = {

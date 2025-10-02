@@ -40,8 +40,7 @@ fun QuizInsectsListScreen(
     Scaffold(
         topBar = {
             AppBar(
-                navController = navController,
-                personalizedTitle = stringResource(R.string.quiz_select_insect)
+                navController = navController
             )
         },
         bottomBar = {
