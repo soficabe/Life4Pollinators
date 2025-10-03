@@ -14,6 +14,7 @@
     <string name="title_quiz_start">Identification Quiz</string>
     <string name="title_quiz_question">Quiz Question</string>
     <string name="title_quiz_result">Quiz Result</string>
+    <string name="title_add_sighting">Add Sighting</string>
     <string name="unknown_screen">Unknown Screen</string>
 
     <!-- SignIn -->
@@ -172,4 +173,25 @@
     <string name="quiz_open_with_lens_info">Now choose Lens or another image recognition app. If you don\'t see Lens, open the photo in Gallery and use the Lens icon there!</string>
     <string name="quiz_open_with_lens_chooser">Choose app for recognition</string>
     <string name="quiz_open_with_lens_continue">Continue</string>
+
+
+    <string name="add_sighting_header">Contribute by sending us an image of a pollinator on a plant:</string>
+    <string name="add_sighting_take_photo">Take a photo</string>
+    <string name="add_sighting_choose_picture">Choose a picture</string>
+    <string name="add_sighting_image_selected">Image selected</string>
+    <string name="add_sighting_select_date">Select date</string>
+    <string name="add_sighting_select_time">Select time</string>
+    <string name="add_sighting_location">Location:</string>
+    <string name="add_sighting_current_location">Current location</string>
+    <string name="add_sighting_choose_location">Choose a location</string>
+    <string name="add_sighting_lat_lng">Lat: %1$.4f, Lng: %2$.4f</string>
+    <string name="add_sighting_pollinator_hint">What pollinator do you think it is?</string>
+    <string name="add_sighting_plant_hint">What plant do you think it is?</string>
+    <string name="add_sighting_clear">Clear</string>
+    <string name="add_sighting_submit">Submit Sighting</string>
+    <string name="add_sighting_success">Sighting sent successfully!</string>
+    <string name="add_sighting_error_missing_fields">Fill all required fields</string>
+    <string name="add_sighting_error_select_species">Select a pollinator or a plant</string>
+    <string name="add_sighting_error_image_upload">Image upload failed</string>
+    <string name="add_sighting_error_db">Database error</string>
 </resources>

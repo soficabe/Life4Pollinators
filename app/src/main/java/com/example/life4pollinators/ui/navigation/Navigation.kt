@@ -9,6 +9,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.life4pollinators.ui.AuthViewModel
+import com.example.life4pollinators.ui.screens.addSighting.AddSightingViewModel
 import com.example.life4pollinators.ui.screens.editProfile.EditProfileScreen
 import com.example.life4pollinators.ui.screens.editProfile.EditProfileViewModel
 import com.example.life4pollinators.ui.screens.home.HomeScreen
@@ -39,6 +40,7 @@ import com.example.life4pollinators.ui.screens.quiz.QuizViewModel
 import com.example.life4pollinators.ui.screens.settings.SettingsScreen
 import com.example.life4pollinators.ui.screens.settings.SettingsState
 import com.example.life4pollinators.ui.screens.settings.SettingsViewModel
+import com.example.life4pollinators.ui.screens.addSighting.AddSightingScreen
 import com.example.life4pollinators.ui.screens.signIn.SignInScreen
 import com.example.life4pollinators.ui.screens.signIn.SignInViewModel
 import com.example.life4pollinators.ui.screens.signUp.SignUpScreen
@@ -103,6 +105,9 @@ sealed interface L4PRoute {
 
     @Serializable
     data object EditProfile : L4PRoute
+
+    @Serializable
+    data object AddSighting : L4PRoute
 }
 
 @Composable
@@ -114,6 +119,7 @@ fun L4PNavGraph(
 ){
     val authViewModel = koinViewModel<AuthViewModel>()
     val isAuthenticated by authViewModel.isAuthenticated.collectAsStateWithLifecycle()
+    val userId by authViewModel.userId.collectAsStateWithLifecycle()
 
     // Crea il QuizViewModel qui per condividerlo tra tutte le schermate del quiz
     val quizViewModel = koinViewModel<QuizViewModel>()
@@ -234,6 +240,18 @@ fun L4PNavGraph(
             val editProfileVM = koinViewModel<EditProfileViewModel>()
             val editProfileState by editProfileVM.state.collectAsStateWithLifecycle()
             EditProfileScreen(editProfileState, editProfileVM.actions, navController)
+        }
+
+        composable<L4PRoute.AddSighting> {
+            val addSightingVM = koinViewModel<AddSightingViewModel>()
+            val addSightingState by addSightingVM.state.collectAsStateWithLifecycle()
+            AddSightingScreen(
+                state = addSightingState,
+                actions = addSightingVM.actions,
+                userId = userId ?: "",
+                isAuthenticated = isAuthenticated,
+                navController = navController
+            )
         }
     }
 }

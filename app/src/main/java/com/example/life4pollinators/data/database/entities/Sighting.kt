@@ -21,12 +21,21 @@ data class Sighting(
     @SerialName("target_type")
     val targetType: String,
 
-    @SerialName("is_validated")
-    val isValidated: Boolean,
-
-    @SerialName("validated_by_ai")
-    val validatedByAI: Boolean,
+    @SerialName("is_auto_validated")
+    val isAutoValidated: Boolean = false,
 
     @SerialName("created_at")
-    val createdAt: Instant
+    val createdAt: Instant,
+
+    @SerialName("date")
+    val date: String? = null,
+
+    @SerialName("time")
+    val time: String? = null,
+
+    @SerialName("latitude")
+    val latitude: Double? = null,
+
+    @SerialName("longitude")
+    val longitude: Double? = null
 )

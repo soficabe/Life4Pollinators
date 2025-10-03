@@ -109,4 +109,7 @@ dependencies {
 
     //dipendenza per coil (per usare AsyncImage)
     implementation(libs.coil.compose)
+
+    //dipendenza material3
+    implementation(libs.material3)
 }

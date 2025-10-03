@@ -43,8 +43,27 @@ class ImageRepository(private val storage: Storage) {
             fileName = "${userId}/profile_image.jpg"
         )
 
+    /**
+     * Funzione per l'upload dell'immagine di un avvistamento.
+     * Salva l'immagine nel bucket pubblico "sightings" nella sottocartella dello userId.
+     * Il nome file contiene sempre il timestamp per evitare sovrascritture.
+     */
+    suspend fun uploadSightingImage(
+        userId: String,
+        uri: Uri,
+        context: Context
+    ): String? {
+        val timestamp = System.currentTimeMillis()
+        val fileName = "$userId/$timestamp.jpg"
+        return uploadImage(
+            uri,
+            context,
+            bucket = "sightings",
+            fileName = fileName
+        )
+    }
+
     // In futuro:
     // suspend fun uploadInsectPhoto(...) = uploadImage(..., bucket = "insect-photos", fileName = ...)
     // suspend fun uploadPlantPhoto(...) = uploadImage(..., bucket = "plant-photos", fileName = ...)
-    // suspend fun uploadSightingPhoto(...) = uploadImage(..., bucket = "sighting-photos", fileName = ...)
 }

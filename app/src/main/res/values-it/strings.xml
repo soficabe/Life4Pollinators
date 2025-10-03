@@ -15,6 +15,7 @@
     <string name="title_quiz_start">Quiz di Identificazione</string>
     <string name="title_quiz_question">Domanda Quiz</string>
     <string name="title_quiz_result">Risultato del Quiz</string>
+    <string name="title_add_sighting">Aggiungi Avvistamento</string>
     <string name="unknown_screen">Schermata Sconosciuta</string>
 
     <!-- SignIn -->
@@ -173,4 +174,26 @@
     <string name="quiz_open_with_lens_info">Ora scegli tra le app "Lens" oppure un\'altra app di riconoscimento immagini. Se non vedi Lens, apri la foto con Galleria e usa l\'icona Lens da lì!</string>
     <string name="quiz_open_with_lens_chooser">Scegli app per riconoscimento</string>
     <string name="quiz_open_with_lens_continue">Continua</string>
+
+
+
+    <string name="add_sighting_header">Contribuisci inviando una foto di un impollinatore su una pianta:</string>
+    <string name="add_sighting_take_photo">Scatta una foto</string>
+    <string name="add_sighting_choose_picture">Scegli una foto</string>
+    <string name="add_sighting_image_selected">Immagine selezionata</string>
+    <string name="add_sighting_select_date">Seleziona la data</string>
+    <string name="add_sighting_select_time">Seleziona l\'orario</string>
+    <string name="add_sighting_location">Posizione:</string>
+    <string name="add_sighting_current_location">Posizione attuale</string>
+    <string name="add_sighting_choose_location">Scegli una posizione</string>
+    <string name="add_sighting_lat_lng">Lat: %1$.4f, Lng: %2$.4f</string>
+    <string name="add_sighting_pollinator_hint">Che impollinatore pensi sia?</string>
+    <string name="add_sighting_plant_hint">Che pianta pensi sia?</string>
+    <string name="add_sighting_clear">Cancella</string>
+    <string name="add_sighting_submit">Invia avvistamento</string>
+    <string name="add_sighting_success">Avvistamento inviato con successo!</string>
+    <string name="add_sighting_error_missing_fields">Compila tutti i campi obbligatori</string>
+    <string name="add_sighting_error_select_species">Seleziona un impollinatore o una pianta</string>
+    <string name="add_sighting_error_image_upload">Caricamento immagine fallito</string>
+    <string name="add_sighting_error_db">Errore database</string>
 </resources>
