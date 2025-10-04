@@ -41,6 +41,8 @@ import com.example.life4pollinators.ui.screens.settings.SettingsScreen
 import com.example.life4pollinators.ui.screens.settings.SettingsState
 import com.example.life4pollinators.ui.screens.settings.SettingsViewModel
 import com.example.life4pollinators.ui.screens.addSighting.AddSightingScreen
+import com.example.life4pollinators.ui.screens.sightings.SightingsScreen
+import com.example.life4pollinators.ui.screens.sightings.SightingsViewModel
 import com.example.life4pollinators.ui.screens.signIn.SignInScreen
 import com.example.life4pollinators.ui.screens.signIn.SignInViewModel
 import com.example.life4pollinators.ui.screens.signUp.SignUpScreen
@@ -108,6 +110,9 @@ sealed interface L4PRoute {
 
     @Serializable
     data object AddSighting : L4PRoute
+
+    @Serializable
+    data object Sightings : L4PRoute
 }
 
 @Composable
@@ -249,6 +254,17 @@ fun L4PNavGraph(
                 state = addSightingState,
                 actions = addSightingVM.actions,
                 userId = userId ?: "",
+                isAuthenticated = isAuthenticated,
+                navController = navController
+            )
+        }
+
+        composable<L4PRoute.Sightings> {
+            val sightingsVM = koinViewModel<SightingsViewModel>()
+            val sightingsState by sightingsVM.state.collectAsStateWithLifecycle()
+            SightingsScreen(
+                state = sightingsState,
+                actions = sightingsVM.actions,
                 isAuthenticated = isAuthenticated,
                 navController = navController
             )

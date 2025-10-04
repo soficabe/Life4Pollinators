@@ -1,8 +1,10 @@
 package com.example.life4pollinators.data.repositories
 
 import android.util.Log
+import com.example.life4pollinators.data.database.entities.Sighting
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
+import io.github.jan.supabase.postgrest.query.Columns
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
 import kotlinx.serialization.json.buildJsonObject
@@ -42,6 +44,46 @@ class SightingsRepository(
             Log.e("SightingsRepository", "Errore durante l'inserimento del sighting", e)
             Log.e("SightingsRepository", "Messaggio errore: ${e.message}")
             false
+        }
+    }
+
+    /**
+     * Recupera tutti i sightings dell'utente
+     */
+    suspend fun getUserSightings(userId: String): List<Sighting> {
+        return try {
+            supabase.from("sighting")
+                .select(columns = Columns.ALL) {
+                    filter {
+                        eq("user_id", userId)
+                    }
+                }
+                .decodeList<Sighting>()
+        } catch (e: Exception) {
+            Log.e("SightingsRepository", "Errore nel recupero sightings utente", e)
+            emptyList()
+        }
+    }
+
+    /**
+     * Ottiene i target_id univoci avvistati dall'utente per tipo
+     * (per sapere quali specie ha già avvistato)
+     */
+    suspend fun getUserSightedSpecies(userId: String, targetType: String): Set<String> {
+        return try {
+            val sightings = supabase.from("sighting")
+                .select(columns = Columns.list("target_id")) {
+                    filter {
+                        eq("user_id", userId)
+                        eq("target_type", targetType)
+                    }
+                }
+                .decodeList<Sighting>()
+
+            sightings.map { it.targetId }.toSet()
+        } catch (e: Exception) {
+            Log.e("SightingsRepository", "Errore nel recupero specie avvistate", e)
+            emptySet()
         }
     }
 }

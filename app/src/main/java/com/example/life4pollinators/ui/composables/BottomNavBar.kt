@@ -44,7 +44,7 @@ fun BottomNavBar(
             selected = false,
             onClick = {
                 if(isAuthenticated)
-                    navController.navigate(L4PRoute.Home) // TODO: cambiare con schermata avvistamenti
+                    navController.navigate(L4PRoute.Sightings)
                 else
                     navController.navigate(L4PRoute.SignIn)
             }

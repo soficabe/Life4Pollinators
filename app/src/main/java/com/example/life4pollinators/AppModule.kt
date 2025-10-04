@@ -23,6 +23,7 @@ import com.example.life4pollinators.ui.screens.plants.PlantsListViewModel
 import com.example.life4pollinators.ui.screens.profile.ProfileViewModel
 import com.example.life4pollinators.ui.screens.quiz.QuizViewModel
 import com.example.life4pollinators.ui.screens.settings.SettingsViewModel
+import com.example.life4pollinators.ui.screens.sightings.SightingsViewModel
 import com.example.life4pollinators.ui.screens.signIn.SignInViewModel
 import com.example.life4pollinators.ui.screens.signUp.SignUpViewModel
 import io.github.jan.supabase.SupabaseClient
@@ -103,4 +104,5 @@ val appModule = module {
     viewModel { InsectDetailViewModel(get(), get()) }
     viewModel { QuizViewModel(get(), get()) }
     viewModel { AddSightingViewModel(get(), get(), get(), get()) }
+    viewModel { SightingsViewModel(get(), get(), get(), get()) }
 }
