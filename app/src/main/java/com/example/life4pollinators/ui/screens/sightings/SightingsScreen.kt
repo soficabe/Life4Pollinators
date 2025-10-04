@@ -2,11 +2,15 @@ package com.example.life4pollinators.ui.screens.sightings
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -23,6 +27,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.life4pollinators.data.models.NavBarTab
 import com.example.life4pollinators.ui.composables.AppBar
 import com.example.life4pollinators.ui.composables.BottomNavBar
+import com.example.life4pollinators.ui.navigation.L4PRoute
 
 @Composable
 fun SightingsScreen(
@@ -38,6 +43,11 @@ fun SightingsScreen(
                 personalizedTitle = "Sightings"
             )
         },
+        floatingActionButton = {
+            FloatingActionButton(onClick = { navController.navigate(L4PRoute.AddSighting) }) {
+                Icon(Icons.Outlined.Add, contentDescription = "Add Sighting")
+            }
+        },
         bottomBar = {
             BottomNavBar(
                 isAuthenticated = isAuthenticated,
@@ -51,11 +61,11 @@ fun SightingsScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            // Filter tabs
+            // Filter tabs - ora con scroll orizzontale
             FilterChips(
                 selectedFilter = state.selectedFilter,
                 onFilterSelected = { actions.selectFilter(it) },
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                modifier = Modifier.padding(vertical = 8.dp)
             )
 
             // Loading indicator
@@ -92,39 +102,17 @@ fun FilterChips(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
+            .horizontalScroll(rememberScrollState())
+            .padding(horizontal = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        FilterChip(
-            selected = selectedFilter == SpeciesFilter.PLANTS,
-            onClick = { onFilterSelected(SpeciesFilter.PLANTS) },
-            label = { Text("Plants") }
-        )
-        FilterChip(
-            selected = selectedFilter == SpeciesFilter.BEES,
-            onClick = { onFilterSelected(SpeciesFilter.BEES) },
-            label = { Text("Bees") }
-        )
-        FilterChip(
-            selected = selectedFilter == SpeciesFilter.BUTTERFLIES,
-            onClick = { onFilterSelected(SpeciesFilter.BUTTERFLIES) },
-            label = { Text("Butterflies") }
-        )
-        FilterChip(
-            selected = selectedFilter == SpeciesFilter.MOTHS,
-            onClick = { onFilterSelected(SpeciesFilter.MOTHS) },
-            label = { Text("Moths") }
-        )
-        FilterChip(
-            selected = selectedFilter == SpeciesFilter.BEEFLIES,
-            onClick = { onFilterSelected(SpeciesFilter.BEEFLIES) },
-            label = { Text("Beeflies") }
-        )
-        FilterChip(
-            selected = selectedFilter == SpeciesFilter.HOVERFLIES,
-            onClick = { onFilterSelected(SpeciesFilter.HOVERFLIES) },
-            label = { Text("Hoverflies") }
-        )
+        SpeciesFilter.entries.forEach { filter ->
+            FilterChip(
+                selected = selectedFilter == filter,
+                onClick = { onFilterSelected(filter) },
+                label = { Text(filter.displayName) }
+            )
+        }
     }
 }
 
@@ -154,6 +142,7 @@ fun SpeciesCircleItem(
                     modifier = Modifier
                         .fillMaxSize()
                         .then(
+                            // Applica blur SOLO se NON è avvistata
                             if (!species.isSighted) Modifier.blur(10.dp)
                             else Modifier
                         ),

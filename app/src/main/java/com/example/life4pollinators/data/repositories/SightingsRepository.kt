@@ -7,12 +7,21 @@ import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Columns
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
 class SightingsRepository(
     private val supabase: SupabaseClient
 ) {
+    // Data class per ricevere solo il target_id dalla query
+    @Serializable
+    private data class TargetIdOnly(
+        @SerialName("target_id")  // ← Questo mappava snake_case a camelCase
+        val targetId: String       // ← Nome Kotlin in camelCase
+    )
+
     suspend fun addSighting(
         userId: String,
         imageUrl: String,
@@ -71,18 +80,22 @@ class SightingsRepository(
      */
     suspend fun getUserSightedSpecies(userId: String, targetType: String): Set<String> {
         return try {
-            val sightings = supabase.from("sighting")
+            // Seleziona solo target_id e decodifica con una data class dedicata
+            val results = supabase.from("sighting")
                 .select(columns = Columns.list("target_id")) {
                     filter {
                         eq("user_id", userId)
                         eq("target_type", targetType)
                     }
                 }
-                .decodeList<Sighting>()
+                .decodeList<TargetIdOnly>()
 
-            sightings.map { it.targetId }.toSet()
+            Log.d("SightingsRepository", "Sighted $targetType per user $userId: ${results.map { it.targetId }}")
+
+            results.map { it.targetId }.toSet()
         } catch (e: Exception) {
             Log.e("SightingsRepository", "Errore nel recupero specie avvistate", e)
+            Log.e("SightingsRepository", "Tipo: $targetType, UserId: $userId", e)
             emptySet()
         }
     }

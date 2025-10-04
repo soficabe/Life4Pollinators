@@ -3,6 +3,7 @@ package com.example.life4pollinators.ui.screens.sightings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.life4pollinators.data.database.entities.Insect
+import com.example.life4pollinators.data.database.entities.InsectGroup
 import com.example.life4pollinators.data.database.entities.Plant
 import com.example.life4pollinators.data.repositories.AuthRepository
 import com.example.life4pollinators.data.repositories.InsectsRepository
@@ -24,8 +25,15 @@ enum class SpeciesType {
     PLANT, INSECT
 }
 
-enum class SpeciesFilter {
-    PLANTS, BEES, BUTTERFLIES, MOTHS, BEEFLIES, HOVERFLIES
+enum class SpeciesFilter(val displayName: String) {
+    PLANTS("Plants"),
+    BEES("Bees"),
+    BUTTERFLIES("Butterflies"),
+    MOTHS("Moths"),
+    BEEFLIES("Beeflies"),
+    HOVERFLIES("Hoverflies"),
+    BEETLES("Beetles"),
+    WASPS("Wasps")
 }
 
 data class SightingsState(
@@ -34,6 +42,7 @@ data class SightingsState(
     val selectedFilter: SpeciesFilter = SpeciesFilter.PLANTS,
     val allPlants: List<Plant> = emptyList(),
     val allInsects: List<Insect> = emptyList(),
+    val insectGroups: List<InsectGroup> = emptyList(),
     val sightedPlantIds: Set<String> = emptySet(),
     val sightedInsectIds: Set<String> = emptySet(),
     val filteredSpecies: List<SpeciesItem> = emptyList(),
@@ -55,14 +64,9 @@ class SightingsViewModel(
     private val _state = MutableStateFlow(SightingsState())
     val state: StateFlow<SightingsState> = _state.asStateFlow()
 
-    // UUID dei gruppi di insetti dal database
-    companion object {
-        private const val BEES_GROUP_ID = "fc4fc047-c445-4d4b-8e1a-55e4358294ab"
-        private const val BUTTERFLIES_GROUP_ID = "2ea44d50-041c-4e47-8ba2-d35d8e042df7"
-        private const val MOTHS_GROUP_ID = "f890dd36-97b4-4a8c-81e9-12c26c2692aa"
-        private const val BEEFLIES_GROUP_ID = "3fdf4b2c-aa6c-4d47-a1c5-2d91fefc0134"
-        private const val HOVERFLIES_GROUP_ID = "6f698630-239c-42fd-8e44-f69789111356"
-    }
+    // Mappa per trovare l'ID del gruppo dato il nome in inglese
+    private val groupNameToIdMap: Map<String, String>
+        get() = _state.value.insectGroups.associate { it.nameEn to it.id }
 
     val actions = object : SightingsActions {
         override fun selectFilter(filter: SpeciesFilter) {
@@ -125,6 +129,7 @@ class SightingsViewModel(
                 it.copy(
                     allPlants = plants,
                     allInsects = insects,
+                    insectGroups = insectGroups,
                     isLoading = false
                 )
             }
@@ -135,8 +140,13 @@ class SightingsViewModel(
 
     private fun loadUserSightings(userId: String) {
         viewModelScope.launch {
+            android.util.Log.d("SightingsVM", "Loading sightings for user: $userId")
+
             val sightedPlants = sightingsRepository.getUserSightedSpecies(userId, "plant")
             val sightedInsects = sightingsRepository.getUserSightedSpecies(userId, "insect")
+
+            android.util.Log.d("SightingsVM", "Sighted plants: $sightedPlants")
+            android.util.Log.d("SightingsVM", "Sighted insects: $sightedInsects")
 
             _state.update {
                 it.copy(
@@ -144,6 +154,9 @@ class SightingsViewModel(
                     sightedInsectIds = sightedInsects
                 )
             }
+
+            android.util.Log.d("SightingsVM", "State updated. Plant IDs: ${_state.value.sightedPlantIds}")
+            android.util.Log.d("SightingsVM", "State updated. Insect IDs: ${_state.value.sightedInsectIds}")
 
             updateFilteredSpecies()
         }
@@ -165,72 +178,44 @@ class SightingsViewModel(
                 }
             }
             SpeciesFilter.BEES -> {
-                currentState.allInsects
-                    .filter { it.group == BEES_GROUP_ID }
-                    .map { insect ->
-                        SpeciesItem(
-                            id = insect.id,
-                            name = insect.name,
-                            imageUrl = insect.insectImage,
-                            isSighted = currentState.sightedInsectIds.contains(insect.id),
-                            type = SpeciesType.INSECT
-                        )
-                    }
+                filterInsectsByGroupName("Bees", currentState)
             }
             SpeciesFilter.BUTTERFLIES -> {
-                currentState.allInsects
-                    .filter { it.group == BUTTERFLIES_GROUP_ID }
-                    .map { insect ->
-                        SpeciesItem(
-                            id = insect.id,
-                            name = insect.name,
-                            imageUrl = insect.insectImage,
-                            isSighted = currentState.sightedInsectIds.contains(insect.id),
-                            type = SpeciesType.INSECT
-                        )
-                    }
+                filterInsectsByGroupName("Butterflies", currentState)
             }
             SpeciesFilter.MOTHS -> {
-                currentState.allInsects
-                    .filter { it.group == MOTHS_GROUP_ID }
-                    .map { insect ->
-                        SpeciesItem(
-                            id = insect.id,
-                            name = insect.name,
-                            imageUrl = insect.insectImage,
-                            isSighted = currentState.sightedInsectIds.contains(insect.id),
-                            type = SpeciesType.INSECT
-                        )
-                    }
+                filterInsectsByGroupName("Moths", currentState)
             }
             SpeciesFilter.BEEFLIES -> {
-                currentState.allInsects
-                    .filter { it.group == BEEFLIES_GROUP_ID }
-                    .map { insect ->
-                        SpeciesItem(
-                            id = insect.id,
-                            name = insect.name,
-                            imageUrl = insect.insectImage,
-                            isSighted = currentState.sightedInsectIds.contains(insect.id),
-                            type = SpeciesType.INSECT
-                        )
-                    }
+                filterInsectsByGroupName("Beeflies", currentState)
             }
             SpeciesFilter.HOVERFLIES -> {
-                currentState.allInsects
-                    .filter { it.group == HOVERFLIES_GROUP_ID }
-                    .map { insect ->
-                        SpeciesItem(
-                            id = insect.id,
-                            name = insect.name,
-                            imageUrl = insect.insectImage,
-                            isSighted = currentState.sightedInsectIds.contains(insect.id),
-                            type = SpeciesType.INSECT
-                        )
-                    }
+                filterInsectsByGroupName("Hoverflies", currentState)
+            }
+            SpeciesFilter.BEETLES -> {
+                filterInsectsByGroupName("Beetles", currentState)
+            }
+            SpeciesFilter.WASPS -> {
+                filterInsectsByGroupName("Wasps", currentState)
             }
         }
 
         _state.update { it.copy(filteredSpecies = species) }
+    }
+
+    private fun filterInsectsByGroupName(groupName: String, state: SightingsState): List<SpeciesItem> {
+        val groupId = groupNameToIdMap[groupName] ?: return emptyList()
+
+        return state.allInsects
+            .filter { it.group == groupId }
+            .map { insect ->
+                SpeciesItem(
+                    id = insect.id,
+                    name = insect.name,
+                    imageUrl = insect.insectImage,
+                    isSighted = state.sightedInsectIds.contains(insect.id),
+                    type = SpeciesType.INSECT
+                )
+            }
     }
 }
