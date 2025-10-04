@@ -232,7 +232,7 @@ fun L4PNavGraph(
 
         composable<L4PRoute.QuizResult> {
             val quizState by quizViewModel.state.collectAsStateWithLifecycle()
-            QuizResultScreen(quizState, quizViewModel.actions, isAuthenticated, navController)
+            QuizResultScreen(quizState, quizViewModel.actions, isAuthenticated, userId ?: "", navController)
         }
 
         composable<L4PRoute.Profile> {

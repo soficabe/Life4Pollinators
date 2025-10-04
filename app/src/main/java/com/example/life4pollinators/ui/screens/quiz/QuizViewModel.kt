@@ -1,12 +1,20 @@
 package com.example.life4pollinators.ui.screens.quiz
 
+import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.life4pollinators.data.database.entities.*
 import com.example.life4pollinators.data.repositories.QuizRepository
 import com.example.life4pollinators.data.repositories.InsectsRepository
+import com.example.life4pollinators.data.repositories.SightingsRepository
+import com.example.life4pollinators.data.repositories.ImageRepository
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import org.koin.core.component.KoinComponent
 
 sealed class QuizStep {
     data object Start : QuizStep()
@@ -40,7 +48,10 @@ data class QuizState(
     val selectedGroupId: String? = null,
     val insectsForSelection: List<Insect> = emptyList(),
     val loading: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val isUploading: Boolean = false,
+    val uploadSuccess: Boolean? = null,
+    val uploadError: String? = null
 )
 
 interface QuizActions {
@@ -52,13 +63,17 @@ interface QuizActions {
     fun answerQuestion(answer: QuizAnswer)
     fun selectTarget(target: TargetWithDetails)
     fun resetQuiz()
-    fun resetQuizKeepingPhoto() // NUOVO: reset mantenendo la foto
+    fun resetQuizKeepingPhoto()
+    fun submitQuizSighting(context: Context, userId: String)
 }
 
 class QuizViewModel(
     private val quizRepository: QuizRepository,
-    private val insectsRepository: InsectsRepository
-) : ViewModel() {
+    private val insectsRepository: InsectsRepository,
+    private val sightingsRepository: SightingsRepository,
+    private val imageRepository: ImageRepository
+) : ViewModel(), KoinComponent {
+
     private val _state = MutableStateFlow(QuizState())
     val state = _state.asStateFlow()
 
@@ -69,22 +84,15 @@ class QuizViewModel(
 
         override fun startQuiz(photoUrl: String?) {
             val type = _state.value.quizType
-
-            // Se è insect generico, carica i gruppi per la selezione
             if (type == "insect") {
                 loadInsectGroups(photoUrl)
                 return
             }
-
-            // Altrimenti avvia il quiz normale per plant o per tipo specifico
             viewModelScope.launch {
                 _state.update { it.copy(step = QuizStep.Start, photoUrl = photoUrl, loading = true) }
                 val quiz = quizRepository.getQuiz(type)
-                println("QUIZ: $quiz")
                 val rootId = quiz?.rootQuestionId
-                println("Root Question Id: $rootId")
                 val rootQuestion = rootId?.let { quizRepository.getRootQuestion(it) }
-                println("Root Question loaded: $rootQuestion")
                 if (rootQuestion != null) {
                     val answers = quizRepository.getAnswers(rootQuestion.id)
                     _state.update {
@@ -127,26 +135,18 @@ class QuizViewModel(
         override fun selectInsectType(groupName: String, groupId: String) {
             viewModelScope.launch {
                 _state.update { it.copy(loading = true, selectedInsectType = groupName, selectedGroupId = groupId) }
-
-                // Mappa dei gruppi che hanno un quiz (nome gruppo -> tipo quiz)
                 val groupToQuizType = mapOf(
                     "Bees" to "bee",
                     "Butterflies" to "butterfly",
                     "Moths" to "moth",
                     "Wasps" to "wasp"
                 )
-
                 val quizType = groupToQuizType[groupName]
-
                 if (quizType != null) {
-                    // Avvia il quiz per questo tipo
                     val quiz = quizRepository.getQuiz(quizType)
-                    println("QUIZ for $groupName (type: $quizType): $quiz")
-
                     if (quiz != null) {
                         val rootId = quiz.rootQuestionId
                         val rootQuestion = quizRepository.getRootQuestion(rootId)
-
                         if (rootQuestion != null) {
                             val answers = quizRepository.getAnswers(rootQuestion.id)
                             _state.update {
@@ -166,7 +166,6 @@ class QuizViewModel(
                         _state.update { it.copy(error = "Quiz not found", loading = false) }
                     }
                 } else {
-                    // Carica la lista degli insetti per questo gruppo
                     try {
                         val insects = insectsRepository.getInsectsByGroup(groupId)
                         _state.update {
@@ -189,7 +188,6 @@ class QuizViewModel(
         }
 
         override fun selectInsectFromList(insect: Insect) {
-            // Crea un TargetWithDetails dall'insetto selezionato
             val targetWithDetails = TargetWithDetails(
                 target = QuizAnswerTarget(
                     answerId = "",
@@ -210,11 +208,8 @@ class QuizViewModel(
 
         override fun answerQuestion(answer: QuizAnswer) {
             viewModelScope.launch {
-                println("Answer selected: $answer")
-                println("Answer.nextQuestion: ${answer.nextQuestion}")
                 _state.update { it.copy(loading = true, selectedAnswer = answer) }
                 val nextQuestion = quizRepository.getNextQuestion(answer)
-                println("Next question loaded: $nextQuestion")
                 if (nextQuestion != null) {
                     val answers = quizRepository.getAnswers(nextQuestion.id)
                     _state.update {
@@ -227,14 +222,7 @@ class QuizViewModel(
                     }
                 } else {
                     val targets = quizRepository.getTargets(answer.id)
-                    println("DEBUG: Answer ID: ${answer.id}")
-                    println("DEBUG: Targets found: ${targets.size}")
-                    targets.forEach { target ->
-                        println("DEBUG: Target - ID: ${target.targetId}, Type: ${target.targetType}")
-                    }
                     val targetsWithDetails = loadTargetDetails(targets)
-                    println("DEBUG: Targets with details: ${targetsWithDetails.size}")
-
                     if (targetsWithDetails.size == 1) {
                         _state.update {
                             it.copy(
@@ -281,11 +269,9 @@ class QuizViewModel(
             _state.value = QuizState()
         }
 
-        // NUOVO: Reset mantenendo foto e tipo quiz originale
         override fun resetQuizKeepingPhoto() {
             val currentPhotoUrl = _state.value.photoUrl
             val currentOriginalQuizType = _state.value.originalQuizType
-
             _state.value = QuizState(
                 photoUrl = currentPhotoUrl,
                 quizType = currentOriginalQuizType,
@@ -293,7 +279,46 @@ class QuizViewModel(
                 step = QuizStep.Start
             )
         }
+
+        override fun submitQuizSighting(context: Context, userId: String) {
+            val s = _state.value
+            if (s.selectedTarget == null || s.photoUrl.isNullOrBlank()) {
+                _state.update { it.copy(uploadSuccess = false, uploadError = "Dati mancanti") }
+                return
+            }
+            viewModelScope.launch {
+                _state.update { it.copy(isUploading = true, uploadSuccess = null, uploadError = null) }
+                val uri = Uri.parse(s.photoUrl)
+                val isRemote = s.photoUrl.startsWith("http")
+                val imageUrl: String? = if (isRemote) s.photoUrl
+                else imageRepository.uploadSightingImage(userId, uri, context)
+                if (imageUrl == null) {
+                    _state.update { it.copy(isUploading = false, uploadSuccess = false, uploadError = "Errore upload immagine") }
+                    return@launch
+                }
+                val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+                val success = sightingsRepository.addSighting(
+                    userId = userId,
+                    imageUrl = imageUrl,
+                    targetId = s.selectedTarget.target.targetId,
+                    targetType = s.selectedTarget.target.targetType,
+                    date = now.date,
+                    time = now.time,
+                    latitude = 0.0,
+                    longitude = 0.0
+                )
+                _state.update {
+                    it.copy(
+                        isUploading = false,
+                        uploadSuccess = success,
+                        uploadError = if (!success) "Errore inserimento su database" else null
+                    )
+                }
+            }
+        }
+
     }
+
 
     private suspend fun loadTargetDetails(targets: List<QuizAnswerTarget>): List<TargetWithDetails> {
         return targets.mapNotNull { target ->

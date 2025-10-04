@@ -33,6 +33,7 @@ fun QuizResultScreen(
     state: QuizState,
     actions: QuizActions,
     isAuthenticated: Boolean,
+    userId: String,
     navController: NavHostController
 ) {
     val locale = Locale.getDefault().language
@@ -64,7 +65,6 @@ fun QuizResultScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             if (state.selectedTarget != null) {
-                // Success icon
                 Icon(
                     imageVector = Icons.Outlined.CheckCircle,
                     contentDescription = null,
@@ -83,13 +83,9 @@ fun QuizResultScreen(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Per insetti: usa name (nome scientifico)
-                // Per piante: usa nameIt/nameEn (nome comune localizzato)
                 val displayName = if (!state.selectedTarget.name.isNullOrEmpty()) {
-                    // Insetto
                     state.selectedTarget.name
                 } else {
-                    // Pianta
                     if (locale == "it") state.selectedTarget.nameIt else state.selectedTarget.nameEn
                 }
 
@@ -104,7 +100,6 @@ fun QuizResultScreen(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // Target's photo
                 state.selectedTarget.imageUrl?.let { imageUrl ->
                     Card(
                         modifier = Modifier.fillMaxWidth(),
@@ -138,7 +133,6 @@ fun QuizResultScreen(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Bottone con dialog info
                 if (state.photoUrl != null) {
                     Button(
                         onClick = { showLensDialog = true },
@@ -155,12 +149,10 @@ fun QuizResultScreen(
                     Spacer(modifier = Modifier.height(24.dp))
                 }
 
-                // Pulsante per rifare il quiz
                 Button(
                     onClick = {
                         actions.resetQuizKeepingPhoto()
                         navController.navigate("quizStart/${state.originalQuizType}") {
-                            // Pulisce tutto lo stack del quiz
                             popUpTo(L4PRoute.Home) { inclusive = false }
                         }
                     },
@@ -177,7 +169,32 @@ fun QuizResultScreen(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Pulsante per tornare alla home
+                // --- Bottone carica come avvistamento dal quiz ---
+                if (isAuthenticated && state.photoUrl != null) {
+                    Button(
+                        onClick = {
+                            actions.submitQuizSighting(context, userId)
+                        },
+                        enabled = !state.isUploading,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp)
+                    ) {
+                        Text("Carica come avvistamento")
+                    }
+
+                    if (state.isUploading) {
+                        LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                    }
+                    if (state.uploadSuccess == true) {
+                        Text("Avvistamento caricato!", color = MaterialTheme.colorScheme.primary)
+                    }
+                    if (state.uploadSuccess == false) {
+                        Text(state.uploadError ?: "Errore nel caricamento", color = MaterialTheme.colorScheme.error)
+                    }
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
+
                 OutlinedButton(
                     onClick = {
                         actions.resetQuiz()
@@ -197,7 +214,6 @@ fun QuizResultScreen(
                 }
 
             } else {
-                // No classification found
                 Icon(
                     imageVector = Icons.Outlined.Cancel,
                     contentDescription = null,
@@ -216,7 +232,6 @@ fun QuizResultScreen(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // Still show user's photo
                 state.photoUrl?.let { photoUrl ->
                     Card(
                         modifier = Modifier.fillMaxWidth(),
@@ -269,7 +284,6 @@ fun QuizResultScreen(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Pulsante per tornare alla home
                 OutlinedButton(
                     onClick = {
                         actions.resetQuiz()
@@ -293,7 +307,6 @@ fun QuizResultScreen(
         }
     }
 
-    // Dialog informativa Lens
     if (showLensDialog && state.photoUrl != null) {
         AlertDialog(
             onDismissRequest = { showLensDialog = false },
