@@ -112,4 +112,11 @@ dependencies {
 
     //dipendenza material3
     implementation(libs.material3)
+
+    //dipendenze per OSM (OpenStreetMap)
+    implementation(libs.osmdroid.android)
+
+    //dipendenze per Google Play Services Location
+    implementation(libs.play.services.location)
+    implementation(libs.kotlinx.coroutines.play.services)
 }

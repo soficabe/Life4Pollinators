@@ -1,5 +1,6 @@
 package com.example.life4pollinators.ui.screens.addSighting
 
+import android.Manifest
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -30,8 +31,13 @@ import com.example.life4pollinators.R
 import com.example.life4pollinators.data.models.NavBarTab
 import com.example.life4pollinators.ui.composables.AppBar
 import com.example.life4pollinators.ui.composables.BottomNavBar
+import com.example.life4pollinators.ui.composables.LocationMapDialog
+import com.example.life4pollinators.utils.LocationService
+import com.example.life4pollinators.utils.PermissionStatus
 import com.example.life4pollinators.utils.rememberCameraLauncher
 import com.example.life4pollinators.utils.rememberGalleryLauncher
+import com.example.life4pollinators.utils.rememberMultiplePermissions
+import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
@@ -48,8 +54,11 @@ fun AddSightingScreen(
     navController: NavHostController
 ) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val locationService = remember { LocationService(context) }
 
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var showMapDialog by remember { mutableStateOf(false) }
 
     val cameraLauncher = rememberCameraLauncher(
         onPhotoReady = { uri ->
@@ -69,9 +78,37 @@ fun AddSightingScreen(
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
 
-    // Per gestire il dropdown dei suggerimenti
     var showPollinatorDropdown by remember { mutableStateOf(false) }
     var showPlantDropdown by remember { mutableStateOf(false) }
+
+    var showLocationDisabledWarning by remember { mutableStateOf(false) }
+    var showPermissionDeniedWarning by remember { mutableStateOf(false) }
+    var showPermissionPermanentlyDeniedWarning by remember { mutableStateOf(false) }
+
+    val locationPermission = rememberMultiplePermissions(
+        listOf(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION)
+    ) { statuses ->
+        when {
+            statuses.any { it.value.isGranted } -> {
+                scope.launch {
+                    try {
+                        val coords = locationService.getCurrentLocation()
+                        coords?.let {
+                            actions.setLocation(it.latitude, it.longitude)
+                        }
+                    } catch (ex: SecurityException) {
+                        // Handled
+                    } catch (ex: IllegalStateException) {
+                        showLocationDisabledWarning = true
+                    }
+                }
+            }
+            statuses.all { it.value == PermissionStatus.PermanentlyDenied } ->
+                showPermissionPermanentlyDeniedWarning = true
+            else ->
+                showPermissionDeniedWarning = true
+        }
+    }
 
     Scaffold(
         topBar = { AppBar(navController) },
@@ -94,7 +131,6 @@ fun AddSightingScreen(
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = 16.dp, vertical = 16.dp)
             ) {
-                // Header
                 Text(
                     text = stringResource(R.string.add_sighting_header),
                     style = MaterialTheme.typography.headlineMedium,
@@ -146,7 +182,6 @@ fun AddSightingScreen(
                     }
                 }
 
-                // Preview immagine
                 if (state.imageUri != null) {
                     Spacer(Modifier.height(16.dp))
                     Box(
@@ -218,30 +253,28 @@ fun AddSightingScreen(
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
 
-                // Map placeholder (puoi implementare Google Maps qui)
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(MaterialTheme.colorScheme.surfaceVariant),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("Map placeholder")
-                }
-
-                Spacer(Modifier.height(12.dp))
-
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     OutlinedButton(
                         onClick = {
-                            // Usa coordinate fittizie per ora
-                            val lat = 45.4642
-                            val lng = 9.19
-                            actions.setLocation(lat, lng)
+                            if (locationPermission.statuses.any { it.value.isGranted }) {
+                                scope.launch {
+                                    try {
+                                        val coords = locationService.getCurrentLocation()
+                                        coords?.let {
+                                            actions.setLocation(it.latitude, it.longitude)
+                                        }
+                                    } catch (ex: SecurityException) {
+                                        showPermissionDeniedWarning = true
+                                    } catch (ex: IllegalStateException) {
+                                        showLocationDisabledWarning = true
+                                    }
+                                }
+                            } else {
+                                locationPermission.launchPermissionRequest()
+                            }
                         },
                         modifier = Modifier.weight(1f)
                     ) {
@@ -261,11 +294,7 @@ fun AddSightingScreen(
                     )
 
                     OutlinedButton(
-                        onClick = {
-                            val lat = 45.4642
-                            val lng = 9.19
-                            actions.setLocation(lat, lng)
-                        },
+                        onClick = { showMapDialog = true },
                         modifier = Modifier.weight(1f)
                     ) {
                         Icon(
@@ -282,7 +311,15 @@ fun AddSightingScreen(
                     Text(
                         text = stringResource(R.string.add_sighting_lat_lng, state.latitude, state.longitude),
                         style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.padding(top = 4.dp)
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                } else {
+                    Text(
+                        text = "No location selected (optional)",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 8.dp)
                     )
                 }
 
@@ -293,7 +330,6 @@ fun AddSightingScreen(
                     OutlinedTextField(
                         value = state.pollinatorQuery,
                         onValueChange = {
-                            // Se c'era una selezione precedente, la rimuoviamo quando l'utente modifica
                             if (state.selectedPollinatorId != null && it != state.selectedPollinatorName) {
                                 actions.clearPollinator()
                             }
@@ -426,6 +462,18 @@ fun AddSightingScreen(
         }
     }
 
+    // Map Dialog
+    if (showMapDialog) {
+        LocationMapDialog(
+            initialLatitude = state.latitude,
+            initialLongitude = state.longitude,
+            onLocationSelected = { lat, lng ->
+                actions.setLocation(lat, lng)
+            },
+            onDismiss = { showMapDialog = false }
+        )
+    }
+
     // Date Picker Dialog
     if (showDatePicker) {
         MaterialDatePickerDialog(
@@ -449,6 +497,66 @@ fun AddSightingScreen(
             onDismiss = { showTimePicker = false }
         )
     }
+
+    // DIALOG GPS DISABILITATO
+    if (showLocationDisabledWarning) {
+        AlertDialog(
+            title = { Text("GPS Disabled") },
+            text = { Text("Please enable GPS to use your current location.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    locationService.openLocationSettings()
+                    showLocationDisabledWarning = false
+                }) { Text("Enable") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showLocationDisabledWarning = false }) { Text("Cancel") }
+            },
+            onDismissRequest = { showLocationDisabledWarning = false }
+        )
+    }
+
+    // DIALOG PERMESSO NEGATO
+    if (showPermissionDeniedWarning) {
+        AlertDialog(
+            title = { Text("Location Permission Denied") },
+            text = { Text("Location permission is required to use your current location.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    locationPermission.launchPermissionRequest()
+                    showPermissionDeniedWarning = false
+                }) { Text("Grant") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showPermissionDeniedWarning = false }) { Text("Cancel") }
+            },
+            onDismissRequest = { showPermissionDeniedWarning = false }
+        )
+    }
+
+    // DIALOG PERMESSO NEGATO PERMANENTEMENTE
+    if (showPermissionPermanentlyDeniedWarning) {
+        AlertDialog(
+            title = { Text("Permission Required") },
+            text = { Text("Location permission has been permanently denied. Please enable it in settings.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    val intent = android.content.Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                        data = android.net.Uri.fromParts("package", context.packageName, null)
+                        flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+                    }
+                    if (intent.resolveActivity(context.packageManager) != null) {
+                        context.startActivity(intent)
+                    }
+                    showPermissionPermanentlyDeniedWarning = false
+                }) { Text("Settings") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showPermissionPermanentlyDeniedWarning = false }) { Text("Cancel") }
+            },
+            onDismissRequest = { showPermissionPermanentlyDeniedWarning = false }
+        )
+    }
 }
 
 @Composable
@@ -466,7 +574,6 @@ fun MaterialDatePickerDialog(
                 .toInstant()
                 .toEpochMilli()
         },
-        // Limita le date selezionabili fino ad oggi
         selectableDates = object : SelectableDates {
             override fun isSelectableDate(utcTimeMillis: Long): Boolean {
                 val date = java.time.Instant.ofEpochMilli(utcTimeMillis)

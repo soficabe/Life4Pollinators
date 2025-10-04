@@ -23,8 +23,8 @@ data class AddSightingState(
     val longitude: Double? = null,
     val pollinatorQuery: String = "",
     val plantQuery: String = "",
-    val pollinatorSuggestions: List<Pair<String, String>> = emptyList(), // Pair<id, name>
-    val plantSuggestions: List<Pair<String, String>> = emptyList(), // Pair<id, name>
+    val pollinatorSuggestions: List<Pair<String, String>> = emptyList(),
+    val plantSuggestions: List<Pair<String, String>> = emptyList(),
     val selectedPollinatorId: String? = null,
     val selectedPollinatorName: String? = null,
     val selectedPlantId: String? = null,
@@ -168,10 +168,6 @@ class AddSightingViewModel(
                 _state.update { it.copy(errorMessage = context.getString(R.string.add_sighting_error_missing_fields)) }
                 return
             }
-            if (s.latitude == null || s.longitude == null) {
-                _state.update { it.copy(errorMessage = context.getString(R.string.add_sighting_error_missing_fields)) }
-                return
-            }
 
             // Controlla che sia stata selezionata una specie valida (non testo libero)
             val targetId = s.selectedPollinatorId ?: s.selectedPlantId
@@ -200,6 +196,10 @@ class AddSightingViewModel(
                     return@launch
                 }
 
+                // La posizione è ora opzionale - usa coordinate di default se non fornite
+                val latitude = s.latitude ?: 0.0
+                val longitude = s.longitude ?: 0.0
+
                 val success = sightingsRepository.addSighting(
                     userId = userId,
                     imageUrl = imageUrl,
@@ -207,8 +207,8 @@ class AddSightingViewModel(
                     targetType = targetType,
                     date = s.date,
                     time = s.time,
-                    latitude = s.latitude,
-                    longitude = s.longitude
+                    latitude = latitude,
+                    longitude = longitude
                 )
 
                 if (success) {

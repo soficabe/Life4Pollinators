@@ -18,9 +18,12 @@ lifecycleViewmodelCompose = "2.9.3"
 material3 = "1.4.0"
 navigationCompose = "2.9.3"
 playServicesAuth = "21.4.0"
+playServicesLocation = "21.3.0"
 supabase = "3.1.4"
 ktorClientAndroid = "3.2.2"
 googleid = "1.1.1"
+osmdroid = "6.1.18"
+kotlinxCoroutinesPlayServices = "1.8.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -49,13 +52,16 @@ ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx
 auth-kt = { module = "io.github.jan-tennert.supabase:auth-kt", version.ref = "supabase" }
 material3 = { module = "androidx.compose.material3:material3", version.ref = "material3" }
 play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuth" }
+play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "playServicesLocation" }
 postgrest-kt = { module = "io.github.jan-tennert.supabase:postgrest-kt", version.ref = "supabase" }
-bom ={ module = "io.github.jan-tennert.supabase:bom", version.ref = "supabase" }
+bom = { module = "io.github.jan-tennert.supabase:bom", version.ref = "supabase" }
 compose-auth = { module = "io.github.jan-tennert.supabase:compose-auth", version.ref = "supabase" }
 compose-auth-ui = { module = "io.github.jan-tennert.supabase:compose-auth-ui", version.ref = "supabase" }
 storage-kt = { module = "io.github.jan-tennert.supabase:storage-kt", version.ref = "supabase" }
 ktor-client-android = { module = "io.ktor:ktor-client-android", version.ref = "ktorClientAndroid" }
 googleid = { module = "com.google.android.libraries.identity.googleid:googleid", version.ref = "googleid" }
+osmdroid-android = { module = "org.osmdroid:osmdroid-android", version.ref = "osmdroid" }
+kotlinx-coroutines-play-services = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services", version.ref = "kotlinxCoroutinesPlayServices" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

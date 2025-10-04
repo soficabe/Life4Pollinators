@@ -194,4 +194,10 @@
     <string name="add_sighting_error_select_species">Select a pollinator or a plant</string>
     <string name="add_sighting_error_image_upload">Image upload failed</string>
     <string name="add_sighting_error_db">Database error</string>
+
+
+    <string name="add_sighting_selected_location">Selected Location</string>
+    <string name="my_location_marker_title">My Location</string>
+    <string name="add_sighting_tap_to_select">Tap on the map to select a location</string>
+    <string name="add_sighting_tap_to_change">Tap on the map to change location</string>
 </resources>

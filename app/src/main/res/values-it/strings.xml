@@ -196,4 +196,10 @@
     <string name="add_sighting_error_select_species">Seleziona un impollinatore o una pianta</string>
     <string name="add_sighting_error_image_upload">Caricamento immagine fallito</string>
     <string name="add_sighting_error_db">Errore database</string>
+
+
+    <string name="add_sighting_selected_location">Seleziona Posizione</string>
+    <string name="my_location_marker_title">Mia Posizione</string>
+    <string name="add_sighting_tap_to_select">Tocca la mappa per selezionare una posizione</string>
+    <string name="add_sighting_tap_to_change">Tocca la mappa per cambiare la posizione</string>
 </resources>
