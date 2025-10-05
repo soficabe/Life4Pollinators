@@ -37,7 +37,11 @@ fun ProfileScreen(
 
     Scaffold(
         topBar = { AppBar(navController) },
-        bottomBar = { BottomNavBar(selectedTab = NavBarTab.Profile, navController = navController) }
+        bottomBar = {
+            BottomNavBar(
+            selectedTab = NavBarTab.Profile,
+            navController = navController)
+        }
     ) { padding ->
         Column(
             Modifier
@@ -49,7 +53,10 @@ fun ProfileScreen(
             Spacer(Modifier.height(20.dp))
 
             val profileImageUrl = state.user?.image?.let { img ->
-                if (img.contains("?t=")) img else "$img?t=${System.currentTimeMillis()}"
+                if (img.contains("?t="))
+                    img
+                else
+                    "$img?t=${System.currentTimeMillis()}"
             }
 
             ProfileIcon(
@@ -79,7 +86,7 @@ fun ProfileScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            // Statistiche utente (ora dinamiche!)
+            // Statistiche utente
             Row(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier
@@ -122,7 +129,7 @@ fun ProfileScreen(
 
             Spacer(Modifier.height(12.dp))
 
-            // Card unica per il ranking globale
+            // Card il ranking globale
             Card(
                 modifier = Modifier
                     .fillMaxWidth()

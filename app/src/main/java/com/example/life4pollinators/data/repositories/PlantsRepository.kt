@@ -17,6 +17,15 @@ class PlantsRepository (
     private val relationsTable = supabase.from("plant_pollinator_group_relation")
     private val insectGroupTable = supabase.from("insect_group")
 
+    suspend fun getTotalPlantsCount(): Int {
+        return try {
+            plantsTable.select().decodeList<Plant>().size
+        } catch (e: Exception) {
+            Log.e("PlantsRepository", "Error counting plants", e)
+            0
+        }
+    }
+
     suspend fun getPlants(): List<Plant> {
         return try {
             plantsTable.select().decodeList<Plant>().sortedBy { if (Locale.getDefault().language == "it") it.nameIt else it.nameEn }

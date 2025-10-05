@@ -13,6 +13,15 @@ class InsectsRepository (
     private val insectsTable = supabase.from("insect")
     private val insectGroupsTable = supabase.from("insect_group")
 
+    suspend fun getTotalInsectsCount(): Int {
+        return try {
+            insectsTable.select().decodeList<Insect>().size
+        } catch (e: Exception) {
+            Log.e("InsectsRepository", "Error counting insects", e)
+            0
+        }
+    }
+
     suspend fun getInsectGroups(): List<InsectGroup> {
         return try {
             insectGroupsTable.select().decodeList<InsectGroup>().sortedBy { if (Locale.getDefault().language == "it") it.nameIt else it.nameEn }
