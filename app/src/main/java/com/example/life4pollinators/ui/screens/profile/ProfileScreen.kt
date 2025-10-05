@@ -1,10 +1,7 @@
 package com.example.life4pollinators.ui.screens.profile
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -14,7 +11,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -27,17 +23,6 @@ import com.example.life4pollinators.ui.composables.BottomNavBar
 import com.example.life4pollinators.ui.composables.ProfileIcon
 import com.example.life4pollinators.ui.navigation.L4PRoute
 
-/**
- * Schermata profilo utente.
- *
- * Visualizza i dati principali dell'utente autenticato (username, nome, cognome, email, immagine).
- * Mostra statistiche (avvistamenti, quiz svolti) e badge di ranking giornaliero e settimanale.
- * Permette di accedere all'editing del profilo tramite bottone.
- *
- * @param state Stato corrente del profilo utente
- * @param actions Interfaccia delle azioni disponibili
- * @param navController Controller di navigazione Compose
- */
 @Composable
 fun ProfileScreen(
     state: ProfileState,
@@ -46,7 +31,6 @@ fun ProfileScreen(
 ) {
     val scrollState = rememberScrollState()
 
-    // Aggiorna il profilo quando la schermata viene caricata
     LaunchedEffect(Unit) {
         actions.refreshProfile()
     }
@@ -64,12 +48,10 @@ fun ProfileScreen(
         ) {
             Spacer(Modifier.height(20.dp))
 
-            // PATCH: aggiungi parametro fittizio all'URL dell'immagine per forzare il refresh
             val profileImageUrl = state.user?.image?.let { img ->
                 if (img.contains("?t=")) img else "$img?t=${System.currentTimeMillis()}"
             }
 
-            // Avatar utente (con loader se necessario)
             ProfileIcon(
                 imageUrl = profileImageUrl,
                 isClickable = false,
@@ -78,7 +60,6 @@ fun ProfileScreen(
 
             Spacer(Modifier.height(12.dp))
 
-            // Username
             Text(
                 "@${state.user?.username ?: ""}",
                 style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
@@ -87,7 +68,6 @@ fun ProfileScreen(
 
             Spacer(Modifier.height(10.dp))
 
-            // Dati anagrafici
             Column(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -99,7 +79,7 @@ fun ProfileScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            // Statistiche utente
+            // Statistiche utente (ora dinamiche!)
             Row(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier
@@ -107,52 +87,98 @@ fun ProfileScreen(
                     .padding(horizontal = 24.dp)
             ) {
                 ProfileStatCard(
-                    value = "10/39", // TODO: Rendi dinamico!
-                    label = stringResource(R.string.title_sightings),
+                    value = if (state.isLoadingStats) "..." else state.stats.plantsText,
+                    label = stringResource(R.string.plants_stats),
                     color = MaterialTheme.colorScheme.secondaryContainer,
                     modifier = Modifier.weight(1f)
                 )
                 ProfileStatCard(
-                    value = "8", // TODO: Rendi dinamico!
-                    label = stringResource(R.string.tests_taken),
+                    value = if (state.isLoadingStats) "..." else state.stats.insectsText,
+                    label = stringResource(R.string.insects_stats),
                     color = MaterialTheme.colorScheme.tertiaryContainer,
                     modifier = Modifier.weight(1f)
                 )
             }
 
+            Spacer(Modifier.height(12.dp))
+
+            // Totale sightings
+            ProfileStatCard(
+                value = if (state.isLoadingStats) "..." else "${state.stats.totalSightings}",
+                label = stringResource(R.string.number_of_sightings),
+                color = MaterialTheme.colorScheme.primaryContainer,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp)
+            )
+
             Spacer(Modifier.height(20.dp))
 
-            // Ranking
+            // Ranking Globale
             Text(
-                stringResource(R.string.ranking),
+                stringResource(R.string.global_ranking),
                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
             )
 
             Spacer(Modifier.height(12.dp))
 
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            // Card unica per il ranking globale
+            Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 32.dp)
+                    .padding(horizontal = 32.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                shape = RoundedCornerShape(16.dp)
             ) {
-                RankingBadge(
-                    period = stringResource(R.string.day),
-                    rank = 5, // TODO: Rendi dinamico!
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.weight(1f)
-                )
-                RankingBadge(
-                    period = stringResource(R.string.week),
-                    rank = 2, // TODO: Rendi dinamico!
-                    color = MaterialTheme.colorScheme.tertiary,
-                    modifier = Modifier.weight(1f)
-                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = if (state.isLoadingStats || state.stats.globalRank == -1)
+                                "..."
+                            else
+                                "${state.stats.globalRank}°",
+                            style = MaterialTheme.typography.displaySmall.copy(
+                                fontWeight = FontWeight.Bold
+                            ),
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = stringResource(R.string.position),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                        )
+                    }
+
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text(
+                            text = if (state.isLoadingStats) "..." else state.stats.scoreText,
+                            style = MaterialTheme.typography.headlineSmall.copy(
+                                fontWeight = FontWeight.Bold
+                            ),
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = stringResource(R.string.total_score),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                        )
+                    }
+                }
             }
 
             Spacer(Modifier.height(24.dp))
 
-            // Bottone modifica profilo
             FilledTonalButton(
                 onClick = { navController.navigate(L4PRoute.EditProfile) },
                 shape = RoundedCornerShape(16.dp),
@@ -174,14 +200,6 @@ fun ProfileScreen(
     }
 }
 
-/**
- * Card per mostrare una statistica del profilo (ad esempio avvistamenti o quiz svolti)
- *
- * @param value Valore numerico/stringa da mostrare
- * @param label Etichetta della statistica
- * @param modifier Modifier Compose
- * @param color Colore di sfondo della card
- */
 @Composable
 fun ProfileStatCard(
     value: String,
@@ -214,73 +232,6 @@ fun ProfileStatCard(
             Text(
                 label,
                 style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-    }
-}
-
-/**
- * Badge per il ranking utente in un determinato periodo.
- *
- * @param modifier Modifier Compose
- * @param period Periodo di riferimento (giorno, settimana, ecc.)
- * @param rank Posizione in classifica
- * @param color Colore principale del badge
- */
-@Composable
-fun RankingBadge(
-    modifier: Modifier = Modifier,
-    period: String,
-    rank: Int,
-    color: Color = MaterialTheme.colorScheme.primary,
-) {
-    Card(
-        modifier = modifier,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
-        shape = RoundedCornerShape(14.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(14.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-
-            Box(
-                modifier = Modifier
-                    .size(55.dp)
-                    .background(
-                        brush = Brush.radialGradient(
-                            colors = listOf(
-                                color.copy(alpha = 0.25f),
-                                color.copy(alpha = 0.10f)
-                            )
-                        ),
-                        shape = CircleShape
-                    )
-                    .border(2.dp, color, CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "${rank}°",
-                    style = MaterialTheme.typography.titleSmall.copy(
-                        fontWeight = FontWeight.Bold
-                    ),
-                    color = color
-                )
-            }
-
-            // Label periodo
-            Text(
-                text = period,
-                style = MaterialTheme.typography.labelMedium.copy(
-                    fontWeight = FontWeight.Medium
-                ),
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }

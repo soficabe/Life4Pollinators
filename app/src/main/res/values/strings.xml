@@ -73,7 +73,10 @@
     <string name="test_your_classification_skills">Test your classification skills:</string>
 
     <!-- Profile Screen -->
-    <string name="tests_taken">Tests Taken</string>
+    <string name="sightings_stats">Sighted Species</string>
+    <string name="plants_stats">Plants</string>
+    <string name="insects_stats">Insects</string>
+    <string name="number_of_sightings">N. Sightings</string>
     <string name="ranking">Ranking</string>
     <string name="day">Day</string>
     <string name="week">Week</string>
@@ -200,4 +203,8 @@
     <string name="my_location_marker_title">My Location</string>
     <string name="add_sighting_tap_to_select">Tap on the map to select a location</string>
     <string name="add_sighting_tap_to_change">Tap on the map to change location</string>
+
+    <string name="global_ranking">Global Ranking</string>
+    <string name="position">Position</string>
+    <string name="total_score">Total Score</string>
 </resources>

@@ -74,7 +74,10 @@
     <string name="test_your_classification_skills">Testa le tue capacità di classificazione:</string>
 
     <!-- Profile Screen -->
-    <string name="tests_taken">Test Completati</string>
+    <string name="sightings_stats">Specie Avvistate</string>
+    <string name="plants_stats">Piante</string>
+    <string name="insects_stats">Insetti</string>
+    <string name="number_of_sightings">N. Avvistamenti</string>
     <string name="ranking">Classifica</string>
     <string name="day">Giorno</string>
     <string name="week">Settimana</string>
@@ -202,4 +205,8 @@
     <string name="my_location_marker_title">Mia Posizione</string>
     <string name="add_sighting_tap_to_select">Tocca la mappa per selezionare una posizione</string>
     <string name="add_sighting_tap_to_change">Tocca la mappa per cambiare la posizione</string>
+
+    <string name="global_ranking">Ranking Globale</string>
+    <string name="position">Posizione</string>
+    <string name="total_score">Punteggio Totale</string>
 </resources>

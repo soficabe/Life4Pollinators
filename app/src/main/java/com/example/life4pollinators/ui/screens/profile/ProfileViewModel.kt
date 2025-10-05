@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.life4pollinators.data.database.entities.User
 import com.example.life4pollinators.data.repositories.AuthRepository
+import com.example.life4pollinators.data.repositories.SightingsRepository
 import com.example.life4pollinators.data.repositories.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -12,14 +13,39 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /**
+ * Statistiche dell'utente
+ */
+data class UserStats(
+    val totalSightings: Int = 0,
+    val uniquePlants: Int = 0,
+    val uniqueInsects: Int = 0,
+    val globalRank: Int = -1,
+    val totalScore: Int = 0
+) {
+    val uniqueSpeciesCount: Int
+        get() = uniquePlants + uniqueInsects
+
+    val uniqueSpeciesText: String
+        get() = "$uniqueSpeciesCount/109"
+
+    val plantsText: String
+        get() = "$uniquePlants/33"
+
+    val insectsText: String
+        get() = "$uniqueInsects/86"
+
+    val scoreText: String
+        get() = "$totalScore pts"
+}
+
+/**
  * Stato della schermata profilo.
- *
- * @property user Dati utente autenticato (null se non caricati)
- * @property isRefreshing True se il profilo è in refresh/caricamento
  */
 data class ProfileState(
     val user: User? = null,
-    val isRefreshing: Boolean = false
+    val stats: UserStats = UserStats(),
+    val isRefreshing: Boolean = false,
+    val isLoadingStats: Boolean = false
 )
 
 /**
@@ -27,15 +53,16 @@ data class ProfileState(
  */
 interface ProfileActions {
     fun refreshProfile()
+    fun refreshStats()
 }
 
 /**
  * ViewModel per la schermata profilo.
- * Si occupa di caricare le informazioni dell'utente autenticato.
  */
 class ProfileViewModel(
     private val authRepository: AuthRepository,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val sightingsRepository: SightingsRepository
 ) : ViewModel() {
     private val _state = MutableStateFlow(ProfileState())
     val state = _state.asStateFlow()
@@ -45,11 +72,7 @@ class ProfileViewModel(
         override fun refreshProfile() {
             viewModelScope.launch {
                 try {
-                    _state.update {
-                        it.copy(
-                            isRefreshing = true
-                        )
-                    }
+                    _state.update { it.copy(isRefreshing = true) }
 
                     val authUser = authRepository.getAuthUser()
                     val user = userRepository.getUser(authUser.id)
@@ -60,14 +83,60 @@ class ProfileViewModel(
                             isRefreshing = false
                         )
                     }
+
+                    // Carica anche le statistiche
+                    refreshStats()
                 } catch (e: Exception) {
                     Log.e("ProfileViewModel", "Errore durante il refresh del profilo", e)
+                    _state.update { it.copy(isRefreshing = false) }
+                }
+            }
+        }
+
+        override fun refreshStats() {
+            viewModelScope.launch {
+                try {
+                    _state.update { it.copy(isLoadingStats = true) }
+
+                    val authUser = authRepository.getAuthUser()
+                    val userId = authUser.id
+
+                    Log.d("ProfileViewModel", "User ID: $userId")
+
+                    // Recupera tutte le statistiche
+                    val totalSightings = sightingsRepository.getUserTotalSightingsCount(userId)
+                    val uniquePlants = sightingsRepository.getUserSightedSpecies(userId, "plant").size
+                    val uniqueInsects = sightingsRepository.getUserSightedSpecies(userId, "insect").size
+
+                    // Calcola punteggio locale
+                    val uniqueSpecies = uniquePlants + uniqueInsects
+                    val totalScore = (uniqueSpecies * 10) + totalSightings
+
+                    // Recupera ranking globale
+                    val (globalRank, serverScore) = sightingsRepository.getGlobalRanking(userId)
+
+                    Log.d("ProfileViewModel", "Specie uniche: $uniqueSpecies, Avvistamenti: $totalSightings")
+                    Log.d("ProfileViewModel", "Score calcolato: $totalScore, Score server: $serverScore")
+
+                    val stats = UserStats(
+                        totalSightings = totalSightings,
+                        uniquePlants = uniquePlants,
+                        uniqueInsects = uniqueInsects,
+                        globalRank = globalRank,
+                        totalScore = totalScore
+                    )
 
                     _state.update {
                         it.copy(
-                            isRefreshing = false
+                            stats = stats,
+                            isLoadingStats = false
                         )
                     }
+
+                    Log.d("ProfileViewModel", "Statistiche caricate: $stats")
+                } catch (e: Exception) {
+                    Log.e("ProfileViewModel", "Errore durante il caricamento delle statistiche", e)
+                    _state.update { it.copy(isLoadingStats = false) }
                 }
             }
         }

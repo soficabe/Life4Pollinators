@@ -93,7 +93,7 @@ val appModule = module {
     viewModel { SettingsViewModel(get(), get()) }
     viewModel { SignUpViewModel(get()) }
     viewModel { SignInViewModel(get()) }
-    viewModel { ProfileViewModel(get(), get()) }
+    viewModel { ProfileViewModel(get(), get(), get()) }
     viewModel { EditProfileViewModel(get(), get(), get()) }
     viewModel { PlantsListViewModel(get()) }
     viewModel { PlantsGeneralInfoViewModel(get()) }
