@@ -131,17 +131,11 @@ fun AddSightingScreen(
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = 16.dp, vertical = 16.dp)
             ) {
-                Text(
-                    text = stringResource(R.string.add_sighting_header),
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
 
                 Text(
-                    text = "Contribute by sending us an image of a pollinator on a plant:",
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(bottom = 16.dp)
+                    text = "Image of pollinator or plant:",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(bottom = 8.dp)
                 )
 
                 // Image selection
@@ -211,7 +205,7 @@ fun AddSightingScreen(
                 OutlinedTextField(
                     value = state.date?.toString() ?: "",
                     onValueChange = {},
-                    label = { Text("Date") },
+                    label = { Text("Date of the sighting") },
                     readOnly = true,
                     modifier = Modifier.fillMaxWidth(),
                     trailingIcon = {
@@ -231,7 +225,7 @@ fun AddSightingScreen(
                 OutlinedTextField(
                     value = state.time?.toString() ?: "",
                     onValueChange = {},
-                    label = { Text("Enter time") },
+                    label = { Text("Time of the sighting") },
                     readOnly = true,
                     modifier = Modifier.fillMaxWidth(),
                     trailingIcon = {
@@ -248,7 +242,7 @@ fun AddSightingScreen(
 
                 // Location
                 Text(
-                    text = "Location:",
+                    text = "Location of the sighting:",
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
@@ -339,6 +333,10 @@ fun AddSightingScreen(
                         label = { Text(stringResource(R.string.add_sighting_pollinator_hint)) },
                         modifier = Modifier.fillMaxWidth(),
                         enabled = state.selectedPlantId == null,
+                        isError = state.isPollinatorInvalid,
+                        supportingText = if (state.isPollinatorInvalid) {
+                            { Text(stringResource(R.string.validation_select_pollinator)) }
+                        } else null,
                         trailingIcon = {
                             if (state.pollinatorQuery.isNotBlank()) {
                                 IconButton(onClick = {
@@ -381,28 +379,45 @@ fun AddSightingScreen(
 
                 Spacer(Modifier.height(16.dp))
 
-                // Plant selection
+// Plant selection
                 Box {
                     OutlinedTextField(
                         value = state.plantQuery,
                         onValueChange = {
+                            if (state.selectedPlantId != null && it != state.selectedPlantName) {
+                                actions.clearPlant()
+                            }
                             actions.onPlantQueryChange(it)
-                            showPlantDropdown = it.isNotBlank()
+                            showPlantDropdown = it.isNotBlank() && state.selectedPlantId == null
                         },
                         label = { Text(stringResource(R.string.add_sighting_plant_hint)) },
                         modifier = Modifier.fillMaxWidth(),
                         enabled = state.pollinatorQuery.isBlank() && state.selectedPollinatorId == null,
+                        isError = state.isPlantInvalid,
+                        supportingText = if (state.isPlantInvalid) {
+                            { Text(stringResource(R.string.validation_select_plant)) }
+                        } else null,
                         trailingIcon = {
                             if (state.plantQuery.isNotBlank()) {
                                 IconButton(onClick = {
-                                    actions.onPlantQueryChange("")
+                                    actions.clearPlant()
                                     showPlantDropdown = false
                                 }) {
                                     Icon(Icons.Filled.Clear, contentDescription = "Clear")
                                 }
                             }
                         },
-                        keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done)
+                        keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
+                        readOnly = state.selectedPlantId != null,
+                        colors = if (state.selectedPlantId != null) {
+                            OutlinedTextFieldDefaults.colors(
+                                disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                                disabledBorderColor = MaterialTheme.colorScheme.primary,
+                                disabledLabelColor = MaterialTheme.colorScheme.primary
+                            )
+                        } else {
+                            OutlinedTextFieldDefaults.colors()
+                        }
                     )
 
                     DropdownMenu(

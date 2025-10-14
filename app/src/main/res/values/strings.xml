@@ -151,7 +151,7 @@
     <!-- Quiz Result Screen -->
     <string name="quiz_result_identified">Identified as:</string>
     <string name="quiz_result_no_classification">No classification found</string>
-    <string name="quiz_try_again">Try again</string>
+    <string name="quiz_try_again">Retake the quiz</string>
     <string name="quiz_restart">Restart quiz</string>
     <string name="quiz_identified_photo">Identified specimen</string>
 
@@ -172,13 +172,13 @@
     <string name="back_to_home">Go Back to Home</string>
     <string name="quiz_change_photo">Change Photo</string>
 
-    <string name="quiz_open_with_lens">Open with Google Lens</string>
+    <string name="quiz_open_with_lens">Verify with Google Lens</string>
     <string name="quiz_open_with_lens_info">Now choose Lens or another image recognition app. If you don\'t see Lens, open the photo in Gallery and use the Lens icon there!</string>
     <string name="quiz_open_with_lens_chooser">Choose app for recognition</string>
     <string name="quiz_open_with_lens_continue">Continue</string>
 
 
-    <string name="add_sighting_header">Contribute by sending us an image of a pollinator on a plant:</string>
+    <string name="add_sighting_header">Contribute by sending us an image of a pollinator or plant:</string>
     <string name="add_sighting_take_photo">Take a photo</string>
     <string name="add_sighting_choose_picture">Choose a picture</string>
     <string name="add_sighting_image_selected">Image selected</string>
@@ -207,4 +207,17 @@
     <string name="global_ranking">Global Ranking</string>
     <string name="position">Position</string>
     <string name="total_score">Total Score</string>
+
+    <!-- Species Filter Labels -->
+    <string name="filter_plants">Plants</string>
+    <string name="filter_bees">Bees</string>
+    <string name="filter_butterflies">Butterflies</string>
+    <string name="filter_moths">Moths</string>
+    <string name="filter_beeflies">Beeflies</string>
+    <string name="filter_hoverflies">Hoverflies</string>
+    <string name="filter_beetles">Beetles</string>
+    <string name="filter_wasps">Wasps</string>
+
+    <string name="validation_select_pollinator">Please select a pollinator from the suggestions</string>
+    <string name="validation_select_plant">Please select a plant from the suggestions</string>
 </resources>

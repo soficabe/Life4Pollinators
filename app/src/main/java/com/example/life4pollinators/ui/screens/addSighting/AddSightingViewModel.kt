@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
+import java.util.Locale
 
 data class AddSightingState(
     val imageUri: Uri? = null,
@@ -29,6 +30,8 @@ data class AddSightingState(
     val selectedPollinatorName: String? = null,
     val selectedPlantId: String? = null,
     val selectedPlantName: String? = null,
+    val isPollinatorInvalid: Boolean = false,
+    val isPlantInvalid: Boolean = false,
     val isLoading: Boolean = false,
     val isSuccess: Boolean = false,
     val errorMessage: String? = null
@@ -59,6 +62,10 @@ class AddSightingViewModel(
     private val _state = MutableStateFlow(AddSightingState())
     val state: StateFlow<AddSightingState> = _state.asStateFlow()
 
+    // Determina se la lingua del dispositivo è italiano
+    private val isItalian: Boolean
+        get() = Locale.getDefault().language == "it"
+
     val actions = object : AddSightingActions {
         override fun setImageUri(uri: Uri?) {
             _state.update { it.copy(imageUri = uri) }
@@ -77,7 +84,12 @@ class AddSightingViewModel(
         }
 
         override fun onPollinatorQueryChange(query: String) {
-            _state.update { it.copy(pollinatorQuery = query) }
+            _state.update {
+                it.copy(
+                    pollinatorQuery = query,
+                    isPollinatorInvalid = false // Reset errore quando l'utente digita
+                )
+            }
             if (query.isBlank()) {
                 _state.update { it.copy(pollinatorSuggestions = emptyList()) }
                 return
@@ -94,7 +106,12 @@ class AddSightingViewModel(
         }
 
         override fun onPlantQueryChange(query: String) {
-            _state.update { it.copy(plantQuery = query) }
+            _state.update {
+                it.copy(
+                    plantQuery = query,
+                    isPlantInvalid = false // Reset errore quando l'utente digita
+                )
+            }
             if (query.isBlank()) {
                 _state.update { it.copy(plantSuggestions = emptyList()) }
                 return
@@ -106,7 +123,11 @@ class AddSightingViewModel(
                         it.nameEn.contains(query, ignoreCase = true) ||
                                 it.nameIt.contains(query, ignoreCase = true)
                     }
-                    .map { it.id to it.nameEn }
+                    .map { plant ->
+                        // Mostra il nome nella lingua corretta
+                        val displayName = if (isItalian) plant.nameIt else plant.nameEn
+                        plant.id to displayName
+                    }
                     .take(10)
                 _state.update { it.copy(plantSuggestions = suggestions) }
             }
@@ -118,7 +139,8 @@ class AddSightingViewModel(
                     selectedPollinatorId = id,
                     selectedPollinatorName = name,
                     pollinatorQuery = name,
-                    pollinatorSuggestions = emptyList()
+                    pollinatorSuggestions = emptyList(),
+                    isPollinatorInvalid = false
                 )
             }
         }
@@ -129,7 +151,8 @@ class AddSightingViewModel(
                     selectedPlantId = id,
                     selectedPlantName = name,
                     plantQuery = name,
-                    plantSuggestions = emptyList()
+                    plantSuggestions = emptyList(),
+                    isPlantInvalid = false
                 )
             }
         }
@@ -140,7 +163,8 @@ class AddSightingViewModel(
                     selectedPollinatorId = null,
                     selectedPollinatorName = null,
                     pollinatorQuery = "",
-                    pollinatorSuggestions = emptyList()
+                    pollinatorSuggestions = emptyList(),
+                    isPollinatorInvalid = false
                 )
             }
         }
@@ -151,7 +175,8 @@ class AddSightingViewModel(
                     selectedPlantId = null,
                     selectedPlantName = null,
                     plantQuery = "",
-                    plantSuggestions = emptyList()
+                    plantSuggestions = emptyList(),
+                    isPlantInvalid = false
                 )
             }
         }
@@ -170,16 +195,29 @@ class AddSightingViewModel(
             }
 
             // Controlla che sia stata selezionata una specie valida (non testo libero)
-            val targetId = s.selectedPollinatorId ?: s.selectedPlantId
-            val targetType = when {
-                s.selectedPollinatorId != null -> "insect"
-                s.selectedPlantId != null -> "plant"
-                else -> null
-            }
+            val targetId: String?
+            val targetType: String?
 
-            if (targetId == null || targetType == null) {
-                _state.update { it.copy(errorMessage = context.getString(R.string.add_sighting_error_select_species)) }
-                return
+            when {
+                s.selectedPollinatorId != null -> {
+                    targetId = s.selectedPollinatorId
+                    targetType = "insect"
+                }
+                s.selectedPlantId != null -> {
+                    targetId = s.selectedPlantId
+                    targetType = "plant"
+                }
+                else -> {
+                    // Nessuna selezione valida - mostra errore visivo
+                    _state.update {
+                        it.copy(
+                            errorMessage = context.getString(R.string.add_sighting_error_select_species),
+                            isPollinatorInvalid = s.pollinatorQuery.isNotBlank(),
+                            isPlantInvalid = s.plantQuery.isNotBlank()
+                        )
+                    }
+                    return
+                }
             }
 
             viewModelScope.launch {

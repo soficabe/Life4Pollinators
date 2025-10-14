@@ -11,6 +11,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Cancel
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.ImageSearch
+import androidx.compose.material.icons.outlined.Refresh
+import androidx.compose.material.icons.outlined.Upload
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -65,23 +69,33 @@ fun QuizResultScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             if (state.selectedTarget != null) {
-                Icon(
-                    imageVector = Icons.Outlined.CheckCircle,
-                    contentDescription = null,
-                    modifier = Modifier.size(56.dp),
-                    tint = MaterialTheme.colorScheme.primary
-                )
+                // Badge compatto con icona e testo
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.primaryContainer
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.CheckCircle,
+                            contentDescription = null,
+                            modifier = Modifier.size(24.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = stringResource(R.string.quiz_result_identified),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    }
+                }
 
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Text(
-                    text = stringResource(R.string.quiz_result_identified),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    textAlign = TextAlign.Center
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 val displayName = if (!state.selectedTarget.name.isNullOrEmpty()) {
                     state.selectedTarget.name
@@ -92,13 +106,13 @@ fun QuizResultScreen(
                 displayName?.let {
                     Text(
                         text = it,
-                        style = MaterialTheme.typography.headlineSmall,
+                        style = MaterialTheme.typography.headlineMedium,
                         color = MaterialTheme.colorScheme.primary,
                         textAlign = TextAlign.Center
                     )
                 }
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 state.selectedTarget.imageUrl?.let { imageUrl ->
                     Card(
@@ -110,7 +124,7 @@ fun QuizResultScreen(
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(260.dp)
+                                    .height(240.dp)
                                     .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)),
                                 contentAlignment = Alignment.Center
                             ) {
@@ -131,8 +145,9 @@ fun QuizResultScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
+                // Sezione bottoni con gerarchia visiva
                 if (state.photoUrl != null) {
                     Button(
                         onClick = { showLensDialog = true },
@@ -141,35 +156,21 @@ fun QuizResultScreen(
                             .height(48.dp),
                         shape = RoundedCornerShape(12.dp)
                     ) {
+                        Icon(
+                            imageVector = Icons.Outlined.ImageSearch,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = stringResource(R.string.quiz_open_with_lens),
                             style = MaterialTheme.typography.bodyLarge
                         )
                     }
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
                 }
 
-                Button(
-                    onClick = {
-                        actions.resetQuizKeepingPhoto()
-                        navController.navigate("quizStart/${state.originalQuizType}") {
-                            popUpTo(L4PRoute.Home) { inclusive = false }
-                        }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(52.dp),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Text(
-                        text = stringResource(R.string.quiz_try_again),
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // --- Bottone carica come avvistamento dal quiz ---
+                // Bottone carica come avvistamento (azione principale)
                 if (isAuthenticated && state.photoUrl != null) {
                     Button(
                         onClick = {
@@ -178,22 +179,69 @@ fun QuizResultScreen(
                         enabled = !state.isUploading,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(48.dp)
+                            .height(48.dp),
+                        shape = RoundedCornerShape(12.dp)
                     ) {
-                        Text("Carica come avvistamento")
+                        Icon(
+                            imageVector = Icons.Outlined.Upload,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Carica come avvistamento",
+                            style = MaterialTheme.typography.bodyLarge
+                        )
                     }
 
                     if (state.isUploading) {
+                        Spacer(modifier = Modifier.height(8.dp))
                         LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
                     }
                     if (state.uploadSuccess == true) {
-                        Text("Avvistamento caricato!", color = MaterialTheme.colorScheme.primary)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Avvistamento caricato!",
+                            color = MaterialTheme.colorScheme.primary,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
                     }
                     if (state.uploadSuccess == false) {
-                        Text(state.uploadError ?: "Errore nel caricamento", color = MaterialTheme.colorScheme.error)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = state.uploadError ?: "Errore nel caricamento",
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
                     }
                     Spacer(modifier = Modifier.height(12.dp))
                 }
+
+                OutlinedButton(
+                    onClick = {
+                        actions.resetQuizKeepingPhoto()
+                        navController.navigate("quizStart/${state.originalQuizType}") {
+                            popUpTo(L4PRoute.Home) { inclusive = false }
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Refresh,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = stringResource(R.string.quiz_try_again),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
 
                 OutlinedButton(
                     onClick = {
@@ -204,9 +252,15 @@ fun QuizResultScreen(
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(52.dp),
+                        .height(48.dp),
                     shape = RoundedCornerShape(12.dp)
                 ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Home,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = stringResource(R.string.back_to_home),
                         style = MaterialTheme.typography.bodyLarge
@@ -214,23 +268,34 @@ fun QuizResultScreen(
                 }
 
             } else {
-                Icon(
-                    imageVector = Icons.Outlined.Cancel,
-                    contentDescription = null,
-                    modifier = Modifier.size(56.dp),
-                    tint = MaterialTheme.colorScheme.error
-                )
+                // Badge compatto per errore
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.errorContainer
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Cancel,
+                            contentDescription = null,
+                            modifier = Modifier.size(24.dp),
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = stringResource(R.string.quiz_result_no_classification),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onErrorContainer,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
 
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Text(
-                    text = stringResource(R.string.quiz_result_no_classification),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    textAlign = TextAlign.Center
-                )
-
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 state.photoUrl?.let { photoUrl ->
                     Card(
@@ -242,7 +307,7 @@ fun QuizResultScreen(
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(260.dp)
+                                    .height(240.dp)
                                     .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
                             ) {
                                 Image(
@@ -273,7 +338,7 @@ fun QuizResultScreen(
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(52.dp),
+                        .height(48.dp),
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(
@@ -293,7 +358,7 @@ fun QuizResultScreen(
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(52.dp),
+                        .height(48.dp),
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(

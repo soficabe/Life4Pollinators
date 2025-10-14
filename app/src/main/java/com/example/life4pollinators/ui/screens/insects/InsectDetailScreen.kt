@@ -59,6 +59,7 @@ fun InsectDetailScreen(
                         Modifier
                             .fillMaxSize()
                             .padding(24.dp),
+                        verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         // Card con immagine e nome

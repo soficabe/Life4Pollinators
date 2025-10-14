@@ -39,8 +39,8 @@ fun ProfileScreen(
         topBar = { AppBar(navController) },
         bottomBar = {
             BottomNavBar(
-            selectedTab = NavBarTab.Profile,
-            navController = navController)
+                selectedTab = NavBarTab.Profile,
+                navController = navController)
         }
     ) { padding ->
         Column(
@@ -65,7 +65,7 @@ fun ProfileScreen(
                 showLoader = state.isRefreshing
             )
 
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(8.dp))
 
             Text(
                 "@${state.user?.username ?: ""}",
@@ -73,10 +73,10 @@ fun ProfileScreen(
                 color = MaterialTheme.colorScheme.onSurface
             )
 
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(6.dp))
 
             Column(
-                verticalArrangement = Arrangement.spacedBy(4.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text("${stringResource(R.string.first_name)}: ${state.user?.firstName ?: ""}", style = MaterialTheme.typography.bodyMedium)
@@ -84,7 +84,7 @@ fun ProfileScreen(
                 Text("${stringResource(R.string.email)}: ${state.user?.email ?: ""}", style = MaterialTheme.typography.bodyMedium)
             }
 
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(12.dp))
 
             // Statistiche utente
             Row(
@@ -119,7 +119,7 @@ fun ProfileScreen(
                     .padding(horizontal = 24.dp)
             )
 
-            Spacer(Modifier.height(20.dp))
+            Spacer(Modifier.height(16.dp))
 
             // Ranking Globale
             Text(
@@ -127,7 +127,7 @@ fun ProfileScreen(
                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
             )
 
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(10.dp))
 
             // Card il ranking globale
             Card(
@@ -143,7 +143,7 @@ fun ProfileScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(20.dp),
+                        .padding(16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -158,7 +158,6 @@ fun ProfileScreen(
                             ),
                             color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
-                        Spacer(Modifier.height(4.dp))
                         Text(
                             text = stringResource(R.string.position),
                             style = MaterialTheme.typography.labelLarge,
@@ -174,7 +173,6 @@ fun ProfileScreen(
                             ),
                             color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
-                        Spacer(Modifier.height(4.dp))
                         Text(
                             text = stringResource(R.string.total_score),
                             style = MaterialTheme.typography.labelMedium,
@@ -184,7 +182,7 @@ fun ProfileScreen(
                 }
             }
 
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(16.dp))
 
             FilledTonalButton(
                 onClick = { navController.navigate(L4PRoute.EditProfile) },

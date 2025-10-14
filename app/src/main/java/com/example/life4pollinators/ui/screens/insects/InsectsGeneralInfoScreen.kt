@@ -54,7 +54,9 @@ fun InsectsGeneralInfoScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(scrollState)
-                    .padding(24.dp)
+                    .padding(24.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Card(
                     shape = RoundedCornerShape(18.dp),

@@ -69,7 +69,7 @@ fun AppBar(
             stringResource(R.string.title_quiz_result)
         backStackEntry?.destination?.hasRoute<L4PRoute.AddSighting>() == true ->
             stringResource(R.string.title_add_sighting)
-        backStackEntry?.destination?.hasRoute<L4PRoute.AddSighting>() == true ->
+        backStackEntry?.destination?.hasRoute<L4PRoute.Sightings>() == true ->
             stringResource(R.string.title_sightings)
         else -> stringResource(R.string.unknown_screen)
     }

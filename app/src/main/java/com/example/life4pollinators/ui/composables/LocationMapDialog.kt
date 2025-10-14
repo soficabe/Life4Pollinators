@@ -114,6 +114,7 @@ fun LocationMapDialog(
             },
             floatingActionButton = {
                 FloatingActionButton(
+                    modifier = Modifier.padding(bottom = 52.dp),
                     onClick = {
                         if (locationPermission.statuses.any { it.value.isGranted }) {
                             scope.launch {

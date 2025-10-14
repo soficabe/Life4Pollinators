@@ -1,7 +1,9 @@
 package com.example.life4pollinators.ui.screens.sightings
 
+import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.life4pollinators.R
 import com.example.life4pollinators.data.database.entities.Insect
 import com.example.life4pollinators.data.database.entities.InsectGroup
 import com.example.life4pollinators.data.database.entities.Plant
@@ -12,6 +14,7 @@ import com.example.life4pollinators.data.repositories.SightingsRepository
 import io.github.jan.supabase.auth.status.SessionStatus
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 data class SpeciesItem(
     val id: String,
@@ -25,15 +28,15 @@ enum class SpeciesType {
     PLANT, INSECT
 }
 
-enum class SpeciesFilter(val displayName: String) {
-    PLANTS("Plants"),
-    BEES("Bees"),
-    BUTTERFLIES("Butterflies"),
-    MOTHS("Moths"),
-    BEEFLIES("Beeflies"),
-    HOVERFLIES("Hoverflies"),
-    BEETLES("Beetles"),
-    WASPS("Wasps")
+enum class SpeciesFilter(@StringRes val displayNameRes: Int) {
+    PLANTS(R.string.filter_plants),
+    BEES(R.string.filter_bees),
+    BUTTERFLIES(R.string.filter_butterflies),
+    MOTHS(R.string.filter_moths),
+    BEEFLIES(R.string.filter_beeflies),
+    HOVERFLIES(R.string.filter_hoverflies),
+    BEETLES(R.string.filter_beetles),
+    WASPS(R.string.filter_wasps)
 }
 
 data class SightingsState(
@@ -63,6 +66,10 @@ class SightingsViewModel(
 
     private val _state = MutableStateFlow(SightingsState())
     val state: StateFlow<SightingsState> = _state.asStateFlow()
+
+    // Determina se la lingua del dispositivo è italiano
+    private val isItalian: Boolean
+        get() = Locale.getDefault().language == "it"
 
     // Mappa per trovare l'ID del gruppo dato il nome in inglese
     private val groupNameToIdMap: Map<String, String>
@@ -170,7 +177,7 @@ class SightingsViewModel(
                 currentState.allPlants.map { plant ->
                     SpeciesItem(
                         id = plant.id,
-                        name = plant.nameEn,
+                        name = if (isItalian) plant.nameIt else plant.nameEn,
                         imageUrl = plant.imageUrl,
                         isSighted = currentState.sightedPlantIds.contains(plant.id),
                         type = SpeciesType.PLANT

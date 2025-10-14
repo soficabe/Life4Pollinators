@@ -19,6 +19,7 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -39,8 +40,7 @@ fun SightingsScreen(
     Scaffold(
         topBar = {
             AppBar(
-                navController = navController,
-                personalizedTitle = "Sightings"
+                navController = navController
             )
         },
         floatingActionButton = {
@@ -110,7 +110,7 @@ fun FilterChips(
             FilterChip(
                 selected = selectedFilter == filter,
                 onClick = { onFilterSelected(filter) },
-                label = { Text(filter.displayName) }
+                label = { Text(stringResource(filter.displayNameRes)) }
             )
         }
     }
@@ -141,12 +141,13 @@ fun SpeciesCircleItem(
                     contentDescription = species.name,
                     modifier = Modifier
                         .fillMaxSize()
+                        .background(Color.White)
                         .then(
                             // Applica blur SOLO se NON è avvistata
                             if (!species.isSighted) Modifier.blur(10.dp)
                             else Modifier
                         ),
-                    contentScale = ContentScale.Crop
+                    contentScale = ContentScale.Fit
                 )
             } else {
                 // Placeholder se non c'è immagine

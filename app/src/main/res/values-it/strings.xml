@@ -152,7 +152,7 @@
     <!-- Quiz Result Screen -->
     <string name="quiz_result_identified">Identificato come:</string>
     <string name="quiz_result_no_classification">Nessuna classificazione trovata</string>
-    <string name="quiz_try_again">Riprova</string>
+    <string name="quiz_try_again">Ritenta il quiz</string>
     <string name="quiz_restart">Ricomincia il quiz</string>
     <string name="quiz_identified_photo">Esemplare identificato</string>
 
@@ -173,14 +173,14 @@
     <string name="back_to_home">Torna alla Home</string>
     <string name="quiz_change_photo">Cambia foto</string>
 
-    <string name="quiz_open_with_lens">Apri con Google Lens</string>
+    <string name="quiz_open_with_lens">Verifica con Google Lens</string>
     <string name="quiz_open_with_lens_info">Ora scegli tra le app "Lens" oppure un\'altra app di riconoscimento immagini. Se non vedi Lens, apri la foto con Galleria e usa l\'icona Lens da lì!</string>
     <string name="quiz_open_with_lens_chooser">Scegli app per riconoscimento</string>
     <string name="quiz_open_with_lens_continue">Continua</string>
 
 
 
-    <string name="add_sighting_header">Contribuisci inviando una foto di un impollinatore su una pianta:</string>
+    <string name="add_sighting_header">Contribuisci inviando una foto di un impollinatore o una pianta:</string>
     <string name="add_sighting_take_photo">Scatta una foto</string>
     <string name="add_sighting_choose_picture">Scegli una foto</string>
     <string name="add_sighting_image_selected">Immagine selezionata</string>
@@ -209,4 +209,17 @@
     <string name="global_ranking">Ranking Globale</string>
     <string name="position">Posizione</string>
     <string name="total_score">Punteggio Totale</string>
+
+    <!-- Species Filter Labels -->
+    <string name="filter_plants">Piante</string>
+    <string name="filter_bees">Api</string>
+    <string name="filter_butterflies">Farfalle</string>
+    <string name="filter_moths">Falene</string>
+    <string name="filter_beeflies">Bombilidi</string>
+    <string name="filter_hoverflies">Sirfidi</string>
+    <string name="filter_beetles">Coleotteri</string>
+    <string name="filter_wasps">Vespe</string>
+
+    <string name="validation_select_pollinator">Seleziona un impollinatore dai suggerimenti</string>
+    <string name="validation_select_plant">Seleziona una pianta dai suggerimenti</string>
 </resources>
