@@ -55,6 +55,24 @@ fun LocationMapDialog(
     var showPermissionDeniedWarning by remember { mutableStateOf(false) }
     var showPermissionPermanentlyDeniedWarning by remember { mutableStateOf(false) }
 
+    // Carica la posizione utente all'apertura se il permesso è già garantito
+    LaunchedEffect(Unit) {
+        val hasPermission = context.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) ==
+                android.content.pm.PackageManager.PERMISSION_GRANTED ||
+                context.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) ==
+                android.content.pm.PackageManager.PERMISSION_GRANTED
+
+        if (hasPermission) {
+            scope.launch {
+                try {
+                    locationService.getCurrentLocation()
+                } catch (ex: Exception) {
+                    // Silenzioso, non importa se fallisce
+                }
+            }
+        }
+    }
+
     val locationPermission = rememberMultiplePermissions(
         listOf(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION)
     ) { statuses ->
@@ -163,13 +181,18 @@ fun LocationMapDialog(
                             setTileSource(TileSourceFactory.MAPNIK)
                             setMultiTouchControls(true)
 
+                            // Centro Italia: Roma approssimativamente
+                            val italyCenterPoint = GeoPoint(41.9028, 12.4964)
+
+                            // Se c'è già una posizione selezionata, mostra quella
                             val startPoint = selectedLocation?.let {
                                 GeoPoint(it.latitude, it.longitude)
-                            } ?: userCoordinates?.let {
-                                GeoPoint(it.latitude, it.longitude)
-                            } ?: GeoPoint(45.4642, 9.19)
+                            } ?: italyCenterPoint
 
-                            controller.setZoom(if (selectedLocation != null) 15.0 else 11.0)
+                            // Zoom: se c'è una selezione zoom più vicino, altrimenti vista Italia
+                            val startZoom = if (selectedLocation != null) 15.0 else 6.0
+
+                            controller.setZoom(startZoom)
                             controller.setCenter(startPoint)
 
                             overlays.add(object : org.osmdroid.views.overlay.Overlay() {
@@ -202,7 +225,7 @@ fun LocationMapDialog(
                             mapView.overlays.add(selectedMarker)
                         }
 
-                        // Marker posizione utente
+                        // Marker posizione utente (sempre visibile se disponibile)
                         userCoordinates?.let { userCoords ->
                             val isSameLocation = selectedLocation?.let {
                                 distanceBetween(it, userCoords) < 10.0
@@ -247,7 +270,7 @@ fun LocationMapDialog(
                             )
                         } ?: run {
                             Text(
-                                text = stringResource(R.string.tap_to_change_location),
+                                text = stringResource(R.string.tap_to_select_location),
                                 style = MaterialTheme.typography.bodyMedium
                             )
                         }

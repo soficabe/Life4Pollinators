@@ -188,6 +188,7 @@
     <string name="validation_select_pollinator">Seleziona un impollinatore dai suggerimenti</string>
     <string name="validation_select_plant">Seleziona una pianta dai suggerimenti</string>
     <string name="loading_location">Caricamento posizione…</string>
+    <string name="tap_to_select_location">Tocca sulla mappa per selezionare una posizione</string>
 
     <!-- Species Filter Labels -->
     <string name="filter_plants">Piante</string>
