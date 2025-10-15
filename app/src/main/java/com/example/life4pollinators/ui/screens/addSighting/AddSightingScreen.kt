@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -55,10 +56,17 @@ fun AddSightingScreen(
     val scope = rememberCoroutineScope()
     val locationService = remember { LocationService(context) }
 
-    var errorMessage by remember { mutableStateOf<String?>(null) }
-    var showMapDialog by remember { mutableStateOf(false) }
-    var showImagePicker by remember { mutableStateOf(false) }
-    var isLoadingLocation by remember { mutableStateOf(false) }
+    var errorMessage by rememberSaveable { mutableStateOf<String?>(null) }
+    var showMapDialog by rememberSaveable { mutableStateOf(false) }
+    var showImagePicker by rememberSaveable { mutableStateOf(false) }
+    var isLoadingLocation by rememberSaveable { mutableStateOf(false) }
+    var showDatePicker by rememberSaveable { mutableStateOf(false) }
+    var showTimePicker by rememberSaveable { mutableStateOf(false) }
+    var showPollinatorDropdown by rememberSaveable { mutableStateOf(false) }
+    var showPlantDropdown by rememberSaveable { mutableStateOf(false) }
+    var showLocationDisabledWarning by rememberSaveable { mutableStateOf(false) }
+    var showPermissionDeniedWarning by rememberSaveable { mutableStateOf(false) }
+    var showPermissionPermanentlyDeniedWarning by rememberSaveable { mutableStateOf(false) }
 
     val cameraLauncher = rememberCameraLauncher(
         onPhotoReady = { uri ->
@@ -77,14 +85,6 @@ fun AddSightingScreen(
         errorMessage = null
         showImagePicker = false
     }
-
-    var showDatePicker by remember { mutableStateOf(false) }
-    var showTimePicker by remember { mutableStateOf(false) }
-    var showPollinatorDropdown by remember { mutableStateOf(false) }
-    var showPlantDropdown by remember { mutableStateOf(false) }
-    var showLocationDisabledWarning by remember { mutableStateOf(false) }
-    var showPermissionDeniedWarning by remember { mutableStateOf(false) }
-    var showPermissionPermanentlyDeniedWarning by remember { mutableStateOf(false) }
 
     val locationPermission = rememberMultiplePermissions(
         listOf(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION)

@@ -17,6 +17,7 @@ import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Upload
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,7 +43,7 @@ fun QuizResultScreen(
 ) {
     val locale = Locale.getDefault().language
     val context = LocalContext.current
-    var showLensDialog by remember { mutableStateOf(false) }
+    var showLensDialog by rememberSaveable { mutableStateOf(false) }
 
     BackHandler {
         actions.resetQuiz()

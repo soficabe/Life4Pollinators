@@ -11,6 +11,7 @@ import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -50,7 +51,7 @@ fun EditProfileScreen(
     val context = LocalContext.current
 
     // Gestione dialog per scelta foto
-    var showImagePicker by remember { mutableStateOf(false) }
+    var showImagePicker by rememberSaveable { mutableStateOf(false) }
 
     // Launcher per fotocamera
     val launchCamera = rememberCameraLauncher(

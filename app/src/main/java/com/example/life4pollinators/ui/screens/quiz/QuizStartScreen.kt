@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.PhotoCamera
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -38,15 +39,15 @@ fun QuizStartScreen(
     navController: NavHostController
 ) {
     val context = LocalContext.current
-    var showImagePicker by remember { mutableStateOf(false) }
+    var showImagePicker by rememberSaveable { mutableStateOf(false) }
 
-    // Inizializza localPhoto con la foto già esistente nello stato
-    var localPhoto by remember(state.photoUrl) {
+    // FIX: Usa rememberSaveable per mantenere la foto durante la rotazione
+    var localPhoto by rememberSaveable(stateSaver = UriSaver) {
         mutableStateOf(state.photoUrl?.let { Uri.parse(it) })
     }
 
-    var errorMessage by remember { mutableStateOf<String?>(null) }
-    var quizStarted by remember { mutableStateOf(false) }
+    var errorMessage by rememberSaveable { mutableStateOf<String?>(null) }
+    var quizStarted by rememberSaveable { mutableStateOf(false) }
 
     // Gestione del back button - resetta il quiz quando si va indietro
     BackHandler {
@@ -54,13 +55,10 @@ fun QuizStartScreen(
         navController.popBackStack()
     }
 
-    // Effect per pulire la foto quando si arriva da una navigazione "fresca"
-    // (non da un "Ritenta il quiz")
-    LaunchedEffect(Unit) {
-        // Se arriviamo qui senza una foto nello stato E il quizType è stato reimpostato
-        // significa che è una nuova sessione
-        if (state.photoUrl == null && state.step == QuizStep.Start) {
-            localPhoto = null
+    // Effect per sincronizzare localPhoto con state.photoUrl
+    LaunchedEffect(state.photoUrl) {
+        if (state.photoUrl != null && localPhoto == null) {
+            localPhoto = Uri.parse(state.photoUrl)
         }
     }
 
@@ -249,3 +247,9 @@ fun QuizStartScreen(
         }
     }
 }
+
+// Saver personalizzato per Uri
+private val UriSaver = androidx.compose.runtime.saveable.Saver<Uri?, String>(
+    save = { it?.toString() },
+    restore = { it.let { Uri.parse(it) } }
+)
