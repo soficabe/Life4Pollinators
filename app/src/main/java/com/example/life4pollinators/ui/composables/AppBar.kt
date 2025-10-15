@@ -28,6 +28,8 @@ import com.example.life4pollinators.ui.theme.AppBarGreen
  * @param navController Controller di navigazione per gestire back e navigazione a settings.
  * @param personalizedTitle Titolo personalizzato opzionale
  * @param showBackButton Se false, nasconde il bottone back anche se c'è un back stack
+ * @param showSettingsButton Se false, nasconde il bottone settings
+ * @param onBackClick Callback personalizzato per il pulsante back (se null usa navigateUp())
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,7 +37,8 @@ fun AppBar(
     navController: NavHostController,
     personalizedTitle: String? = null,
     showBackButton: Boolean = true,
-    showSettingsButton: Boolean = true
+    showSettingsButton: Boolean = true,
+    onBackClick: (() -> Unit)? = null
 ) {
     val backStackEntry by navController.currentBackStackEntryAsState()
 
@@ -84,7 +87,13 @@ fun AppBar(
         },
         navigationIcon = {
             if(showBackButton && title != stringResource(R.string.title_learn) && navController.previousBackStackEntry != null) {
-                IconButton(onClick = {navController.navigateUp()}) {
+                IconButton(onClick = {
+                    if (onBackClick != null) {
+                        onBackClick()
+                    } else {
+                        navController.navigateUp()
+                    }
+                }) {
                     Icon(Icons.AutoMirrored.Outlined.ArrowBack, "Go Back")
                 }
             }

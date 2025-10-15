@@ -1,6 +1,7 @@
 package com.example.life4pollinators.ui.screens.quiz
 
 import android.net.Uri
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -47,6 +48,22 @@ fun QuizStartScreen(
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var quizStarted by remember { mutableStateOf(false) }
 
+    // Gestione del back button - resetta il quiz quando si va indietro
+    BackHandler {
+        actions.resetQuiz()
+        navController.popBackStack()
+    }
+
+    // Effect per pulire la foto quando si arriva da una navigazione "fresca"
+    // (non da un "Ritenta il quiz")
+    LaunchedEffect(Unit) {
+        // Se arriviamo qui senza una foto nello stato E il quizType è stato reimpostato
+        // significa che è una nuova sessione
+        if (state.photoUrl == null && state.step == QuizStep.Start) {
+            localPhoto = null
+        }
+    }
+
     val launchCamera = rememberCameraLauncher(
         onPhotoReady = { uri ->
             localPhoto = uri
@@ -75,7 +92,11 @@ fun QuizStartScreen(
         topBar = {
             AppBar(
                 navController = navController,
-                personalizedTitle = stringResource(R.string.title_quiz_start)
+                personalizedTitle = stringResource(R.string.title_quiz_start),
+                onBackClick = {
+                    actions.resetQuiz()
+                    navController.popBackStack()
+                }
             )
         },
         bottomBar = {
