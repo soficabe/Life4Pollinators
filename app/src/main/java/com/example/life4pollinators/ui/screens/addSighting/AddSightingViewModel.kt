@@ -32,6 +32,10 @@ data class AddSightingState(
     val selectedPlantName: String? = null,
     val isPollinatorInvalid: Boolean = false,
     val isPlantInvalid: Boolean = false,
+    val isImageInvalid: Boolean = false,
+    val isDateInvalid: Boolean = false,
+    val isTimeInvalid: Boolean = false,
+    val isLocationInvalid: Boolean = false,
     val isLoading: Boolean = false,
     val isSuccess: Boolean = false,
     val errorMessage: String? = null
@@ -62,32 +66,31 @@ class AddSightingViewModel(
     private val _state = MutableStateFlow(AddSightingState())
     val state: StateFlow<AddSightingState> = _state.asStateFlow()
 
-    // Determina se la lingua del dispositivo è italiano
     private val isItalian: Boolean
         get() = Locale.getDefault().language == "it"
 
     val actions = object : AddSightingActions {
         override fun setImageUri(uri: Uri?) {
-            _state.update { it.copy(imageUri = uri) }
+            _state.update { it.copy(imageUri = uri, isImageInvalid = false) }
         }
 
         override fun setDate(date: LocalDate) {
-            _state.update { it.copy(date = date) }
+            _state.update { it.copy(date = date, isDateInvalid = false) }
         }
 
         override fun setTime(time: LocalTime) {
-            _state.update { it.copy(time = time) }
+            _state.update { it.copy(time = time, isTimeInvalid = false) }
         }
 
         override fun setLocation(latitude: Double, longitude: Double) {
-            _state.update { it.copy(latitude = latitude, longitude = longitude) }
+            _state.update { it.copy(latitude = latitude, longitude = longitude, isLocationInvalid = false) }
         }
 
         override fun onPollinatorQueryChange(query: String) {
             _state.update {
                 it.copy(
                     pollinatorQuery = query,
-                    isPollinatorInvalid = false // Reset errore quando l'utente digita
+                    isPollinatorInvalid = false
                 )
             }
             if (query.isBlank()) {
@@ -109,7 +112,7 @@ class AddSightingViewModel(
             _state.update {
                 it.copy(
                     plantQuery = query,
-                    isPlantInvalid = false // Reset errore quando l'utente digita
+                    isPlantInvalid = false
                 )
             }
             if (query.isBlank()) {
@@ -124,7 +127,6 @@ class AddSightingViewModel(
                                 it.nameIt.contains(query, ignoreCase = true)
                     }
                     .map { plant ->
-                        // Mostra il nome nella lingua corretta
                         val displayName = if (isItalian) plant.nameIt else plant.nameEn
                         plant.id to displayName
                     }
@@ -184,21 +186,40 @@ class AddSightingViewModel(
         override fun submitSighting(context: Context, userId: String) {
             val s = _state.value
 
-            // Validazione campi obbligatori
-            if (s.imageUri == null) {
-                _state.update { it.copy(errorMessage = context.getString(R.string.add_sighting_error_missing_fields)) }
-                return
-            }
-            if (s.date == null || s.time == null) {
-                _state.update { it.copy(errorMessage = context.getString(R.string.add_sighting_error_missing_fields)) }
-                return
-            }
-            if (s.latitude == null || s.longitude == null) {
-                _state.update { it.copy(errorMessage = context.getString(R.string.add_sighting_error_missing_fields)) }
-                return
+            // Reset tutti gli errori
+            _state.update {
+                it.copy(
+                    isImageInvalid = false,
+                    isDateInvalid = false,
+                    isTimeInvalid = false,
+                    isLocationInvalid = false,
+                    isPollinatorInvalid = false,
+                    isPlantInvalid = false,
+                    errorMessage = null
+                )
             }
 
-            // Controlla che sia stata selezionata una specie valida (non testo libero)
+            // Validazione campi obbligatori con evidenziazione errori
+            var hasError = false
+
+            if (s.imageUri == null) {
+                _state.update { it.copy(isImageInvalid = true) }
+                hasError = true
+            }
+            if (s.date == null) {
+                _state.update { it.copy(isDateInvalid = true) }
+                hasError = true
+            }
+            if (s.time == null) {
+                _state.update { it.copy(isTimeInvalid = true) }
+                hasError = true
+            }
+            if (s.latitude == null || s.longitude == null) {
+                _state.update { it.copy(isLocationInvalid = true) }
+                hasError = true
+            }
+
+            // Controlla selezione specie
             val targetId: String?
             val targetType: String?
 
@@ -212,22 +233,30 @@ class AddSightingViewModel(
                     targetType = "plant"
                 }
                 else -> {
-                    // Nessuna selezione valida - mostra errore visivo
+                    // Mostra errore su entrambi i campi se nessuno è selezionato
                     _state.update {
                         it.copy(
-                            errorMessage = context.getString(R.string.add_sighting_error_select_species),
-                            isPollinatorInvalid = s.pollinatorQuery.isNotBlank(),
-                            isPlantInvalid = s.plantQuery.isNotBlank()
+                            isPollinatorInvalid = true,
+                            isPlantInvalid = true
                         )
                     }
-                    return
+                    hasError = true
+                    targetId = null
+                    targetType = null
                 }
+            }
+
+            if (hasError) {
+                _state.update {
+                    it.copy(errorMessage = context.getString(R.string.add_sighting_error_missing_fields))
+                }
+                return
             }
 
             viewModelScope.launch {
                 _state.update { it.copy(isLoading = true, errorMessage = null) }
 
-                val imageUrl = imageRepository.uploadSightingImage(userId, s.imageUri, context)
+                val imageUrl = imageRepository.uploadSightingImage(userId, s.imageUri!!, context)
                 if (imageUrl == null) {
                     _state.update {
                         it.copy(
@@ -238,19 +267,15 @@ class AddSightingViewModel(
                     return@launch
                 }
 
-                // La posizione è ora opzionale - usa coordinate di default se non fornite
-                val latitude = s.latitude
-                val longitude = s.longitude
-
                 val success = sightingsRepository.addSighting(
                     userId = userId,
                     imageUrl = imageUrl,
-                    targetId = targetId,
-                    targetType = targetType,
-                    date = s.date,
-                    time = s.time,
-                    latitude = latitude,
-                    longitude = longitude
+                    targetId = targetId!!,
+                    targetType = targetType!!,
+                    date = s.date!!,
+                    time = s.time!!,
+                    latitude = s.latitude!!,
+                    longitude = s.longitude!!
                 )
 
                 if (success) {

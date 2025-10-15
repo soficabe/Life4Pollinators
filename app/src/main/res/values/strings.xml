@@ -186,6 +186,7 @@
     <string name="tap_to_change_location">Tap on the map to change location</string>
     <string name="validation_select_pollinator">Please select a pollinator from the suggestions</string>
     <string name="validation_select_plant">Please select a plant from the suggestions</string>
+    <string name="loading_location">Loading location…</string>
 
     <!-- Species Filter Labels -->
     <string name="filter_plants">Plants</string>

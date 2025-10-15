@@ -1,6 +1,7 @@
 package com.example.life4pollinators.ui.screens.addSighting
 
 import android.Manifest
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -13,6 +14,7 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
@@ -56,6 +58,7 @@ fun AddSightingScreen(
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var showMapDialog by remember { mutableStateOf(false) }
     var showImagePicker by remember { mutableStateOf(false) }
+    var isLoadingLocation by remember { mutableStateOf(false) }
 
     val cameraLauncher = rememberCameraLauncher(
         onPhotoReady = { uri ->
@@ -77,10 +80,8 @@ fun AddSightingScreen(
 
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
-
     var showPollinatorDropdown by remember { mutableStateOf(false) }
     var showPlantDropdown by remember { mutableStateOf(false) }
-
     var showLocationDisabledWarning by remember { mutableStateOf(false) }
     var showPermissionDeniedWarning by remember { mutableStateOf(false) }
     var showPermissionPermanentlyDeniedWarning by remember { mutableStateOf(false) }
@@ -91,22 +92,21 @@ fun AddSightingScreen(
         when {
             statuses.any { it.value.isGranted } -> {
                 scope.launch {
+                    isLoadingLocation = true
                     try {
                         val coords = locationService.getCurrentLocation()
-                        coords?.let {
-                            actions.setLocation(it.latitude, it.longitude)
-                        }
-                    } catch (ex: SecurityException) {
-                        // Handled
+                        coords?.let { actions.setLocation(it.latitude, it.longitude) }
+                    } catch (_: SecurityException) {
                     } catch (ex: IllegalStateException) {
                         showLocationDisabledWarning = true
+                    } finally {
+                        isLoadingLocation = false
                     }
                 }
             }
             statuses.all { it.value == PermissionStatus.PermanentlyDenied } ->
                 showPermissionPermanentlyDeniedWarning = true
-            else ->
-                showPermissionDeniedWarning = true
+            else -> showPermissionDeniedWarning = true
         }
     }
 
@@ -125,30 +125,46 @@ fun AddSightingScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
 
-            // Image selection section
+            // Image section
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(12.dp),
+                border = if (state.isImageInvalid) {
+                    BorderStroke(2.dp, MaterialTheme.colorScheme.error)
+                } else null
             ) {
                 Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    modifier = Modifier.padding(14.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    Text(
-                        text = stringResource(R.string.add_sighting_image_section),
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = stringResource(R.string.add_sighting_image_section),
+                            style = MaterialTheme.typography.titleSmall,
+                            color = if (state.isImageInvalid) MaterialTheme.colorScheme.error
+                            else MaterialTheme.colorScheme.primary
+                        )
+                        if (state.isImageInvalid) {
+                            Text(
+                                text = "*",
+                                style = MaterialTheme.typography.titleSmall,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    }
 
                     if (state.imageUri != null) {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(180.dp)
+                                .height(160.dp)
                                 .clip(RoundedCornerShape(8.dp))
                                 .background(MaterialTheme.colorScheme.surfaceVariant)
                         ) {
@@ -159,7 +175,6 @@ fun AddSightingScreen(
                                 contentScale = ContentScale.Crop
                             )
                         }
-
                         OutlinedButton(
                             onClick = { showImagePicker = true },
                             modifier = Modifier.fillMaxWidth()
@@ -200,17 +215,34 @@ fun AddSightingScreen(
             // Date & Time section
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(12.dp),
+                border = if (state.isDateInvalid || state.isTimeInvalid) {
+                    BorderStroke(2.dp, MaterialTheme.colorScheme.error)
+                } else null
             ) {
                 Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    modifier = Modifier.padding(14.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    Text(
-                        text = stringResource(R.string.add_sighting_datetime_section),
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = stringResource(R.string.add_sighting_datetime_section),
+                            style = MaterialTheme.typography.titleSmall,
+                            color = if (state.isDateInvalid || state.isTimeInvalid)
+                                MaterialTheme.colorScheme.error
+                            else MaterialTheme.colorScheme.primary
+                        )
+                        if (state.isDateInvalid || state.isTimeInvalid) {
+                            Text(
+                                text = "*",
+                                style = MaterialTheme.typography.titleSmall,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    }
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -222,6 +254,7 @@ fun AddSightingScreen(
                             label = { Text(stringResource(R.string.add_sighting_date)) },
                             readOnly = true,
                             modifier = Modifier.weight(1.3f),
+                            isError = state.isDateInvalid,
                             trailingIcon = {
                                 IconButton(onClick = { showDatePicker = true }) {
                                     Icon(
@@ -239,6 +272,7 @@ fun AddSightingScreen(
                             label = { Text(stringResource(R.string.add_sighting_time)) },
                             readOnly = true,
                             modifier = Modifier.weight(1f),
+                            isError = state.isTimeInvalid,
                             trailingIcon = {
                                 IconButton(onClick = { showTimePicker = true }) {
                                     Icon(
@@ -256,17 +290,33 @@ fun AddSightingScreen(
             // Location section
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(12.dp),
+                border = if (state.isLocationInvalid) {
+                    BorderStroke(2.dp, MaterialTheme.colorScheme.error)
+                } else null
             ) {
                 Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    modifier = Modifier.padding(14.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    Text(
-                        text = stringResource(R.string.add_sighting_location_section),
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = stringResource(R.string.add_sighting_location_section),
+                            style = MaterialTheme.typography.titleSmall,
+                            color = if (state.isLocationInvalid) MaterialTheme.colorScheme.error
+                            else MaterialTheme.colorScheme.primary
+                        )
+                        if (state.isLocationInvalid) {
+                            Text(
+                                text = "*",
+                                style = MaterialTheme.typography.titleSmall,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    }
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -276,22 +326,24 @@ fun AddSightingScreen(
                             onClick = {
                                 if (locationPermission.statuses.any { it.value.isGranted }) {
                                     scope.launch {
+                                        isLoadingLocation = true
                                         try {
                                             val coords = locationService.getCurrentLocation()
-                                            coords?.let {
-                                                actions.setLocation(it.latitude, it.longitude)
-                                            }
+                                            coords?.let { actions.setLocation(it.latitude, it.longitude) }
                                         } catch (ex: SecurityException) {
                                             showPermissionDeniedWarning = true
                                         } catch (ex: IllegalStateException) {
                                             showLocationDisabledWarning = true
+                                        } finally {
+                                            isLoadingLocation = false
                                         }
                                     }
                                 } else {
                                     locationPermission.launchPermissionRequest()
                                 }
                             },
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
+                            enabled = !isLoadingLocation
                         ) {
                             Icon(
                                 imageVector = Icons.Outlined.MyLocation,
@@ -316,7 +368,24 @@ fun AddSightingScreen(
                         }
                     }
 
-                    if (state.latitude != null && state.longitude != null) {
+                    if (isLoadingLocation) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(16.dp),
+                                strokeWidth = 2.dp
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                text = stringResource(R.string.loading_location),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    } else if (state.latitude != null && state.longitude != null) {
                         Text(
                             text = stringResource(R.string.add_sighting_lat_lng, state.latitude, state.longitude),
                             style = MaterialTheme.typography.bodySmall,
@@ -329,19 +398,36 @@ fun AddSightingScreen(
             // Species selection section
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(12.dp),
+                border = if (state.isPollinatorInvalid || state.isPlantInvalid) {
+                    BorderStroke(2.dp, MaterialTheme.colorScheme.error)
+                } else null
             ) {
                 Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    modifier = Modifier.padding(14.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    Text(
-                        text = stringResource(R.string.add_sighting_species_section),
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = stringResource(R.string.add_sighting_species_section),
+                            style = MaterialTheme.typography.titleSmall,
+                            color = if (state.isPollinatorInvalid || state.isPlantInvalid)
+                                MaterialTheme.colorScheme.error
+                            else MaterialTheme.colorScheme.primary
+                        )
+                        if (state.isPollinatorInvalid || state.isPlantInvalid) {
+                            Text(
+                                text = "*",
+                                style = MaterialTheme.typography.titleSmall,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    }
 
-                    // Pollinator selection
+                    // Pollinator
                     Box {
                         OutlinedTextField(
                             value = state.pollinatorQuery,
@@ -400,7 +486,7 @@ fun AddSightingScreen(
                         }
                     }
 
-                    // Plant selection
+                    // Plant
                     Box {
                         OutlinedTextField(
                             value = state.plantQuery,
@@ -467,7 +553,7 @@ fun AddSightingScreen(
                 enabled = !state.isLoading,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(52.dp),
+                    .height(50.dp),
                 shape = RoundedCornerShape(12.dp)
             ) {
                 if (state.isLoading) {
@@ -506,7 +592,7 @@ fun AddSightingScreen(
                 )
             }
 
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(4.dp))
         }
     }
 
