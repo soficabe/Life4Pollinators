@@ -189,7 +189,7 @@ fun QuizResultScreen(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "Carica come avvistamento",
+                            text = stringResource(R.string.upload_sighting),
                             style = MaterialTheme.typography.bodyLarge
                         )
                     }
@@ -201,7 +201,7 @@ fun QuizResultScreen(
                     if (state.uploadSuccess == true) {
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "Avvistamento caricato!",
+                            text = stringResource(R.string.sighting_uploaded),
                             color = MaterialTheme.colorScheme.primary,
                             style = MaterialTheme.typography.bodyMedium
                         )
@@ -209,7 +209,7 @@ fun QuizResultScreen(
                     if (state.uploadSuccess == false) {
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = state.uploadError ?: "Errore nel caricamento",
+                            text = state.uploadError?.let { stringResource(it) } ?: stringResource(R.string.sighting_upload_error),
                             color = MaterialTheme.colorScheme.error,
                             style = MaterialTheme.typography.bodyMedium
                         )

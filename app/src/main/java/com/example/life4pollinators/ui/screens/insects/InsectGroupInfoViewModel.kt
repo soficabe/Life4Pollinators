@@ -3,6 +3,7 @@ package com.example.life4pollinators.ui.screens.insects
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.life4pollinators.R
 import com.example.life4pollinators.data.database.entities.InsectGroup
 import com.example.life4pollinators.data.repositories.InsectsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,7 +13,7 @@ import kotlinx.coroutines.launch
 data class InsectGroupInfoState(
     val group: InsectGroup? = null,
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: Int? = null
 )
 
 class InsectGroupInfoViewModel(
@@ -37,7 +38,7 @@ class InsectGroupInfoViewModel(
                 val group = repository.getInsectGroupById(groupId)
                 _state.value = InsectGroupInfoState(group = group, isLoading = false)
             } catch (e: Exception) {
-                _state.value = InsectGroupInfoState(isLoading = false, error = "Error loading group")
+                _state.value = InsectGroupInfoState(isLoading = false, error = R.string.group_loading_error)
             }
         }
     }

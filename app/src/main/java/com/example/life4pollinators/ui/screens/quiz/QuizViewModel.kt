@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.life4pollinators.R
 import com.example.life4pollinators.data.database.entities.*
 import com.example.life4pollinators.data.repositories.QuizRepository
 import com.example.life4pollinators.data.repositories.InsectsRepository
@@ -48,10 +49,10 @@ data class QuizState(
     val selectedGroupId: String? = null,
     val insectsForSelection: List<Insect> = emptyList(),
     val loading: Boolean = false,
-    val error: String? = null,
+    val error: Int? = null,  // Cambiato da String? a Int? per ID risorsa
     val isUploading: Boolean = false,
     val uploadSuccess: Boolean? = null,
-    val uploadError: String? = null
+    val uploadError: Int? = null  // Cambiato da String? a Int? per ID risorsa
 )
 
 interface QuizActions {
@@ -104,7 +105,7 @@ class QuizViewModel(
                         )
                     }
                 } else {
-                    _state.update { it.copy(error = "Quiz not found", loading = false) }
+                    _state.update { it.copy(error = R.string.quiz_error_not_found, loading = false) }
                 }
             }
         }
@@ -124,7 +125,7 @@ class QuizViewModel(
                 } catch (e: Exception) {
                     _state.update {
                         it.copy(
-                            error = "Failed to load insect groups",
+                            error = R.string.quiz_error_load_groups,
                             loading = false
                         )
                     }
@@ -160,10 +161,10 @@ class QuizViewModel(
                                 )
                             }
                         } else {
-                            _state.update { it.copy(error = "Quiz not found", loading = false) }
+                            _state.update { it.copy(error = R.string.quiz_error_not_found, loading = false) }
                         }
                     } else {
-                        _state.update { it.copy(error = "Quiz not found", loading = false) }
+                        _state.update { it.copy(error = R.string.quiz_error_not_found, loading = false) }
                     }
                 } else {
                     try {
@@ -178,7 +179,7 @@ class QuizViewModel(
                     } catch (e: Exception) {
                         _state.update {
                             it.copy(
-                                error = "Failed to load insects",
+                                error = R.string.quiz_error_load_insects,
                                 loading = false
                             )
                         }
@@ -248,7 +249,7 @@ class QuizViewModel(
                                 possibleTargets = emptyList(),
                                 selectedTarget = null,
                                 loading = false,
-                                error = "No classification found."
+                                error = R.string.quiz_error_no_classification
                             )
                         }
                     }
@@ -283,7 +284,7 @@ class QuizViewModel(
         override fun submitQuizSighting(context: Context, userId: String) {
             val s = _state.value
             if (s.selectedTarget == null || s.photoUrl.isNullOrBlank()) {
-                _state.update { it.copy(uploadSuccess = false, uploadError = "Dati mancanti") }
+                _state.update { it.copy(uploadSuccess = false, uploadError = R.string.quiz_error_missing_data) }
                 return
             }
             viewModelScope.launch {
@@ -293,7 +294,13 @@ class QuizViewModel(
                 val imageUrl: String? = if (isRemote) s.photoUrl
                 else imageRepository.uploadSightingImage(userId, uri, context)
                 if (imageUrl == null) {
-                    _state.update { it.copy(isUploading = false, uploadSuccess = false, uploadError = "Errore upload immagine") }
+                    _state.update {
+                        it.copy(
+                            isUploading = false,
+                            uploadSuccess = false,
+                            uploadError = R.string.quiz_error_upload_image
+                        )
+                    }
                     return@launch
                 }
                 val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
@@ -311,14 +318,12 @@ class QuizViewModel(
                     it.copy(
                         isUploading = false,
                         uploadSuccess = success,
-                        uploadError = if (!success) "Errore inserimento su database" else null
+                        uploadError = if (!success) R.string.quiz_error_database else null
                     )
                 }
             }
         }
-
     }
-
 
     private suspend fun loadTargetDetails(targets: List<QuizAnswerTarget>): List<TargetWithDetails> {
         return targets.mapNotNull { target ->

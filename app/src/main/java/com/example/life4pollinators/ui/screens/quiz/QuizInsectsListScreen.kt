@@ -110,7 +110,7 @@ fun QuizInsectsListScreen(
                 when {
                     state.loading -> CircularProgressIndicator(Modifier.align(Alignment.Center))
                     state.error != null -> Text(
-                        state.error,
+                        stringResource(state.error),
                         color = MaterialTheme.colorScheme.error,
                         modifier = Modifier.align(Alignment.Center)
                     )

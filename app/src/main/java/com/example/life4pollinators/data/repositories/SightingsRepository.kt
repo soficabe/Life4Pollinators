@@ -40,7 +40,6 @@ class SightingsRepository(
                 put("time", time.toString())
                 put("latitude", latitude)
                 put("longitude", longitude)
-                put("is_auto_validated", false)
             }
             supabase.from("sighting").insert(sighting)
             true

@@ -115,7 +115,7 @@ fun AddSightingScreen(
         bottomBar = {
             BottomNavBar(
                 isAuthenticated = isAuthenticated,
-                selectedTab = NavBarTab.None,
+                selectedTab = NavBarTab.AddSighting,
                 navController = navController
             )
         }
@@ -221,7 +221,7 @@ fun AddSightingScreen(
                             onValueChange = {},
                             label = { Text(stringResource(R.string.add_sighting_date)) },
                             readOnly = true,
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier.weight(1.3f),
                             trailingIcon = {
                                 IconButton(onClick = { showDatePicker = true }) {
                                     Icon(
@@ -321,12 +321,6 @@ fun AddSightingScreen(
                             text = stringResource(R.string.add_sighting_lat_lng, state.latitude, state.longitude),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.primary
-                        )
-                    } else {
-                        Text(
-                            text = stringResource(R.string.add_sighting_location_optional),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -672,7 +666,7 @@ fun MaterialDatePickerDialog(
                     }
                     onDismiss()
                 }
-            ) { Text("OK") }
+            ) { Text("Ok") }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
@@ -705,7 +699,7 @@ fun MaterialTimePickerDialog(
                     onTimeSelected(LocalTime(pickerState.hour, pickerState.minute))
                     onDismiss()
                 }
-            ) { Text("OK") }
+            ) { Text("Ok") }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }

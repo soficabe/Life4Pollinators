@@ -3,6 +3,7 @@ package com.example.life4pollinators.ui.screens.insects
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.life4pollinators.R
 import com.example.life4pollinators.data.database.entities.Insect
 import com.example.life4pollinators.data.repositories.InsectsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,7 +13,7 @@ import kotlinx.coroutines.launch
 data class InsectDetailState(
     val insect: Insect? = null,
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: Int? = null
 )
 
 class InsectDetailViewModel(
@@ -37,7 +38,7 @@ class InsectDetailViewModel(
                 val insect = repository.getInsectById(insectId)
                 _state.value = InsectDetailState(insect = insect, isLoading = false)
             } catch (e: Exception) {
-                _state.value = InsectDetailState(isLoading = false, error = "Error loading insect")
+                _state.value = InsectDetailState(isLoading = false, error = R.string.insect_loading_error)
             }
         }
     }

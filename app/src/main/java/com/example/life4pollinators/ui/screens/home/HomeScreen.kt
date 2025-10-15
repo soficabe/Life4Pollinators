@@ -72,7 +72,7 @@ fun HomeScreen(
                 modifier = Modifier.padding(bottom = 8.dp)
             )
             SectionCard(
-                title = stringResource(R.string.plants),
+                title = stringResource(R.string.plants_quiz),
                 imageRes = painterResource(R.drawable.plants),
                 backgroundColor = MaterialTheme.colorScheme.surfaceContainer,
                 onClick = { navController.navigate("quizStart/plant") },
@@ -80,7 +80,7 @@ fun HomeScreen(
             )
             Spacer(Modifier.height(8.dp))
             SectionCard(
-                title = stringResource(R.string.insects),
+                title = stringResource(R.string.insects_quiz),
                 imageRes = painterResource(R.drawable.insects),
                 backgroundColor = MaterialTheme.colorScheme.surfaceContainer,
                 onClick = { navController.navigate("quizStart/insect") },

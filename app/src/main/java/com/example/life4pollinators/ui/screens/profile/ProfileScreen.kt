@@ -167,7 +167,7 @@ fun ProfileScreen(
 
                     Column(horizontalAlignment = Alignment.End) {
                         Text(
-                            text = if (state.isLoadingStats) "..." else state.stats.scoreText,
+                            text = if (state.isLoadingStats) "..." else "${state.stats.totalScore} ${stringResource(R.string.points)}",
                             style = MaterialTheme.typography.headlineSmall.copy(
                                 fontWeight = FontWeight.Bold
                             ),

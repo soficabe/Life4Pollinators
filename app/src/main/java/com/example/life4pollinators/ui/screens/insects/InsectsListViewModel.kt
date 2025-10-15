@@ -3,6 +3,7 @@ package com.example.life4pollinators.ui.screens.insects
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.life4pollinators.R
 import com.example.life4pollinators.data.database.entities.Insect
 import com.example.life4pollinators.data.database.entities.InsectGroup
 import com.example.life4pollinators.data.repositories.InsectsRepository
@@ -14,7 +15,7 @@ data class InsectsListState(
     val insects: List<Insect> = emptyList(),
     val group: InsectGroup? = null,
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: Int? = null
 )
 
 class InsectsListViewModel(
@@ -44,7 +45,7 @@ class InsectsListViewModel(
                     insects = emptyList(),
                     group = null,
                     isLoading = false,
-                    error = "Loading error"
+                    error = R.string.insects_loading_error
                 )
             }
         }

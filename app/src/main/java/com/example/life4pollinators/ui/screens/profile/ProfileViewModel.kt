@@ -31,9 +31,6 @@ data class UserStats(
 
     val insectsText: String
         get() = "$uniqueInsects/$totalInsects"
-
-    val scoreText: String
-        get() = "$totalScore pts"
 }
 
 /**

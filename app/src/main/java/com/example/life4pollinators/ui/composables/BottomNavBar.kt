@@ -41,7 +41,7 @@ fun BottomNavBar(
         NavigationBarItem(
             icon = { Icon(Icons.Outlined.Visibility, contentDescription = "Sightings") },
             label = { Text(stringResource(R.string.sightings)) },
-            selected = false,
+            selected = selectedTab == NavBarTab.Sightings,
             onClick = {
                 if(isAuthenticated)
                     navController.navigate(L4PRoute.Sightings)
@@ -53,7 +53,7 @@ fun BottomNavBar(
         NavigationBarItem(
             icon = { Icon(Icons.Outlined.AddCircle, contentDescription = "Add Sighting") },
             label = { Text(stringResource(R.string.add_sighting)) },
-            selected = false,
+            selected = selectedTab == NavBarTab.AddSighting,
             onClick = {
                 if(isAuthenticated)
                     navController.navigate(L4PRoute.AddSighting)

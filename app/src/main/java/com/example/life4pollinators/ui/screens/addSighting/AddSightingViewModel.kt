@@ -193,6 +193,10 @@ class AddSightingViewModel(
                 _state.update { it.copy(errorMessage = context.getString(R.string.add_sighting_error_missing_fields)) }
                 return
             }
+            if (s.latitude == null || s.longitude == null) {
+                _state.update { it.copy(errorMessage = context.getString(R.string.add_sighting_error_missing_fields)) }
+                return
+            }
 
             // Controlla che sia stata selezionata una specie valida (non testo libero)
             val targetId: String?
@@ -235,8 +239,8 @@ class AddSightingViewModel(
                 }
 
                 // La posizione è ora opzionale - usa coordinate di default se non fornite
-                val latitude = s.latitude ?: 0.0
-                val longitude = s.longitude ?: 0.0
+                val latitude = s.latitude
+                val longitude = s.longitude
 
                 val success = sightingsRepository.addSighting(
                     userId = userId,

@@ -21,8 +21,8 @@ data class Sighting(
     @SerialName("target_type")
     val targetType: String,
 
-    @SerialName("is_auto_validated")
-    val isAutoValidated: Boolean = false,
+    @SerialName("is_validated")
+    val isValidated: Boolean = false,
 
     @SerialName("created_at")
     val createdAt: Instant,

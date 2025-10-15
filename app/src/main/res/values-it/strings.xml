@@ -2,7 +2,7 @@
 <resources>
     <string name="app_name">Life4Pollinators</string>
 
-    <!-- Screen Titles -->
+    <!-- AppBar Screen Titles -->
     <string name="title_learn">Impara</string>
     <string name="title_profile">Profilo</string>
     <string name="title_edit_profile">Modifica Profilo</string>
@@ -18,8 +18,11 @@
     <string name="title_add_sighting">Aggiungi Avvistamento</string>
     <string name="unknown_screen">Schermata Sconosciuta</string>
 
-    <!-- SignIn -->
-    <string name="signInWithGoogle">Accedi con Google</string>
+    <!-- BottomNavBar Titles -->
+    <string name="learn">Impara</string>
+    <string name="sightings">Avvista</string>
+    <string name="add_sighting">Aggiungi</string>
+    <string name="user_profile">Profilo</string>
 
     <!-- Signup Screen -->
     <string name="create_account_title">Crea il tuo account</string>
@@ -37,12 +40,10 @@
     <string name="requiredFields_error">Sono richiesti tutti i campi</string>
     <string name="passwordNotMatch_error">Le password non corrispondono</string>
     <string name="weakPassword">La password deve essere lunga almeno 6 caratteri</string>
-    <string name="userExisting_error">Un user con questa email esiste già</string>
     <string name="username_already_exists">Questo username è già utilizzato</string>
     <string name="email_already_exists">Questa email è già registrata</string>
     <string name="email_invalid_format">Digita un indirizzo email valido</string>
     <string name="generic_signup_error">Registrazione fallita. Riprova.</string>
-    <string name="errorString">Si è verificato un errore</string>
 
     <!-- SignIn Screen -->
     <string name="sign_in_title">Accedi per procedere</string>
@@ -51,21 +52,12 @@
     <string name="or">Oppure</string>
 
     <!-- SignIn Error Messages -->
-    <string name="login_cancelled">Login annullato</string>
     <string name="login_cancelled_by_user">Login annullato dall\'utente</string>
     <string name="network_error">Errore di rete. Verifica la connessione.</string>
     <string name="invalid_credentials">Email o password non valide. Controlla le credenziali.</string>
     <string name="required_fields">Email e password sono obbligatori</string>
     <string name="invalid_email">Inserisci un indirizzo email valido</string>
     <string name="unknown_error">Accesso non riuscito. Riprova.</string>
-
-    <!-- BottomNavBar Titles -->
-    <string name="home">Home</string>
-    <string name="profile">Profilo</string>
-    <string name="learn">Impara</string>
-    <string name="sightings">Avvista</string>
-    <string name="add_sighting">Aggiungi</string>
-    <string name="user_profile">Profilo</string>
 
     <!-- Learn Screen -->
     <string name="learn_about">Scopri di più su:</string>
@@ -74,13 +66,13 @@
     <string name="test_your_classification_skills">Testa le tue capacità di classificazione:</string>
 
     <!-- Profile Screen -->
-    <string name="sightings_stats">Specie Avvistate</string>
-    <string name="plants_stats">Piante</string>
-    <string name="insects_stats">Insetti</string>
-    <string name="number_of_sightings">N. Avvistamenti</string>
-    <string name="ranking">Classifica</string>
-    <string name="day">Giorno</string>
-    <string name="week">Settimana</string>
+    <string name="plants_stats">Piante avvistate</string>
+    <string name="insects_stats">Insetti avvistati</string>
+    <string name="number_of_sightings">Avvistamenti totali</string>
+    <string name="points">pt</string>
+    <string name="global_ranking">Classifica Globale</string>
+    <string name="position">Posizione</string>
+    <string name="total_score">Punteggio Totale</string>
 
     <!-- Edit Profile Screen -->
     <string name="change_image">Cambia Immagine</string>
@@ -91,7 +83,6 @@
     <string name="profile_saved">Modifica profilo salvata!</string>
     <string name="photo_not_saved">Foto non salvata</string>
     <string name="photo_error">Errore nella foto</string>
-    <string name="all_fields_required">Tutti i campi sono obbligatori</string>
     <string name="invalid_email_format">Formato email non valido</string>
     <string name="no_changes_to_save">Nessuna modifica da salvare</string>
     <string name="user_not_found">Utente non trovato</string>
@@ -118,10 +109,6 @@
     <string name="newPassword">Nuova Password</string>
     <string name="confirmNewPassword">Conferma Nuova Password</string>
     <string name="saveString">Salva</string>
-    <string name="currentPassword">Password Attuale</string>
-    <string name="password_too_short">La password deve essere lunga almeno 6 caratteri</string>
-    <string name="passwords_not_match">Le password non corrispondono</string>
-    <string name="current_password_wrong">La password attuale non è corretta</string>
     <string name="generic_change_psw_error">Cambio password fallito. Riprova.</string>
 
     <!-- Plants -->
@@ -132,13 +119,12 @@
     <string name="loading_error">Errore di caricamento</string>
 
     <!-- Quiz Start Screen -->
+    <string name="plants_quiz">Identificazione Piante</string>
+    <string name="insects_quiz">Identificazione Insetti</string>
     <string name="quiz_start_title_plant">Scatta o carica una foto della pianta</string>
     <string name="quiz_start_title_insect">Scatta o carica una foto dell\'insetto</string>
     <string name="quiz_start_title_default">Scatta o carica una foto</string>
     <string name="quiz_upload_button">Carica o scatta foto</string>
-    <string name="quiz_choose_photo">Scegli una foto</string>
-    <string name="quiz_take_photo">Scatta foto</string>
-    <string name="quiz_gallery">Galleria</string>
     <string name="quiz_cancel">Annulla</string>
     <string name="quiz_start_button">Inizia il quiz</string>
     <string name="quiz_selected_photo">Foto selezionata</string>
@@ -147,7 +133,7 @@
     <string name="quiz_your_photo">La tua foto</string>
 
     <!-- Quiz Target Selection Screen -->
-    <string name="quiz_select_match">Seleziona la corrispondenza corretta:</string>
+    <string name="quiz_select_match">Seleziona l\'opzione che corrisponde alla tua foto</string>
 
     <!-- Quiz Result Screen -->
     <string name="quiz_result_identified">Identificato come:</string>
@@ -155,60 +141,52 @@
     <string name="quiz_try_again">Ritenta il quiz</string>
     <string name="quiz_restart">Ricomincia il quiz</string>
     <string name="quiz_identified_photo">Esemplare identificato</string>
+    <string name="back_to_home">Torna alla Home</string>
+    <string name="quiz_change_photo">Cambia foto</string>
+    <string name="quiz_open_with_lens">Verifica con Google Lens</string>
+    <string name="quiz_open_with_lens_info">Ora scegli tra le app con cui puoi aprire l\'immagine: "Google Lens" oppure un\'altra app di riconoscimento immagini.\nIn questo modo puoi verificare se il tuo risultato di identificazione è corretto.\nSe non vedi Google Lens tra le opzioni, apri direttamente l\'app dal tuo cellulare e carica da lì la tua foto.</string>
+    <string name="quiz_open_with_lens_chooser">Scegli app per riconoscimento</string>
+    <string name="quiz_open_with_lens_continue">Continua</string>
+    <string name="upload_sighting">Aggiungi agli Avvistamenti</string>
+    <string name="sighting_uploaded">Avvistamento caricato!</string>
+    <string name="sighting_upload_error">Errore nel caricamento</string>
 
     <!-- Quiz Insect Type Selection -->
-    <string name="quiz_select_insect_type">Seleziona il tipo di insetto</string>
     <string name="quiz_which_insect_type">Quale tipo di insetto è?</string>
 
-    <string name="quiz_select_insect">Seleziona Insetto</string>
     <string name="quiz_select_insect_from_list">Seleziona l\'insetto che corrisponde alla tua foto</string>
 
-    <!-- Dialog di uscita dal quiz -->
+    <!-- Exit Quiz Dialog -->
     <string name="quiz_exit_title">Uscire dal quiz?</string>
     <string name="quiz_exit_message">Il tuo progresso andrà perso se esci ora.</string>
     <string name="quiz_exit_confirm">Esci</string>
     <string name="quiz_exit_cancel">Continua quiz</string>
 
-    <!-- Navigazione -->
-    <string name="back_to_home">Torna alla Home</string>
-    <string name="quiz_change_photo">Cambia foto</string>
-
-    <string name="quiz_open_with_lens">Verifica con Google Lens</string>
-    <string name="quiz_open_with_lens_info">Ora scegli tra le app "Lens" oppure un\'altra app di riconoscimento immagini. Se non vedi Lens, apri la foto con Galleria e usa l\'icona Lens da lì!</string>
-    <string name="quiz_open_with_lens_chooser">Scegli app per riconoscimento</string>
-    <string name="quiz_open_with_lens_continue">Continua</string>
-
-
-
-    <string name="add_sighting_header">Contribuisci inviando una foto di un impollinatore o una pianta:</string>
-    <string name="add_sighting_take_photo">Scatta una foto</string>
-    <string name="add_sighting_choose_picture">Scegli una foto</string>
-    <string name="add_sighting_image_selected">Immagine selezionata</string>
-    <string name="add_sighting_select_date">Seleziona la data</string>
-    <string name="add_sighting_select_time">Seleziona l\'orario</string>
-    <string name="add_sighting_location">Posizione:</string>
-    <string name="add_sighting_current_location">Posizione attuale</string>
-    <string name="add_sighting_choose_location">Scegli una posizione</string>
+    <!-- Add Sighting Screen -->
     <string name="add_sighting_lat_lng">Lat: %1$.4f, Lng: %2$.4f</string>
     <string name="add_sighting_pollinator_hint">Che impollinatore pensi sia?</string>
     <string name="add_sighting_plant_hint">Che pianta pensi sia?</string>
-    <string name="add_sighting_clear">Cancella</string>
     <string name="add_sighting_submit">Invia avvistamento</string>
     <string name="add_sighting_success">Avvistamento inviato con successo!</string>
     <string name="add_sighting_error_missing_fields">Compila tutti i campi obbligatori</string>
     <string name="add_sighting_error_select_species">Seleziona un impollinatore o una pianta</string>
     <string name="add_sighting_error_image_upload">Caricamento immagine fallito</string>
     <string name="add_sighting_error_db">Errore database</string>
-
-
     <string name="add_sighting_selected_location">Seleziona Posizione</string>
     <string name="my_location_marker_title">Mia Posizione</string>
-    <string name="add_sighting_tap_to_select">Tocca la mappa per selezionare una posizione</string>
-    <string name="add_sighting_tap_to_change">Tocca la mappa per cambiare la posizione</string>
-
-    <string name="global_ranking">Ranking Globale</string>
-    <string name="position">Posizione</string>
-    <string name="total_score">Punteggio Totale</string>
+    <string name="add_sighting_image_section">Immagine</string>
+    <string name="add_sighting_select_image">Seleziona Immagine</string>
+    <string name="add_sighting_datetime_section">Data &amp; Orario</string>
+    <string name="add_sighting_date">Data</string>
+    <string name="add_sighting_time">Orario</string>
+    <string name="add_sighting_location_section">Posizione</string>
+    <string name="add_sighting_current_location_short">Attuale</string>
+    <string name="add_sighting_choose_location_short">Scegli</string>
+    <string name="add_sighting_species_section">Specie</string>
+    <string name="select_location">Seleziona Posizione</string>
+    <string name="tap_to_change_location">Tocca sulla mappa per cambiare posizione</string>
+    <string name="validation_select_pollinator">Seleziona un impollinatore dai suggerimenti</string>
+    <string name="validation_select_plant">Seleziona una pianta dai suggerimenti</string>
 
     <!-- Species Filter Labels -->
     <string name="filter_plants">Piante</string>
@@ -220,21 +198,6 @@
     <string name="filter_beetles">Coleotteri</string>
     <string name="filter_wasps">Vespe</string>
 
-    <string name="validation_select_pollinator">Seleziona un impollinatore dai suggerimenti</string>
-    <string name="validation_select_plant">Seleziona una pianta dai suggerimenti</string>
-
-    <!-- AddSighting - Nuove stringhe per layout compatto -->
-    <string name="add_sighting_image_section">Immagine</string>
-    <string name="add_sighting_select_image">Seleziona Immagine</string>
-    <string name="add_sighting_datetime_section">Data &amp; Orario</string>
-    <string name="add_sighting_date">Data</string>
-    <string name="add_sighting_time">Orario</string>
-    <string name="add_sighting_location_section">Posizione Opzionale</string>
-    <string name="add_sighting_current_location_short">Attuale</string>
-    <string name="add_sighting_choose_location_short">Scegli</string>
-    <string name="add_sighting_location_optional">Nessuna posizione scelta</string>
-    <string name="add_sighting_species_section">Specie</string>
-
     <!-- Location permission dialogs -->
     <string name="gps_disabled_title">GPS Disabilitato</string>
     <string name="gps_disabled_message">Abilita il GPS per usare la tua posizione corrente</string>
@@ -242,8 +205,21 @@
     <string name="grant">Autorizza</string>
     <string name="location_permission_denied_title">Autorizzazione alla posizione negata.</string>
     <string name="location_permission_denied_message">Per utilizzare la tua posizione attuale è necessaria l\'autorizzazione</string>
-    <string name="permission_required_title">Autorizzazione necessario</string>
+    <string name="permission_required_title">Autorizzazione necessaria</string>
     <string name="permission_permanently_denied_message">L\'autorizzazione alla posizione è stata negata definitivamente. Abilitala nelle impostazioni.</string>
     <string name="settings">Impostazioni</string>
 
+    <!-- Learn Errors -->
+    <string name="insect_loading_error">Errore caricamento insetto</string>
+    <string name="group_loading_error">Errore caricamento info gruppo</string>
+    <string name="insects_loading_error">Errore caricamento insetti</string>
+
+    <!-- Quiz Errors -->
+    <string name="quiz_error_not_found">Quiz non trovato</string>
+    <string name="quiz_error_load_groups">Impossibile caricare i gruppi di insetti</string>
+    <string name="quiz_error_load_insects">Impossibile caricare gli insetti</string>
+    <string name="quiz_error_no_classification">Nessuna classificazione trovata</string>
+    <string name="quiz_error_missing_data">Dati mancanti</string>
+    <string name="quiz_error_upload_image">Errore durante il caricamento dell\'immagine</string>
+    <string name="quiz_error_database">Errore durante l\'inserimento nel database</string>
 </resources>

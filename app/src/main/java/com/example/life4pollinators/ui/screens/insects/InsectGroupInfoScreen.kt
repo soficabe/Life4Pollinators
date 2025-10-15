@@ -11,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -34,7 +35,16 @@ fun InsectGroupInfoScreen(
     var showZoom by remember { mutableStateOf(false) }
 
     Scaffold(
-        topBar = { AppBar(navController, personalizedTitle = group?.let { if (locale == "it") it.nameIt else it.nameEn }) },
+        topBar = {
+            AppBar(
+                navController,
+                personalizedTitle = group?.let {
+                    if (locale == "it")
+                        "Info ${it.nameIt}"
+                    else
+                        "${it.nameEn} Info" }
+            )
+        },
         bottomBar = {
             BottomNavBar(
                 isAuthenticated = isAuthenticated,
@@ -50,7 +60,7 @@ fun InsectGroupInfoScreen(
         ) {
             when {
                 state.isLoading -> CircularProgressIndicator(Modifier.align(Alignment.Center))
-                state.error != null -> Text(state.error, color = MaterialTheme.colorScheme.error, modifier = Modifier.align(Alignment.Center))
+                state.error != null -> Text(stringResource(state.error), color = MaterialTheme.colorScheme.error, modifier = Modifier.align(Alignment.Center))
                 group != null -> {
                     val imageUrl = if (locale == "it") group.imageUrlIt else group.imageUrlEn
                     val imageDesc = if (locale == "it") group.nameIt else group.nameEn

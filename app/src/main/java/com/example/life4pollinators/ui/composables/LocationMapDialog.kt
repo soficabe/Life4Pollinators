@@ -12,6 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
@@ -91,7 +92,7 @@ fun LocationMapDialog(
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("Select Location") },
+                    title = { Text(stringResource(R.string.select_location)) },
                     navigationIcon = {
                         IconButton(onClick = onDismiss) {
                             Icon(Icons.Default.Close, contentDescription = "Close")
@@ -114,7 +115,7 @@ fun LocationMapDialog(
             },
             floatingActionButton = {
                 FloatingActionButton(
-                    modifier = Modifier.padding(bottom = 52.dp),
+                    modifier = Modifier.padding(bottom = 64.dp),
                     onClick = {
                         if (locationPermission.statuses.any { it.value.isGranted }) {
                             scope.launch {
@@ -240,13 +241,13 @@ fun LocationMapDialog(
                                 style = MaterialTheme.typography.bodyMedium
                             )
                             Text(
-                                text = "Tap on the map to change location",
+                                text = stringResource(R.string.tap_to_change_location),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         } ?: run {
                             Text(
-                                text = "Tap on the map to select a location",
+                                text = stringResource(R.string.tap_to_change_location),
                                 style = MaterialTheme.typography.bodyMedium
                             )
                         }
@@ -259,16 +260,18 @@ fun LocationMapDialog(
     // Dialogs di warning
     if (showLocationDisabledWarning) {
         AlertDialog(
-            title = { Text("GPS Disabled") },
-            text = { Text("Please enable GPS to use your current location.") },
+            title = { Text(stringResource(R.string.gps_disabled_title)) },
+            text = { Text(stringResource(R.string.gps_disabled_message)) },
             confirmButton = {
                 TextButton(onClick = {
                     locationService.openLocationSettings()
                     showLocationDisabledWarning = false
-                }) { Text("Enable") }
+                }) { Text(stringResource(R.string.enable)) }
             },
             dismissButton = {
-                TextButton(onClick = { showLocationDisabledWarning = false }) { Text("Cancel") }
+                TextButton(onClick = { showLocationDisabledWarning = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
             },
             onDismissRequest = { showLocationDisabledWarning = false }
         )
@@ -276,16 +279,18 @@ fun LocationMapDialog(
 
     if (showPermissionDeniedWarning) {
         AlertDialog(
-            title = { Text("Location Permission Denied") },
-            text = { Text("Location permission is required to use your current location.") },
+            title = { Text(stringResource(R.string.location_permission_denied_title)) },
+            text = { Text(stringResource(R.string.location_permission_denied_message)) },
             confirmButton = {
                 TextButton(onClick = {
                     locationPermission.launchPermissionRequest()
                     showPermissionDeniedWarning = false
-                }) { Text("Grant") }
+                }) { Text(stringResource(R.string.grant)) }
             },
             dismissButton = {
-                TextButton(onClick = { showPermissionDeniedWarning = false }) { Text("Cancel") }
+                TextButton(onClick = { showPermissionDeniedWarning = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
             },
             onDismissRequest = { showPermissionDeniedWarning = false }
         )
@@ -293,8 +298,8 @@ fun LocationMapDialog(
 
     if (showPermissionPermanentlyDeniedWarning) {
         AlertDialog(
-            title = { Text("Permission Required") },
-            text = { Text("Location permission has been permanently denied. Please enable it in settings.") },
+            title = { Text(stringResource(R.string.permission_required_title)) },
+            text = { Text(stringResource(R.string.permission_permanently_denied_message)) },
             confirmButton = {
                 TextButton(onClick = {
                     val intent = android.content.Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
@@ -305,10 +310,12 @@ fun LocationMapDialog(
                         context.startActivity(intent)
                     }
                     showPermissionPermanentlyDeniedWarning = false
-                }) { Text("Settings") }
+                }) { Text(stringResource(R.string.settings)) }
             },
             dismissButton = {
-                TextButton(onClick = { showPermissionPermanentlyDeniedWarning = false }) { Text("Cancel") }
+                TextButton(onClick = { showPermissionPermanentlyDeniedWarning = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
             },
             onDismissRequest = { showPermissionPermanentlyDeniedWarning = false }
         )
