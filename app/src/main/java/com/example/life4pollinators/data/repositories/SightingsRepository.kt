@@ -93,6 +93,20 @@ class SightingsRepository(
     }
 
     /**
+     * Recupera tutti gli avvistamenti dal database
+     */
+    suspend fun getAllSightings(): List<Sighting> {
+        return try {
+            supabase.from("sighting")
+                .select()
+                .decodeList<Sighting>()
+        } catch (e: Exception) {
+            Log.e("SightingsRepository", "Errore recupero tutti gli avvistamenti", e)
+            emptyList()
+        }
+    }
+
+    /**
      * Calcola il ranking globale basato su specie uniche e avvistamenti totali
      * Formula: (specie uniche * 10) + avvistamenti totali
      * @return Pair(rank, score) dove rank è la posizione e score è il punteggio

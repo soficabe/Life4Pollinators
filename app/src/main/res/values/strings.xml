@@ -15,6 +15,7 @@
     <string name="title_quiz_question">Quiz Question</string>
     <string name="title_quiz_result">Quiz Result</string>
     <string name="title_add_sighting">Add Sighting</string>
+    <string name="title_leaderboard">Ranking</string>
     <string name="unknown_screen">Unknown Screen</string>
 
     <!-- BottomNavBar Titles -->
@@ -224,4 +225,11 @@
     <string name="quiz_error_missing_data">Missing data</string>
     <string name="quiz_error_upload_image">Image upload error</string>
     <string name="quiz_error_database">Database insertion error</string>
+
+    <!-- Leaderboard Screen -->
+    <string name="leaderboard_title">Global Ranking</string>
+    <string name="leaderboard_empty">No users in the ranking yet</string>
+    <string name="leaderboard_error">Error loading the ranking</string>
+    <string name="retry">Try again</string>
+    <string name="you">You</string>
 </resources>

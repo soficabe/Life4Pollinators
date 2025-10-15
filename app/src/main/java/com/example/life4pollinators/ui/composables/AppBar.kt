@@ -74,6 +74,8 @@ fun AppBar(
             stringResource(R.string.title_add_sighting)
         backStackEntry?.destination?.hasRoute<L4PRoute.Sightings>() == true ->
             stringResource(R.string.title_sightings)
+        backStackEntry?.destination?.hasRoute<L4PRoute.Leaderboard>() == true ->
+            stringResource(R.string.title_leaderboard)
         else -> stringResource(R.string.unknown_screen)
     }
 

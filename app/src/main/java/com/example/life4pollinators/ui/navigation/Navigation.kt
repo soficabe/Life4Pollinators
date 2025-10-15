@@ -41,6 +41,8 @@ import com.example.life4pollinators.ui.screens.settings.SettingsScreen
 import com.example.life4pollinators.ui.screens.settings.SettingsState
 import com.example.life4pollinators.ui.screens.settings.SettingsViewModel
 import com.example.life4pollinators.ui.screens.addSighting.AddSightingScreen
+import com.example.life4pollinators.ui.screens.leaderboard.LeaderboardScreen
+import com.example.life4pollinators.ui.screens.leaderboard.LeaderboardViewModel
 import com.example.life4pollinators.ui.screens.sightings.SightingsScreen
 import com.example.life4pollinators.ui.screens.sightings.SightingsViewModel
 import com.example.life4pollinators.ui.screens.signIn.SignInScreen
@@ -113,6 +115,9 @@ sealed interface L4PRoute {
 
     @Serializable
     data object Sightings : L4PRoute
+
+    @Serializable
+    data object Leaderboard : L4PRoute
 }
 
 @Composable
@@ -268,6 +273,12 @@ fun L4PNavGraph(
                 isAuthenticated = isAuthenticated,
                 navController = navController
             )
+        }
+
+        composable<L4PRoute.Leaderboard> {
+            val leaderboardVM = koinViewModel<LeaderboardViewModel>()
+            val leaderboardState by leaderboardVM.state.collectAsStateWithLifecycle()
+            LeaderboardScreen(leaderboardState, leaderboardVM.actions, navController)
         }
     }
 }

@@ -16,6 +16,7 @@
     <string name="title_quiz_question">Domanda Quiz</string>
     <string name="title_quiz_result">Risultato del Quiz</string>
     <string name="title_add_sighting">Aggiungi Avvistamento</string>
+    <string name="title_leaderboard">Classifica</string>
     <string name="unknown_screen">Schermata Sconosciuta</string>
 
     <!-- BottomNavBar Titles -->
@@ -224,4 +225,11 @@
     <string name="quiz_error_missing_data">Dati mancanti</string>
     <string name="quiz_error_upload_image">Errore durante il caricamento dell\'immagine</string>
     <string name="quiz_error_database">Errore durante l\'inserimento nel database</string>
+
+    <!-- Leaderboard Screen -->
+    <string name="leaderboard_title">Classifica Globale</string>
+    <string name="leaderboard_empty">Nessun utente in classifica ancora</string>
+    <string name="leaderboard_error">Errore nel caricamento della classifica</string>
+    <string name="retry">Riprova</string>
+    <string name="you">Tu</string>
 </resources>

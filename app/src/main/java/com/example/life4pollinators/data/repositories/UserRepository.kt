@@ -111,4 +111,20 @@ class UserRepository(
             }
         }
     }
+
+    /**
+     * Recupera tutti gli utenti dal database
+     */
+    suspend fun getAllUsers(): List<User> {
+        return withContext(Dispatchers.IO) {
+            try {
+                supabase.from("user")
+                    .select()
+                    .decodeList<User>()
+            } catch (e: Exception) {
+                Log.e("UserRepository", "Error fetching all users: ${e.message}", e)
+                emptyList()
+            }
+        }
+    }
 }

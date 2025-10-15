@@ -138,7 +138,8 @@ fun ProfileScreen(
                     containerColor = MaterialTheme.colorScheme.primaryContainer
                 ),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                shape = RoundedCornerShape(16.dp)
+                shape = RoundedCornerShape(16.dp),
+                onClick = { navController.navigate(L4PRoute.Leaderboard) }
             ) {
                 Row(
                     modifier = Modifier

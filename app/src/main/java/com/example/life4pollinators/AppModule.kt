@@ -17,6 +17,7 @@ import com.example.life4pollinators.ui.screens.insects.InsectDetailViewModel
 import com.example.life4pollinators.ui.screens.insects.InsectGroupInfoViewModel
 import com.example.life4pollinators.ui.screens.insects.InsectGroupsListViewModel
 import com.example.life4pollinators.ui.screens.insects.InsectsListViewModel
+import com.example.life4pollinators.ui.screens.leaderboard.LeaderboardViewModel
 import com.example.life4pollinators.ui.screens.plants.PlantDetailViewModel
 import com.example.life4pollinators.ui.screens.plants.PlantsGeneralInfoViewModel
 import com.example.life4pollinators.ui.screens.plants.PlantsListViewModel
@@ -105,4 +106,5 @@ val appModule = module {
     viewModel { QuizViewModel(get(), get(), get(), get()) }
     viewModel { AddSightingViewModel(get(), get(), get(), get()) }
     viewModel { SightingsViewModel(get(), get(), get(), get()) }
+    viewModel { LeaderboardViewModel(get(), get(), get()) }
 }
