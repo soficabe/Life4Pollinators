@@ -10,14 +10,9 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.outlined.CalendarToday
-import androidx.compose.material.icons.outlined.CameraAlt
-import androidx.compose.material.icons.outlined.Image
-import androidx.compose.material.icons.outlined.LocationOn
-import androidx.compose.material.icons.outlined.Schedule
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
@@ -31,6 +26,7 @@ import com.example.life4pollinators.R
 import com.example.life4pollinators.data.models.NavBarTab
 import com.example.life4pollinators.ui.composables.AppBar
 import com.example.life4pollinators.ui.composables.BottomNavBar
+import com.example.life4pollinators.ui.composables.ImagePickerDialog
 import com.example.life4pollinators.ui.composables.LocationMapDialog
 import com.example.life4pollinators.utils.LocationService
 import com.example.life4pollinators.utils.PermissionStatus
@@ -59,20 +55,24 @@ fun AddSightingScreen(
 
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var showMapDialog by remember { mutableStateOf(false) }
+    var showImagePicker by remember { mutableStateOf(false) }
 
     val cameraLauncher = rememberCameraLauncher(
         onPhotoReady = { uri ->
             actions.setImageUri(uri)
             errorMessage = null
+            showImagePicker = false
         },
         onError = { resId ->
             errorMessage = context.getString(resId)
+            showImagePicker = false
         }
     )
 
     val galleryLauncher = rememberGalleryLauncher { uri ->
         actions.setImageUri(uri)
         errorMessage = null
+        showImagePicker = false
     }
 
     var showDatePicker by remember { mutableStateOf(false) }
@@ -120,361 +120,415 @@ fun AddSightingScreen(
             )
         }
     ) { padding ->
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 16.dp, vertical = 16.dp)
+
+            // Image selection section
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp)
             ) {
-
-                Text(
-                    text = "Image of pollinator or plant:",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-
-                // Image selection
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    OutlinedButton(
-                        onClick = { cameraLauncher() },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.CameraAlt,
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(Modifier.width(8.dp))
-                        Text(stringResource(R.string.add_sighting_take_photo))
-                    }
-
                     Text(
-                        text = "or",
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.align(Alignment.CenterVertically)
+                        text = stringResource(R.string.add_sighting_image_section),
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.primary
                     )
 
-                    OutlinedButton(
-                        onClick = { galleryLauncher() },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Image,
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(Modifier.width(8.dp))
-                        Text(stringResource(R.string.add_sighting_choose_picture))
-                    }
-                }
-
-                if (state.imageUri != null) {
-                    Spacer(Modifier.height(16.dp))
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(200.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(MaterialTheme.colorScheme.surfaceVariant)
-                    ) {
-                        Image(
-                            painter = rememberAsyncImagePainter(state.imageUri),
-                            contentDescription = "Selected image",
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
-                        )
-                    }
-                }
-
-                errorMessage?.let {
-                    Spacer(Modifier.height(8.dp))
-                    Text(text = it, color = MaterialTheme.colorScheme.error)
-                }
-
-                Spacer(Modifier.height(24.dp))
-
-                // Date
-                OutlinedTextField(
-                    value = state.date?.toString() ?: "",
-                    onValueChange = {},
-                    label = { Text("Date of the sighting") },
-                    readOnly = true,
-                    modifier = Modifier.fillMaxWidth(),
-                    trailingIcon = {
-                        IconButton(onClick = { showDatePicker = true }) {
-                            Icon(
-                                imageVector = Icons.Outlined.CalendarToday,
-                                contentDescription = "Select date"
+                    if (state.imageUri != null) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(180.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(MaterialTheme.colorScheme.surfaceVariant)
+                        ) {
+                            Image(
+                                painter = rememberAsyncImagePainter(state.imageUri),
+                                contentDescription = "Selected image",
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop
                             )
                         }
-                    },
-                    placeholder = { Text("MM/DD/YYYY") }
-                )
 
-                Spacer(Modifier.height(16.dp))
-
-                // Time
-                OutlinedTextField(
-                    value = state.time?.toString() ?: "",
-                    onValueChange = {},
-                    label = { Text("Time of the sighting") },
-                    readOnly = true,
-                    modifier = Modifier.fillMaxWidth(),
-                    trailingIcon = {
-                        IconButton(onClick = { showTimePicker = true }) {
+                        OutlinedButton(
+                            onClick = { showImagePicker = true },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
                             Icon(
-                                imageVector = Icons.Outlined.Schedule,
-                                contentDescription = "Select time"
+                                imageVector = Icons.Outlined.Edit,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
                             )
+                            Spacer(Modifier.width(8.dp))
+                            Text(stringResource(R.string.change_image))
+                        }
+                    } else {
+                        Button(
+                            onClick = { showImagePicker = true },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.CameraAlt,
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(stringResource(R.string.add_sighting_select_image))
                         }
                     }
-                )
 
-                Spacer(Modifier.height(24.dp))
+                    errorMessage?.let {
+                        Text(
+                            text = it,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }
+            }
 
-                // Location
-                Text(
-                    text = "Location of the sighting:",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+            // Date & Time section
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    OutlinedButton(
-                        onClick = {
-                            if (locationPermission.statuses.any { it.value.isGranted }) {
-                                scope.launch {
-                                    try {
-                                        val coords = locationService.getCurrentLocation()
-                                        coords?.let {
-                                            actions.setLocation(it.latitude, it.longitude)
+                    Text(
+                        text = stringResource(R.string.add_sighting_datetime_section),
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        OutlinedTextField(
+                            value = state.date?.toString() ?: "",
+                            onValueChange = {},
+                            label = { Text(stringResource(R.string.add_sighting_date)) },
+                            readOnly = true,
+                            modifier = Modifier.weight(1f),
+                            trailingIcon = {
+                                IconButton(onClick = { showDatePicker = true }) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.CalendarToday,
+                                        contentDescription = "Select date"
+                                    )
+                                }
+                            },
+                            singleLine = true
+                        )
+
+                        OutlinedTextField(
+                            value = state.time?.toString() ?: "",
+                            onValueChange = {},
+                            label = { Text(stringResource(R.string.add_sighting_time)) },
+                            readOnly = true,
+                            modifier = Modifier.weight(1f),
+                            trailingIcon = {
+                                IconButton(onClick = { showTimePicker = true }) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Schedule,
+                                        contentDescription = "Select time"
+                                    )
+                                }
+                            },
+                            singleLine = true
+                        )
+                    }
+                }
+            }
+
+            // Location section
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.add_sighting_location_section),
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        OutlinedButton(
+                            onClick = {
+                                if (locationPermission.statuses.any { it.value.isGranted }) {
+                                    scope.launch {
+                                        try {
+                                            val coords = locationService.getCurrentLocation()
+                                            coords?.let {
+                                                actions.setLocation(it.latitude, it.longitude)
+                                            }
+                                        } catch (ex: SecurityException) {
+                                            showPermissionDeniedWarning = true
+                                        } catch (ex: IllegalStateException) {
+                                            showLocationDisabledWarning = true
                                         }
-                                    } catch (ex: SecurityException) {
-                                        showPermissionDeniedWarning = true
-                                    } catch (ex: IllegalStateException) {
-                                        showLocationDisabledWarning = true
+                                    }
+                                } else {
+                                    locationPermission.launchPermissionRequest()
+                                }
+                            },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.MyLocation,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(Modifier.width(4.dp))
+                            Text(stringResource(R.string.add_sighting_current_location_short))
+                        }
+
+                        OutlinedButton(
+                            onClick = { showMapDialog = true },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.Map,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(Modifier.width(4.dp))
+                            Text(stringResource(R.string.add_sighting_choose_location_short))
+                        }
+                    }
+
+                    if (state.latitude != null && state.longitude != null) {
+                        Text(
+                            text = stringResource(R.string.add_sighting_lat_lng, state.latitude, state.longitude),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    } else {
+                        Text(
+                            text = stringResource(R.string.add_sighting_location_optional),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+
+            // Species selection section
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.add_sighting_species_section),
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+
+                    // Pollinator selection
+                    Box {
+                        OutlinedTextField(
+                            value = state.pollinatorQuery,
+                            onValueChange = {
+                                if (state.selectedPollinatorId != null && it != state.selectedPollinatorName) {
+                                    actions.clearPollinator()
+                                }
+                                actions.onPollinatorQueryChange(it)
+                                showPollinatorDropdown = it.isNotBlank() && state.selectedPollinatorId == null
+                            },
+                            label = { Text(stringResource(R.string.add_sighting_pollinator_hint)) },
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = state.selectedPlantId == null,
+                            isError = state.isPollinatorInvalid,
+                            supportingText = if (state.isPollinatorInvalid) {
+                                { Text(stringResource(R.string.validation_select_pollinator)) }
+                            } else null,
+                            trailingIcon = {
+                                if (state.pollinatorQuery.isNotBlank()) {
+                                    IconButton(onClick = {
+                                        actions.clearPollinator()
+                                        showPollinatorDropdown = false
+                                    }) {
+                                        Icon(Icons.Filled.Clear, contentDescription = "Clear")
                                     }
                                 }
+                            },
+                            keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
+                            readOnly = state.selectedPollinatorId != null,
+                            colors = if (state.selectedPollinatorId != null) {
+                                OutlinedTextFieldDefaults.colors(
+                                    disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                                    disabledBorderColor = MaterialTheme.colorScheme.primary,
+                                    disabledLabelColor = MaterialTheme.colorScheme.primary
+                                )
                             } else {
-                                locationPermission.launchPermissionRequest()
-                            }
-                        },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.LocationOn,
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp)
+                                OutlinedTextFieldDefaults.colors()
+                            },
+                            singleLine = true
                         )
-                        Spacer(Modifier.width(4.dp))
-                        Text(stringResource(R.string.add_sighting_current_location))
+
+                        DropdownMenu(
+                            expanded = showPollinatorDropdown && state.pollinatorSuggestions.isNotEmpty(),
+                            onDismissRequest = { showPollinatorDropdown = false },
+                            modifier = Modifier.fillMaxWidth(0.9f)
+                        ) {
+                            state.pollinatorSuggestions.forEach { (id, name) ->
+                                DropdownMenuItem(
+                                    text = { Text(name) },
+                                    onClick = {
+                                        actions.selectPollinator(id, name)
+                                        showPollinatorDropdown = false
+                                    }
+                                )
+                            }
+                        }
                     }
 
-                    Text(
-                        text = "or",
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.align(Alignment.CenterVertically)
-                    )
-
-                    OutlinedButton(
-                        onClick = { showMapDialog = true },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.LocationOn,
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp)
+                    // Plant selection
+                    Box {
+                        OutlinedTextField(
+                            value = state.plantQuery,
+                            onValueChange = {
+                                if (state.selectedPlantId != null && it != state.selectedPlantName) {
+                                    actions.clearPlant()
+                                }
+                                actions.onPlantQueryChange(it)
+                                showPlantDropdown = it.isNotBlank() && state.selectedPlantId == null
+                            },
+                            label = { Text(stringResource(R.string.add_sighting_plant_hint)) },
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = state.pollinatorQuery.isBlank() && state.selectedPollinatorId == null,
+                            isError = state.isPlantInvalid,
+                            supportingText = if (state.isPlantInvalid) {
+                                { Text(stringResource(R.string.validation_select_plant)) }
+                            } else null,
+                            trailingIcon = {
+                                if (state.plantQuery.isNotBlank()) {
+                                    IconButton(onClick = {
+                                        actions.clearPlant()
+                                        showPlantDropdown = false
+                                    }) {
+                                        Icon(Icons.Filled.Clear, contentDescription = "Clear")
+                                    }
+                                }
+                            },
+                            keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
+                            readOnly = state.selectedPlantId != null,
+                            colors = if (state.selectedPlantId != null) {
+                                OutlinedTextFieldDefaults.colors(
+                                    disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                                    disabledBorderColor = MaterialTheme.colorScheme.primary,
+                                    disabledLabelColor = MaterialTheme.colorScheme.primary
+                                )
+                            } else {
+                                OutlinedTextFieldDefaults.colors()
+                            },
+                            singleLine = true
                         )
-                        Spacer(Modifier.width(4.dp))
-                        Text(stringResource(R.string.add_sighting_choose_location))
+
+                        DropdownMenu(
+                            expanded = showPlantDropdown && state.plantSuggestions.isNotEmpty(),
+                            onDismissRequest = { showPlantDropdown = false },
+                            modifier = Modifier.fillMaxWidth(0.9f)
+                        ) {
+                            state.plantSuggestions.take(5).forEach { suggestion ->
+                                DropdownMenuItem(
+                                    text = { Text(suggestion.second) },
+                                    onClick = {
+                                        actions.selectPlant(suggestion.first, suggestion.second)
+                                        showPlantDropdown = false
+                                    }
+                                )
+                            }
+                        }
                     }
                 }
+            }
 
-                if (state.latitude != null && state.longitude != null) {
-                    Text(
-                        text = stringResource(R.string.add_sighting_lat_lng, state.latitude, state.longitude),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(top = 8.dp)
+            // Submit button
+            Button(
+                onClick = { actions.submitSighting(context, userId) },
+                enabled = !state.isLoading,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                if (state.isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        strokeWidth = 2.dp
                     )
                 } else {
                     Text(
-                        text = "No location selected (optional)",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(top = 8.dp)
+                        stringResource(R.string.add_sighting_submit),
+                        style = MaterialTheme.typography.labelLarge
                     )
                 }
-
-                Spacer(Modifier.height(24.dp))
-
-                // Pollinator selection
-                Box {
-                    OutlinedTextField(
-                        value = state.pollinatorQuery,
-                        onValueChange = {
-                            if (state.selectedPollinatorId != null && it != state.selectedPollinatorName) {
-                                actions.clearPollinator()
-                            }
-                            actions.onPollinatorQueryChange(it)
-                            showPollinatorDropdown = it.isNotBlank() && state.selectedPollinatorId == null
-                        },
-                        label = { Text(stringResource(R.string.add_sighting_pollinator_hint)) },
-                        modifier = Modifier.fillMaxWidth(),
-                        enabled = state.selectedPlantId == null,
-                        isError = state.isPollinatorInvalid,
-                        supportingText = if (state.isPollinatorInvalid) {
-                            { Text(stringResource(R.string.validation_select_pollinator)) }
-                        } else null,
-                        trailingIcon = {
-                            if (state.pollinatorQuery.isNotBlank()) {
-                                IconButton(onClick = {
-                                    actions.clearPollinator()
-                                    showPollinatorDropdown = false
-                                }) {
-                                    Icon(Icons.Filled.Clear, contentDescription = "Clear")
-                                }
-                            }
-                        },
-                        keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
-                        readOnly = state.selectedPollinatorId != null,
-                        colors = if (state.selectedPollinatorId != null) {
-                            OutlinedTextFieldDefaults.colors(
-                                disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                                disabledBorderColor = MaterialTheme.colorScheme.primary,
-                                disabledLabelColor = MaterialTheme.colorScheme.primary
-                            )
-                        } else {
-                            OutlinedTextFieldDefaults.colors()
-                        }
-                    )
-
-                    DropdownMenu(
-                        expanded = showPollinatorDropdown && state.pollinatorSuggestions.isNotEmpty(),
-                        onDismissRequest = { showPollinatorDropdown = false },
-                        modifier = Modifier.fillMaxWidth(0.9f)
-                    ) {
-                        state.pollinatorSuggestions.forEach { (id, name) ->
-                            DropdownMenuItem(
-                                text = { Text(name) },
-                                onClick = {
-                                    actions.selectPollinator(id, name)
-                                    showPollinatorDropdown = false
-                                }
-                            )
-                        }
-                    }
-                }
-
-                Spacer(Modifier.height(16.dp))
-
-// Plant selection
-                Box {
-                    OutlinedTextField(
-                        value = state.plantQuery,
-                        onValueChange = {
-                            if (state.selectedPlantId != null && it != state.selectedPlantName) {
-                                actions.clearPlant()
-                            }
-                            actions.onPlantQueryChange(it)
-                            showPlantDropdown = it.isNotBlank() && state.selectedPlantId == null
-                        },
-                        label = { Text(stringResource(R.string.add_sighting_plant_hint)) },
-                        modifier = Modifier.fillMaxWidth(),
-                        enabled = state.pollinatorQuery.isBlank() && state.selectedPollinatorId == null,
-                        isError = state.isPlantInvalid,
-                        supportingText = if (state.isPlantInvalid) {
-                            { Text(stringResource(R.string.validation_select_plant)) }
-                        } else null,
-                        trailingIcon = {
-                            if (state.plantQuery.isNotBlank()) {
-                                IconButton(onClick = {
-                                    actions.clearPlant()
-                                    showPlantDropdown = false
-                                }) {
-                                    Icon(Icons.Filled.Clear, contentDescription = "Clear")
-                                }
-                            }
-                        },
-                        keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
-                        readOnly = state.selectedPlantId != null,
-                        colors = if (state.selectedPlantId != null) {
-                            OutlinedTextFieldDefaults.colors(
-                                disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                                disabledBorderColor = MaterialTheme.colorScheme.primary,
-                                disabledLabelColor = MaterialTheme.colorScheme.primary
-                            )
-                        } else {
-                            OutlinedTextFieldDefaults.colors()
-                        }
-                    )
-
-                    DropdownMenu(
-                        expanded = showPlantDropdown && state.plantSuggestions.isNotEmpty(),
-                        onDismissRequest = { showPlantDropdown = false },
-                        modifier = Modifier.fillMaxWidth(0.9f)
-                    ) {
-                        state.plantSuggestions.take(5).forEach { suggestion ->
-                            DropdownMenuItem(
-                                text = { Text(suggestion.second) },
-                                onClick = {
-                                    actions.selectPlant(suggestion.first, suggestion.second)
-                                    showPlantDropdown = false
-                                }
-                            )
-                        }
-                    }
-                }
-
-                Spacer(Modifier.height(32.dp))
-
-                // Submit button
-                Button(
-                    onClick = { actions.submitSighting(context, userId) },
-                    enabled = !state.isLoading,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp)
-                ) {
-                    Text(stringResource(R.string.add_sighting_submit))
-                }
-
-                if (state.isLoading) {
-                    Spacer(Modifier.height(16.dp))
-                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-                }
-
-                state.errorMessage?.let {
-                    Spacer(Modifier.height(8.dp))
-                    Text(text = it, color = MaterialTheme.colorScheme.error)
-                }
-
-                if (state.isSuccess) {
-                    LaunchedEffect(Unit) {
-                        kotlinx.coroutines.delay(2000)
-                        navController.popBackStack()
-                    }
-                    Spacer(Modifier.height(8.dp))
-                    Text(
-                        stringResource(R.string.add_sighting_success),
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-
-                Spacer(Modifier.height(32.dp))
             }
+
+            state.errorMessage?.let {
+                Text(
+                    text = it,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(horizontal = 4.dp)
+                )
+            }
+
+            if (state.isSuccess) {
+                LaunchedEffect(Unit) {
+                    kotlinx.coroutines.delay(2000)
+                    navController.popBackStack()
+                }
+                Text(
+                    stringResource(R.string.add_sighting_success),
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(horizontal = 4.dp)
+                )
+            }
+
+            Spacer(Modifier.height(8.dp))
         }
+    }
+
+    // Image Picker Dialog
+    if (showImagePicker) {
+        ImagePickerDialog(
+            onDismiss = { showImagePicker = false },
+            onCameraClick = {
+                cameraLauncher()
+                showImagePicker = false
+            },
+            onGalleryClick = {
+                galleryLauncher()
+                showImagePicker = false
+            }
+        )
     }
 
     // Map Dialog
@@ -513,47 +567,49 @@ fun AddSightingScreen(
         )
     }
 
-    // DIALOG GPS DISABILITATO
+    // Location permission dialogs
     if (showLocationDisabledWarning) {
         AlertDialog(
-            title = { Text("GPS Disabled") },
-            text = { Text("Please enable GPS to use your current location.") },
+            title = { Text(stringResource(R.string.gps_disabled_title)) },
+            text = { Text(stringResource(R.string.gps_disabled_message)) },
             confirmButton = {
                 TextButton(onClick = {
                     locationService.openLocationSettings()
                     showLocationDisabledWarning = false
-                }) { Text("Enable") }
+                }) { Text(stringResource(R.string.enable)) }
             },
             dismissButton = {
-                TextButton(onClick = { showLocationDisabledWarning = false }) { Text("Cancel") }
+                TextButton(onClick = { showLocationDisabledWarning = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
             },
             onDismissRequest = { showLocationDisabledWarning = false }
         )
     }
 
-    // DIALOG PERMESSO NEGATO
     if (showPermissionDeniedWarning) {
         AlertDialog(
-            title = { Text("Location Permission Denied") },
-            text = { Text("Location permission is required to use your current location.") },
+            title = { Text(stringResource(R.string.location_permission_denied_title)) },
+            text = { Text(stringResource(R.string.location_permission_denied_message)) },
             confirmButton = {
                 TextButton(onClick = {
                     locationPermission.launchPermissionRequest()
                     showPermissionDeniedWarning = false
-                }) { Text("Grant") }
+                }) { Text(stringResource(R.string.grant)) }
             },
             dismissButton = {
-                TextButton(onClick = { showPermissionDeniedWarning = false }) { Text("Cancel") }
+                TextButton(onClick = { showPermissionDeniedWarning = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
             },
             onDismissRequest = { showPermissionDeniedWarning = false }
         )
     }
 
-    // DIALOG PERMESSO NEGATO PERMANENTEMENTE
     if (showPermissionPermanentlyDeniedWarning) {
         AlertDialog(
-            title = { Text("Permission Required") },
-            text = { Text("Location permission has been permanently denied. Please enable it in settings.") },
+            title = { Text(stringResource(R.string.permission_required_title)) },
+            text = { Text(stringResource(R.string.permission_permanently_denied_message)) },
             confirmButton = {
                 TextButton(onClick = {
                     val intent = android.content.Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
@@ -564,10 +620,12 @@ fun AddSightingScreen(
                         context.startActivity(intent)
                     }
                     showPermissionPermanentlyDeniedWarning = false
-                }) { Text("Settings") }
+                }) { Text(stringResource(R.string.settings)) }
             },
             dismissButton = {
-                TextButton(onClick = { showPermissionPermanentlyDeniedWarning = false }) { Text("Cancel") }
+                TextButton(onClick = { showPermissionPermanentlyDeniedWarning = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
             },
             onDismissRequest = { showPermissionPermanentlyDeniedWarning = false }
         )
@@ -617,7 +675,7 @@ fun MaterialDatePickerDialog(
             ) { Text("OK") }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
         }
     ) {
         DatePicker(state = pickerState)
@@ -650,7 +708,7 @@ fun MaterialTimePickerDialog(
             ) { Text("OK") }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
         },
         text = {
             TimePicker(state = pickerState)

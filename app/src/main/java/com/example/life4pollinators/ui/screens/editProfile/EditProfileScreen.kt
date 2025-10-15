@@ -9,8 +9,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Edit
-import androidx.compose.material.icons.outlined.Photo
-import androidx.compose.material.icons.outlined.PhotoCamera
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -23,6 +21,7 @@ import com.example.life4pollinators.R
 import com.example.life4pollinators.data.models.NavBarTab
 import com.example.life4pollinators.ui.composables.AppBar
 import com.example.life4pollinators.ui.composables.BottomNavBar
+import com.example.life4pollinators.ui.composables.ImagePickerDialog
 import com.example.life4pollinators.ui.composables.ProfileIcon
 import com.example.life4pollinators.ui.navigation.L4PRoute
 import com.example.life4pollinators.utils.rememberCameraLauncher
@@ -157,39 +156,15 @@ fun EditProfileScreen(
 
             // Dialog scelta immagine (camera/galleria)
             if (showImagePicker) {
-                AlertDialog(
-                    onDismissRequest = { showImagePicker = false },
-                    title = { Text(stringResource(R.string.choose_photo)) },
-                    text = {
-                        Column {
-                            Button(
-                                onClick = { launchCamera() },
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Text(stringResource(R.string.take_photo))
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Icon(
-                                    imageVector = Icons.Outlined.PhotoCamera,
-                                    contentDescription = "Camera"
-                                )
-                            }
-                            Spacer(Modifier.height(8.dp))
-                            Button(
-                                onClick = { launchGallery() },
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Text(stringResource(R.string.choose_gallery))
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Icon(
-                                    imageVector = Icons.Outlined.Photo,
-                                    contentDescription = "Photo from Gallery"
-                                )
-                            }
-                        }
+                ImagePickerDialog(
+                    onDismiss = { showImagePicker = false },
+                    onCameraClick = {
+                        launchCamera()
+                        showImagePicker = false
                     },
-                    confirmButton = {},
-                    dismissButton = {
-                        TextButton(onClick = { showImagePicker = false }) { Text(stringResource(R.string.cancel)) }
+                    onGalleryClick = {
+                        launchGallery()
+                        showImagePicker = false
                     }
                 )
             }

@@ -222,4 +222,28 @@
 
     <string name="validation_select_pollinator">Seleziona un impollinatore dai suggerimenti</string>
     <string name="validation_select_plant">Seleziona una pianta dai suggerimenti</string>
+
+    <!-- AddSighting - Nuove stringhe per layout compatto -->
+    <string name="add_sighting_image_section">Immagine</string>
+    <string name="add_sighting_select_image">Seleziona Immagine</string>
+    <string name="add_sighting_datetime_section">Data &amp; Orario</string>
+    <string name="add_sighting_date">Data</string>
+    <string name="add_sighting_time">Orario</string>
+    <string name="add_sighting_location_section">Posizione Opzionale</string>
+    <string name="add_sighting_current_location_short">Attuale</string>
+    <string name="add_sighting_choose_location_short">Scegli</string>
+    <string name="add_sighting_location_optional">Nessuna posizione scelta</string>
+    <string name="add_sighting_species_section">Specie</string>
+
+    <!-- Location permission dialogs -->
+    <string name="gps_disabled_title">GPS Disabilitato</string>
+    <string name="gps_disabled_message">Abilita il GPS per usare la tua posizione corrente</string>
+    <string name="enable">Abilita</string>
+    <string name="grant">Autorizza</string>
+    <string name="location_permission_denied_title">Autorizzazione alla posizione negata.</string>
+    <string name="location_permission_denied_message">Per utilizzare la tua posizione attuale è necessaria l\'autorizzazione</string>
+    <string name="permission_required_title">Autorizzazione necessario</string>
+    <string name="permission_permanently_denied_message">L\'autorizzazione alla posizione è stata negata definitivamente. Abilitala nelle impostazioni.</string>
+    <string name="settings">Impostazioni</string>
+
 </resources>

@@ -8,7 +8,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Photo
 import androidx.compose.material.icons.outlined.PhotoCamera
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -25,6 +24,7 @@ import com.example.life4pollinators.R
 import com.example.life4pollinators.data.models.NavBarTab
 import com.example.life4pollinators.ui.composables.AppBar
 import com.example.life4pollinators.ui.composables.BottomNavBar
+import com.example.life4pollinators.ui.composables.ImagePickerDialog
 import com.example.life4pollinators.ui.navigation.L4PRoute
 import com.example.life4pollinators.utils.rememberCameraLauncher
 import com.example.life4pollinators.utils.rememberGalleryLauncher
@@ -198,63 +198,15 @@ fun QuizStartScreen(
 
     // Image picker dialog
     if (showImagePicker) {
-        AlertDialog(
-            onDismissRequest = { showImagePicker = false },
-            title = {
-                Text(
-                    text = stringResource(R.string.quiz_choose_photo),
-                    style = MaterialTheme.typography.titleMedium
-                )
+        ImagePickerDialog(
+            onDismiss = { showImagePicker = false },
+            onCameraClick = {
+                launchCamera()
+                showImagePicker = false
             },
-            text = {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    Button(
-                        onClick = { launchCamera() },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(52.dp),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.PhotoCamera,
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Text(
-                            text = stringResource(R.string.quiz_take_photo),
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                    }
-
-                    OutlinedButton(
-                        onClick = { launchGallery() },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(52.dp),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Photo,
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Text(
-                            text = stringResource(R.string.quiz_gallery),
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                    }
-                }
-            },
-            confirmButton = {},
-            dismissButton = {
-                TextButton(onClick = { showImagePicker = false }) {
-                    Text(stringResource(R.string.quiz_cancel))
-                }
+            onGalleryClick = {
+                launchGallery()
+                showImagePicker = false
             }
         )
     }
