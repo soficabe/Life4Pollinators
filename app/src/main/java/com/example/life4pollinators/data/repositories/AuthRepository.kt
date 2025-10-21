@@ -79,6 +79,18 @@ sealed interface EditProfileResult {
 }
 
 /**
+ * Risultati possibili del logout
+ */
+sealed interface SignOutResult {
+    data object Success : SignOutResult
+
+    sealed interface Error : SignOutResult {
+        data object NetworkError : Error
+        data class UnknownError(val exception: Throwable) : Error
+    }
+}
+
+/**
  * Repository per gestire autenticazione e logica utente:
  * sign up, sign in, sign out, cambio password e modifica email, usando Supabase Auth.
  */
@@ -192,9 +204,34 @@ class AuthRepository(
 
     /**
      * Termina la sessione dell'utente corrente.
+     *
+     * Gestisce errori di rete per evitare crash.
+     *
+     * @return SignOutResult con l'esito del logout
      */
-    suspend fun signOut() {
-        auth.signOut()
+    suspend fun signOut(): SignOutResult {
+        return try {
+            auth.signOut()
+            SignOutResult.Success
+        } catch (e: AuthRestException) {
+            Log.e("AuthRepository", "Auth signout failed - REST exception", e)
+            when {
+                e.message?.contains("network", ignoreCase = true) == true -> {
+                    SignOutResult.Error.NetworkError
+                }
+                else -> SignOutResult.Error.UnknownError(e)
+            }
+        } catch (e: Exception) {
+            Log.e("AuthRepository", "Sign out failed", e)
+            when {
+                e.message?.contains("network", ignoreCase = true) == true ||
+                        e.message?.contains("unable to resolve host", ignoreCase = true) == true ||
+                        e.message?.contains("failed to connect", ignoreCase = true) == true -> {
+                    SignOutResult.Error.NetworkError
+                }
+                else -> SignOutResult.Error.UnknownError(e)
+            }
+        }
     }
 
     /**

@@ -6,6 +6,7 @@ import com.example.life4pollinators.R
 import com.example.life4pollinators.data.models.Theme
 import com.example.life4pollinators.data.repositories.AuthRepository
 import com.example.life4pollinators.data.repositories.ChangePasswordResult
+import com.example.life4pollinators.data.repositories.SignOutResult
 import com.example.life4pollinators.data.repositories.SettingsRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,9 +22,11 @@ data class SettingsState(
     val isAuthenticated: Boolean = false,
     val changePasswordResult: ChangePasswordResult? = null,
     val isChangingPassword: Boolean = false,
-    val changePasswordError: Int? = null, // errore generico
+    val changePasswordError: Int? = null,
     val newPasswordError: Int? = null,
-    val confirmPasswordError: Int? = null
+    val confirmPasswordError: Int? = null,
+    val signOutError: Int? = null,
+    val isLoggingOut: Boolean = false
 )
 
 /**
@@ -34,6 +37,7 @@ interface SettingsActions {
     fun logout() : Job
     fun changePassword(newPassword: String, confirmPassword: String)
     fun clearChangePasswordError()
+    fun clearSignOutError()
 }
 
 /**
@@ -64,7 +68,29 @@ class SettingsViewModel(
 
         override fun logout() =
             viewModelScope.launch {
-                authRepository.signOut()
+                _state.update { it.copy(signOutError = null, isLoggingOut = true) }
+
+                when (authRepository.signOut()) {
+                    is SignOutResult.Success -> {
+                        _state.update { it.copy(isLoggingOut = false) }
+                    }
+                    is SignOutResult.Error.NetworkError -> {
+                        _state.update {
+                            it.copy(
+                                signOutError = R.string.network_error_connection,
+                                isLoggingOut = false
+                            )
+                        }
+                    }
+                    is SignOutResult.Error.UnknownError -> {
+                        _state.update {
+                            it.copy(
+                                signOutError = R.string.unknown_error,
+                                isLoggingOut = false
+                            )
+                        }
+                    }
+                }
             }
 
         /**
@@ -130,6 +156,10 @@ class SettingsViewModel(
                     confirmPasswordError = null
                 )
             }
+        }
+
+        override fun clearSignOutError() {
+            _state.update { it.copy(signOutError = null) }
         }
     }
 }

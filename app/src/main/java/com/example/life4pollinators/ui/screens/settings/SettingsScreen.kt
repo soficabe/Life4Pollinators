@@ -105,6 +105,18 @@ fun SettingsScreen (
         }
     }
 
+    // Chiudi dialog e naviga quando logout ha successo
+    LaunchedEffect(isAuthenticated, state.signOutError) {
+        if (!isAuthenticated && state.signOutError == null && showLogoutDialog) {
+            showLogoutDialog = false
+            navController.navigate(L4PRoute.Home) {
+                popUpTo(navController.graph.id) {
+                    inclusive = true
+                }
+            }
+        }
+    }
+
     Scaffold (
         topBar = { AppBar(navController) },
         bottomBar = {
@@ -210,15 +222,14 @@ fun SettingsScreen (
         if(showLogoutDialog) {
             LogoutConfirmationDialog(
                 onConfirm = {
-                    showLogoutDialog = false
                     actions.logout()
-                    navController.navigate(L4PRoute.Home) {
-                        popUpTo(navController.graph.id) {
-                            inclusive = true
-                        }
-                    }
                 },
-                onDismiss = { showLogoutDialog = false }
+                onDismiss = {
+                    showLogoutDialog = false
+                    actions.clearSignOutError()
+                },
+                isLoading = state.isLoggingOut,
+                error = state.signOutError
             )
         }
     }
@@ -272,15 +283,6 @@ fun SettingsClickable(
     }
 }
 
-/**
- * Dialog per la selezione del tema (scuro, chiaro, sistema).
- *
- * @param title Titolo del dialog
- * @param options Lista delle opzioni tema disponibili
- * @param selectedOption Tema attualmente selezionato
- * @param onOptionSelected Callback al cambio di selezione
- * @param onDismiss Callback per chiusura dialog
- */
 @Composable
 fun ThemeRadioOptionsDialog(
     title: String,
@@ -447,11 +449,15 @@ fun ChangePasswordDialog(
  *
  * @param onConfirm Callback al click su "Conferma"
  * @param onDismiss Callback per chiusura dialog
+ * @param isLoading
+ * @param error to show
  */
 @Composable
 fun LogoutConfirmationDialog(
     onConfirm: () -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    isLoading: Boolean = false,
+    error: Int? = null
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -462,23 +468,43 @@ fun LogoutConfirmationDialog(
             )
         },
         text = {
-            Text(
-                text = stringResource(R.string.logout_confirmation_message),
-                style = MaterialTheme.typography.bodyMedium
-            )
+            Column {
+                Text(
+                    text = stringResource(R.string.logout_confirmation_message),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+
+                if (error != null) {
+                    Spacer(Modifier.height(12.dp))
+                    Text(
+                        text = stringResource(error),
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
         },
         confirmButton = {
             TextButton(
                 onClick = onConfirm,
+                enabled = !isLoading,
                 colors = ButtonDefaults.textButtonColors(
                     contentColor = MaterialTheme.colorScheme.error
                 )
             ) {
-                Text(stringResource(R.string.logout_confirm))
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(16.dp),
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                } else {
+                    Text(stringResource(R.string.logout_confirm))
+                }
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
+            TextButton(onClick = onDismiss, enabled = !isLoading) {
                 Text(stringResource(R.string.cancel))
             }
         }

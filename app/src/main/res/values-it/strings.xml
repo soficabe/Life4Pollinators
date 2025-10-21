@@ -44,7 +44,7 @@
     <string name="username_already_exists">Questo username è già utilizzato</string>
     <string name="email_already_exists">Questa email è già registrata</string>
     <string name="email_invalid_format">Digita un indirizzo email valido</string>
-    <string name="generic_signup_error">Registrazione fallita. Riprova.</string>
+    <string name="generic_signup_error">Registrazione fallita. Controlla la connessione e riprova.</string>
 
     <!-- SignIn Screen -->
     <string name="sign_in_title">Accedi per procedere</string>
@@ -58,7 +58,7 @@
     <string name="invalid_credentials">Email o password non valide. Controlla le credenziali.</string>
     <string name="required_fields">Email e password sono obbligatori</string>
     <string name="invalid_email">Inserisci un indirizzo email valido</string>
-    <string name="unknown_error">Accesso non riuscito. Riprova.</string>
+    <string name="unknown_error">Accesso non riuscito. Controlla la connessione e riprova.</string>
 
     <!-- Learn Screen -->
     <string name="learn_about">Scopri di più su:</string>

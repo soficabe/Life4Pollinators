@@ -43,7 +43,7 @@
     <string name="username_already_exists">This username is already taken</string>
     <string name="email_already_exists">This email is already registered</string>
     <string name="email_invalid_format">Please enter a valid email address</string>
-    <string name="generic_signup_error">Registration failed. Please try again.</string>
+    <string name="generic_signup_error">Registration failed. Please check your connection and try again.</string>
 
     <!-- SignIn Screen -->
     <string name="sign_in_title">Sign In to continue</string>
@@ -57,7 +57,7 @@
     <string name="invalid_credentials">Invalid email or password. Please check your credentials.</string>
     <string name="required_fields">Email and password are required</string>
     <string name="invalid_email">Please enter a valid email address</string>
-    <string name="unknown_error">Sign in failed. Please try again.</string>
+    <string name="unknown_error">Sign in failed. Please check your connection and try again.</string>
 
     <!-- Learn Screen -->
     <string name="learn_about">Learn About:</string>
