@@ -116,7 +116,6 @@
     <string name="pollinator_groups">Pollinator groups that visit it the most</string>
     <string name="diverse_plants">This plant is heterogeneous (diverse species)</string>
     <string name="invasive_plants">Invasive plant</string>
-    <string name="loading_error">Loading Error</string>
 
     <!-- Quiz Start Screen -->
     <string name="plants_quiz">Plants Identification</string>
@@ -144,7 +143,7 @@
     <string name="back_to_home">Go Back to Home</string>
     <string name="quiz_change_photo">Change Photo</string>
     <string name="quiz_open_with_lens">Verify with Google Lens</string>
-    <string name="quiz_open_with_lens_info">Now choose between the apps you can use to open the image: “Google Lens” or another image recognition app.\nThis allows you to check whether your identification result is correct.\nIf you don\'t see Google Lens among the options, open the app directly from your cell phone and upload your photo from there.</string>
+    <string name="quiz_open_with_lens_info">Now choose between the apps you can use to open the image: \"Google Lens\" or another image recognition app.\nThis allows you to check whether your identification result is correct.\nIf you don\'t see Google Lens among the options, open the app directly from your cell phone and upload your photo from there.</string>
     <string name="quiz_open_with_lens_chooser">Choose app for recognition</string>
     <string name="quiz_open_with_lens_continue">Continue</string>
     <string name="upload_sighting">Add to Sightings</string>
@@ -153,7 +152,6 @@
 
     <!-- Quiz Insect Type Selection -->
     <string name="quiz_which_insect_type">Which type of insect is it?</string>
-
     <string name="quiz_select_insect_from_list">Select the insect that matches your photo</string>
 
     <!-- Exit Quiz Dialog -->
@@ -190,7 +188,6 @@
     <string name="loading_location">Loading location…</string>
     <string name="tap_to_select_location">Tap on the map to select a location</string>
 
-
     <!-- Species Filter Labels -->
     <string name="filter_plants">Plants</string>
     <string name="filter_bees">Bees</string>
@@ -212,12 +209,6 @@
     <string name="permission_permanently_denied_message">Location permission has been permanently denied. Please enable it in settings.</string>
     <string name="settings">Settings</string>
 
-    <!-- Learn Errors -->
-    <string name="insect_loading_error">Error loading insect</string>
-    <string name="group_loading_error">Error loading group info</string>
-    <string name="insects_loading_error">Error loading insects</string>
-
-    <!-- Quiz Errors -->
     <!-- Quiz Errors -->
     <string name="quiz_error_not_found">Quiz not found. Check your connection.</string>
     <string name="quiz_error_load_groups">Unable to load data. Check your connection.</string>
@@ -235,6 +226,6 @@
     <string name="you">You</string>
 
     <!-- Network and Connection Errors (General) -->
-    <string name="network_error_connection">No internet connection. Please check your connection and try again.</string>
-    <string name="error_loading_data">Error loading data. Please check your connection.</string>
+    <string name="network_error_connection">No internet connection. Check your connection and try again.</string>
+    <string name="error_loading_data">Error loading data. Check your connection.</string>
 </resources>

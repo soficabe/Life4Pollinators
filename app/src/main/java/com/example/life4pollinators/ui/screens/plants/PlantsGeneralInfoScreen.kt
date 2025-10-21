@@ -19,6 +19,7 @@ import coil.compose.AsyncImage
 import com.example.life4pollinators.data.models.NavBarTab
 import com.example.life4pollinators.ui.composables.AppBar
 import com.example.life4pollinators.ui.composables.BottomNavBar
+import com.example.life4pollinators.ui.composables.ErrorMessage
 import com.example.life4pollinators.ui.composables.ZoomOverlayImage
 import java.util.Locale
 
@@ -50,11 +51,7 @@ fun PlantGeneralInfoScreen(
                     CircularProgressIndicator(Modifier.align(Alignment.Center))
                 }
                 state.error != null -> {
-                    Text(
-                        state.error,
-                        color = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.align(Alignment.Center)
-                    )
+                    ErrorMessage(errorResId = state.error)
                 }
                 state.info != null -> {
                     val locale = Locale.getDefault().language
@@ -90,17 +87,6 @@ fun PlantGeneralInfoScreen(
                                 contentScale = ContentScale.Fit
                             )
                         }
-                        /*
-                        CardImage(
-                            imageUrl = imageUrl,
-                            contentDescription = title,
-                            onClick = { showZoom = true },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(230.dp)
-                                .align(Alignment.CenterHorizontally)
-                        )
-                        */
                         Spacer(Modifier.height(16.dp))
                         Text(
                             title,
@@ -128,31 +114,3 @@ fun PlantGeneralInfoScreen(
         }
     }
 }
-
-/*
-@Composable
-fun CardImage(
-    modifier: Modifier = Modifier,
-    imageUrl: String?,
-    contentDescription: String?,
-    onClick: (() -> Unit)? = null
-) {
-    Card(
-        shape = RoundedCornerShape(18.dp),
-        elevation = CardDefaults.cardElevation(12.dp),
-        modifier = modifier
-            .clip(RoundedCornerShape(18.dp))
-            .then(
-                if (onClick != null) Modifier.clickable { onClick() }
-                else Modifier
-            )
-    ) {
-        AsyncImage(
-            model = imageUrl,
-            contentDescription = contentDescription,
-            modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Fit
-        )
-    }
-}
-*/

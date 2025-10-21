@@ -24,7 +24,9 @@ class InsectsRepository (
 
     suspend fun getInsectGroups(): List<InsectGroup> {
         return try {
-            insectGroupsTable.select().decodeList<InsectGroup>().sortedBy { if (Locale.getDefault().language == "it") it.nameIt else it.nameEn }
+            insectGroupsTable.select().decodeList<InsectGroup>().sortedBy {
+                if (Locale.getDefault().language == "it") it.nameIt else it.nameEn
+            }
         } catch (e: Exception) {
             Log.e("InsectsRepository", "Error fetching insect groups", e)
             emptyList()
@@ -37,6 +39,7 @@ class InsectsRepository (
                 filter { Insect::group eq groupId }
             }.decodeList<Insect>().sortedBy { it.name }
         } catch (e: Exception) {
+            Log.e("InsectsRepository", "Error fetching insects by group: $groupId", e)
             emptyList()
         }
     }
@@ -47,6 +50,7 @@ class InsectsRepository (
                 filter { Insect::id eq insectId }
             }.decodeList<Insect>().firstOrNull()
         } catch (e: Exception) {
+            Log.e("InsectsRepository", "Error fetching insect by ID: $insectId", e)
             null
         }
     }
@@ -57,6 +61,7 @@ class InsectsRepository (
                 filter { InsectGroup::id eq groupId }
             }.decodeList<InsectGroup>().firstOrNull()
         } catch (e: Exception) {
+            Log.e("InsectsRepository", "Error fetching insect group by ID: $groupId", e)
             null
         }
     }

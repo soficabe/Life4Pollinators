@@ -39,13 +39,27 @@ class InsectsListViewModel(
             try {
                 val group = repository.getInsectGroupById(groupId)
                 val insects = repository.getInsectsByGroup(groupId)
-                _state.value = InsectsListState(insects = insects, group = group, isLoading = false)
+
+                if (group == null || insects.isEmpty()) {
+                    _state.value = InsectsListState(
+                        insects = emptyList(),
+                        group = null,
+                        isLoading = false,
+                        error = R.string.network_error_connection
+                    )
+                } else {
+                    _state.value = InsectsListState(
+                        insects = insects,
+                        group = group,
+                        isLoading = false
+                    )
+                }
             } catch (e: Exception) {
                 _state.value = InsectsListState(
                     insects = emptyList(),
                     group = null,
                     isLoading = false,
-                    error = R.string.insects_loading_error
+                    error = R.string.network_error_connection
                 )
             }
         }

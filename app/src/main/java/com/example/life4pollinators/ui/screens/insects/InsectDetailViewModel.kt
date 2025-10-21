@@ -36,9 +36,22 @@ class InsectDetailViewModel(
         viewModelScope.launch {
             try {
                 val insect = repository.getInsectById(insectId)
-                _state.value = InsectDetailState(insect = insect, isLoading = false)
+                if (insect == null) {
+                    _state.value = InsectDetailState(
+                        isLoading = false,
+                        error = R.string.network_error_connection
+                    )
+                } else {
+                    _state.value = InsectDetailState(
+                        insect = insect,
+                        isLoading = false
+                    )
+                }
             } catch (e: Exception) {
-                _state.value = InsectDetailState(isLoading = false, error = R.string.insect_loading_error)
+                _state.value = InsectDetailState(
+                    isLoading = false,
+                    error = R.string.network_error_connection
+                )
             }
         }
     }

@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
 data class PlantsListState(
     val plants: List<Plant> = emptyList(),
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: Int? = null
 )
 
 class PlantsListViewModel(
@@ -22,23 +22,34 @@ class PlantsListViewModel(
     private val _state = MutableStateFlow(PlantsListState())
     val state = _state.asStateFlow()
 
+    init {
+        loadPlants()
+    }
+
     private fun loadPlants() {
         _state.value = _state.value.copy(isLoading = true, error = null)
         viewModelScope.launch {
             try {
                 val plants = repository.getPlants()
-                _state.value = PlantsListState(plants = plants, isLoading = false)
+                if (plants.isEmpty()) {
+                    _state.value = PlantsListState(
+                        plants = emptyList(),
+                        isLoading = false,
+                        error = R.string.network_error_connection
+                    )
+                } else {
+                    _state.value = PlantsListState(
+                        plants = plants,
+                        isLoading = false
+                    )
+                }
             } catch (e: Exception) {
                 _state.value = PlantsListState(
                     plants = emptyList(),
                     isLoading = false,
-                    error = R.string.loading_error.toString()
+                    error = R.string.network_error_connection
                 )
             }
         }
-    }
-
-    init {
-        loadPlants()
     }
 }

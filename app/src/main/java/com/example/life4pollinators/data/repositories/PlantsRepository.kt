@@ -28,7 +28,9 @@ class PlantsRepository (
 
     suspend fun getPlants(): List<Plant> {
         return try {
-            plantsTable.select().decodeList<Plant>().sortedBy { if (Locale.getDefault().language == "it") it.nameIt else it.nameEn }
+            plantsTable.select().decodeList<Plant>().sortedBy {
+                if (Locale.getDefault().language == "it") it.nameIt else it.nameEn
+            }
         } catch (e: Exception) {
             Log.e("PlantsRepository", "Error fetching plants", e)
             emptyList()
@@ -48,8 +50,9 @@ class PlantsRepository (
         return try {
             plantsTable.select {
                 filter { Plant::id eq plantId }
-            }.decodeList<Plant>().firstOrNull() ?: return null
+            }.decodeList<Plant>().firstOrNull()
         } catch (e: Exception) {
+            Log.e("PlantsRepository", "Error fetching plant by ID: $plantId", e)
             null
         }
     }
@@ -72,6 +75,7 @@ class PlantsRepository (
 
             groups.map { if (language == "it") it.nameIt else it.nameEn }
         } catch (e: Exception) {
+            Log.e("PlantsRepository", "Error fetching pollinator groups for plant: $plantId", e)
             emptyList()
         }
     }

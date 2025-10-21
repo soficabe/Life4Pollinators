@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
 data class InsectGroupsListState(
     val insectGroups: List<InsectGroup> = emptyList(),
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: Int? = null
 )
 
 class InsectGroupsListViewModel(
@@ -22,23 +22,34 @@ class InsectGroupsListViewModel(
     private val _state = MutableStateFlow(InsectGroupsListState())
     val state = _state.asStateFlow()
 
+    init {
+        loadInsectGroups()
+    }
+
     private fun loadInsectGroups() {
         _state.value = _state.value.copy(isLoading = true, error = null)
         viewModelScope.launch {
             try {
                 val insectGroups = repository.getInsectGroups()
-                _state.value = InsectGroupsListState(insectGroups = insectGroups, isLoading = false)
+                if (insectGroups.isEmpty()) {
+                    _state.value = InsectGroupsListState(
+                        insectGroups = emptyList(),
+                        isLoading = false,
+                        error = R.string.network_error_connection
+                    )
+                } else {
+                    _state.value = InsectGroupsListState(
+                        insectGroups = insectGroups,
+                        isLoading = false
+                    )
+                }
             } catch (e: Exception) {
                 _state.value = InsectGroupsListState(
                     insectGroups = emptyList(),
                     isLoading = false,
-                    error = R.string.loading_error.toString()
+                    error = R.string.network_error_connection
                 )
             }
         }
-    }
-
-    init {
-        loadInsectGroups()
     }
 }

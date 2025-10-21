@@ -9,13 +9,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.example.life4pollinators.data.models.NavBarTab
 import com.example.life4pollinators.ui.composables.AppBar
 import com.example.life4pollinators.ui.composables.BottomNavBar
+import com.example.life4pollinators.ui.composables.ErrorMessage
 import com.example.life4pollinators.ui.composables.ZoomOverlayImage
 import java.util.Locale
 
@@ -49,11 +49,9 @@ fun InsectDetailScreen(
         ) {
             when {
                 state.isLoading -> CircularProgressIndicator(Modifier.align(Alignment.Center))
-                state.error != null -> Text(
-                    stringResource(state.error),
-                    color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.align(Alignment.Center)
-                )
+                state.error != null -> {
+                    ErrorMessage(errorResId = state.error)
+                }
                 insect != null -> {
                     val imageUrl = if (locale == "it") insect.imageIt else insect.imageEn
                     Column(
@@ -63,7 +61,6 @@ fun InsectDetailScreen(
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        // Card con immagine e nome
                         Card(
                             shape = RoundedCornerShape(18.dp),
                             elevation = CardDefaults.cardElevation(12.dp),
@@ -83,7 +80,6 @@ fun InsectDetailScreen(
                         }
                     }
 
-                    // Overlay zoomabile sull'immagine
                     if (showZoom) {
                         ZoomOverlayImage(
                             imageUrl = imageUrl,

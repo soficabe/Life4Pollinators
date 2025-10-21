@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 data class PlantsGeneralInfoState(
     val info: PlantsGeneralInfo? = null,
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: Int? = null
 )
 
 class PlantsGeneralInfoViewModel(
@@ -32,12 +32,23 @@ class PlantsGeneralInfoViewModel(
         viewModelScope.launch {
             try {
                 val info = repository.getGeneralInfo()
-                _state.value = PlantsGeneralInfoState(info = info, isLoading = false)
+                if (info == null) {
+                    _state.value = PlantsGeneralInfoState(
+                        info = null,
+                        isLoading = false,
+                        error = R.string.network_error_connection
+                    )
+                } else {
+                    _state.value = PlantsGeneralInfoState(
+                        info = info,
+                        isLoading = false
+                    )
+                }
             } catch (e: Exception) {
                 _state.value = PlantsGeneralInfoState(
                     info = null,
                     isLoading = false,
-                    error = R.string.loading_error.toString()
+                    error = R.string.network_error_connection
                 )
             }
         }

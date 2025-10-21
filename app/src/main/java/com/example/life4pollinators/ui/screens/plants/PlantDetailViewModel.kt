@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
 
 data class PlantDetailState(
     val isLoading: Boolean = true,
-    val error: String? = null,
+    val error: Int? = null,
     val plant: Plant? = null,
     val pollinatorGroups: List<String> = emptyList()
 )
@@ -36,16 +36,23 @@ class PlantDetailViewModel(
         viewModelScope.launch {
             try {
                 val plant = plantsRepository.getPlantById(plantId)
-                val pollinatorGroups = plantsRepository.getPollinatorGroupsForPlant(plantId)
-                _state.value = PlantDetailState(
-                    isLoading = false,
-                    plant = plant,
-                    pollinatorGroups = pollinatorGroups
-                )
+                if (plant == null) {
+                    _state.value = PlantDetailState(
+                        isLoading = false,
+                        error = R.string.network_error_connection
+                    )
+                } else {
+                    val pollinatorGroups = plantsRepository.getPollinatorGroupsForPlant(plantId)
+                    _state.value = PlantDetailState(
+                        isLoading = false,
+                        plant = plant,
+                        pollinatorGroups = pollinatorGroups
+                    )
+                }
             } catch (e: Exception) {
                 _state.value = PlantDetailState(
                     isLoading = false,
-                    error = R.string.loading_error.toString()
+                    error = R.string.network_error_connection
                 )
             }
         }
