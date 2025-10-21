@@ -21,7 +21,7 @@ sealed interface UpdateUserProfileResult {
 
 /**
  * Repository per la gestione dei dati utente nel database:
- * recupero e l’aggiornamento dei dati utente (diversi dall’autenticazione) su Supabase.
+ * recupero e l'aggiornamento dei dati utente (diversi dall'autenticazione) su Supabase.
  */
 class UserRepository(
     private val supabase: SupabaseClient
@@ -52,7 +52,7 @@ class UserRepository(
     /**
      * Controllo unicità username (escludendo l'utente stesso)
      *
-     * @param username di cui controllare l'unicitò
+     * @param username di cui controllare l'unicità
      * @param excludeUserId username attuale da escludere nel controllo
      * @return Boolean
      */
@@ -91,7 +91,7 @@ class UserRepository(
                 if (isUsernameExists(username, excludeUserId = userId)) {
                     return@withContext UpdateUserProfileResult.Error.UsernameAlreadyExists
                 }
-                // Campi da aggiornare
+
                 val updateData = mutableMapOf(
                     "username" to username,
                     "first_name" to firstName,
@@ -100,6 +100,7 @@ class UserRepository(
                 if (image != null) {
                     updateData["image"] = image
                 }
+
                 supabase.from("user")
                     .update(updateData) {
                         filter { eq("id", userId) }
@@ -107,7 +108,14 @@ class UserRepository(
                 UpdateUserProfileResult.Success
             } catch (e: Exception) {
                 Log.e("UserRepository", "Error updating user profile: ${e.message}", e)
-                UpdateUserProfileResult.Error.UnknownError(e)
+                when {
+                    e.message?.contains("network", ignoreCase = true) == true ||
+                            e.message?.contains("unable to resolve host", ignoreCase = true) == true ||
+                            e.message?.contains("failed to connect", ignoreCase = true) == true -> {
+                        UpdateUserProfileResult.Error.NetworkError
+                    }
+                    else -> UpdateUserProfileResult.Error.UnknownError(e)
+                }
             }
         }
     }

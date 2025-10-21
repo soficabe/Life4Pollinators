@@ -190,6 +190,7 @@ class EditProfileViewModel(
         try {
             val currentUser = authRepository.getAuthUser()
             val userProfile = userRepository.getUser(currentUser.id)
+
             userProfile?.let {
                 _state.update { state ->
                     state.copy(
@@ -206,13 +207,25 @@ class EditProfileViewModel(
                     )
                 }
             } ?: run {
-                _state.update { it.copy(isLoading = false, errorMessageRes = R.string.user_not_found) }
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        errorMessageRes = R.string.network_error_connection
+                    )
+                }
             }
         } catch (e: Exception) {
             _state.update {
                 it.copy(
                     isLoading = false,
-                    errorMessageRes = R.string.error_loading_profile
+                    errorMessageRes = when {
+                        e.message?.contains("network", ignoreCase = true) == true ||
+                                e.message?.contains("unable to resolve host", ignoreCase = true) == true ||
+                                e.message?.contains("failed to connect", ignoreCase = true) == true -> {
+                            R.string.network_error_connection
+                        }
+                        else -> R.string.error_loading_profile
+                    }
                 )
             }
         }
@@ -265,7 +278,7 @@ class EditProfileViewModel(
                             _state.update {
                                 it.copy(
                                     isSaving = false,
-                                    errorMessageRes = R.string.network_error
+                                    errorMessageRes = R.string.network_error_connection  // ✅ Messaggio chiaro
                                 )
                             }
                             return@launch
@@ -274,7 +287,7 @@ class EditProfileViewModel(
                             _state.update {
                                 it.copy(
                                     isSaving = false,
-                                    errorMessageRes = R.string.unknown_error
+                                    errorMessageRes = R.string.network_error_connection  // ✅ Messaggio chiaro
                                 )
                             }
                             return@launch
@@ -282,18 +295,18 @@ class EditProfileViewModel(
                     }
                 }
 
-                // PATCH: Aggiorna PRIMA i dati testuali (username, firstName, lastName), senza immagine!
+                // Aggiorna PRIMA i dati testuali (username, firstName, lastName), senza immagine!
                 val userUpdateResult = userRepository.updateUserProfile(
                     userId = userId,
                     username = currentState.username,
                     firstName = currentState.firstName,
                     lastName = currentState.lastName,
-                    image = null // NON aggiornare ancora l'immagine!
+                    image = null
                 )
 
                 when (userUpdateResult) {
                     is UpdateUserProfileResult.Success -> {
-                        // PATCH: Ora, SOLO se i dati sono ok, carica la foto se serve, (aggiunta query param per invalidare la cache)
+                        // SOLO se i dati sono ok, carica la foto se serve, (query param per invalidare la cache)
                         var imageUrl: String? = currentState.image
                         val newImageUri = currentState.newProfileImageUri
                         if (newImageUri != null) {
@@ -330,7 +343,7 @@ class EditProfileViewModel(
                                 isSuccess = true,
                                 user = updatedUser,
                                 image = imageUrl,
-                                newProfileImageUri = null // resetta l'uri locale
+                                newProfileImageUri = null
                             )
                         }
                     }
@@ -342,13 +355,13 @@ class EditProfileViewModel(
                     }
                     is UpdateUserProfileResult.Error.NetworkError -> {
                         _state.update {
-                            it.copy(isSaving = false, errorMessageRes = R.string.network_error)
+                            it.copy(isSaving = false, errorMessageRes = R.string.network_error_connection)  // ✅ Messaggio chiaro
                         }
                         return@launch
                     }
                     is UpdateUserProfileResult.Error.UnknownError -> {
                         _state.update {
-                            it.copy(isSaving = false, errorMessageRes = R.string.unknown_error)
+                            it.copy(isSaving = false, errorMessageRes = R.string.network_error_connection)  // ✅ Messaggio chiaro
                         }
                         return@launch
                     }
@@ -366,11 +379,18 @@ class EditProfileViewModel(
                 }
 
             } catch (e: Exception) {
+                // Gestisci errore generico
                 _state.update {
                     it.copy(
                         isSaving = false,
-                        errorMessageRes = R.string.unexpected_error,
-                        errorMessageArg = e.message
+                        errorMessageRes = when {
+                            e.message?.contains("network", ignoreCase = true) == true ||
+                                    e.message?.contains("unable to resolve host", ignoreCase = true) == true ||
+                                    e.message?.contains("failed to connect", ignoreCase = true) == true -> {
+                                R.string.network_error_connection
+                            }
+                            else -> R.string.unknown_error
+                        }
                     )
                 }
             }

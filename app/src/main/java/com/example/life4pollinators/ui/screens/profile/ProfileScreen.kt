@@ -9,9 +9,11 @@ import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -30,9 +32,19 @@ fun ProfileScreen(
     navController: NavHostController
 ) {
     val scrollState = rememberScrollState()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         actions.refreshProfile()
+    }
+
+    // Mostra snackbar per errore caricamento profilo
+    LaunchedEffect(state.errorLoadingProfile) {
+        state.errorLoadingProfile?.let {
+            snackbarHostState.showSnackbar(context.getString(it))
+            actions.clearError()
+        }
     }
 
     Scaffold(
@@ -41,7 +53,8 @@ fun ProfileScreen(
             BottomNavBar(
                 selectedTab = NavBarTab.Profile,
                 navController = navController)
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
         Column(
             Modifier

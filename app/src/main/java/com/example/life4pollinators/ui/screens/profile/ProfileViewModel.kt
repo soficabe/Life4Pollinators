@@ -3,6 +3,7 @@ package com.example.life4pollinators.ui.screens.profile
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.life4pollinators.R
 import com.example.life4pollinators.data.database.entities.User
 import com.example.life4pollinators.data.repositories.AuthRepository
 import com.example.life4pollinators.data.repositories.InsectsRepository
@@ -40,7 +41,8 @@ data class ProfileState(
     val user: User? = null,
     val stats: UserStats = UserStats(),
     val isRefreshing: Boolean = false,
-    val isLoadingStats: Boolean = false
+    val isLoadingStats: Boolean = false,
+    val errorLoadingProfile: Int? = null
 )
 
 /**
@@ -49,6 +51,7 @@ data class ProfileState(
 interface ProfileActions {
     fun refreshProfile()
     fun refreshStats()
+    fun clearError()
 }
 
 /**
@@ -69,22 +72,46 @@ class ProfileViewModel(
         override fun refreshProfile() {
             viewModelScope.launch {
                 try {
-                    _state.update { it.copy(isRefreshing = true) }
+                    _state.update { it.copy(isRefreshing = true, errorLoadingProfile = null) }
 
                     val authUser = authRepository.getAuthUser()
                     val user = userRepository.getUser(authUser.id)
 
+                    // Se user è null, è probabilmente un errore di rete
+                    if (user == null) {
+                        _state.update {
+                            it.copy(
+                                isRefreshing = false,
+                                errorLoadingProfile = R.string.network_error_connection
+                            )
+                        }
+                        return@launch
+                    }
+
                     _state.update {
                         it.copy(
                             user = user,
-                            isRefreshing = false
+                            isRefreshing = false,
+                            errorLoadingProfile = null
                         )
                     }
 
                     refreshStats()
                 } catch (e: Exception) {
                     Log.e("ProfileViewModel", "Errore durante il refresh del profilo", e)
-                    _state.update { it.copy(isRefreshing = false) }
+                    _state.update {
+                        it.copy(
+                            isRefreshing = false,
+                            errorLoadingProfile = when {
+                                e.message?.contains("network", ignoreCase = true) == true ||
+                                        e.message?.contains("unable to resolve host", ignoreCase = true) == true ||
+                                        e.message?.contains("failed to connect", ignoreCase = true) == true -> {
+                                    R.string.network_error_connection
+                                }
+                                else -> R.string.error_loading_profile
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -128,6 +155,10 @@ class ProfileViewModel(
                     _state.update { it.copy(isLoadingStats = false) }
                 }
             }
+        }
+
+        override fun clearError() {
+            _state.update { it.copy(errorLoadingProfile = null) }
         }
     }
 
