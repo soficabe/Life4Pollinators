@@ -28,6 +28,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.life4pollinators.data.models.NavBarTab
 import com.example.life4pollinators.ui.composables.AppBar
 import com.example.life4pollinators.ui.composables.BottomNavBar
+import com.example.life4pollinators.ui.composables.ErrorMessage
 import com.example.life4pollinators.ui.navigation.L4PRoute
 
 @Composable
@@ -61,31 +62,35 @@ fun SightingsScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            // Filter tabs - ora con scroll orizzontale
+            // Filter tabs
             FilterChips(
                 selectedFilter = state.selectedFilter,
                 onFilterSelected = { actions.selectFilter(it) },
                 modifier = Modifier.padding(vertical = 8.dp)
             )
 
-            // Loading indicator
-            if (state.isLoading) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
-            } else {
-                // Grid di specie
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(3),
-                    contentPadding = PaddingValues(16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    items(state.filteredSpecies) { species ->
-                        SpeciesCircleItem(species = species)
+            // Gestione stati: loading, error, content
+            Box(modifier = Modifier.fillMaxSize()) {
+                when {
+                    state.isLoading -> {
+                        CircularProgressIndicator(
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                    }
+                    state.error != null -> {
+                        ErrorMessage(errorResId = state.error)
+                    }
+                    else -> {
+                        LazyVerticalGrid(
+                            columns = GridCells.Fixed(3),
+                            contentPadding = PaddingValues(16.dp),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            items(state.filteredSpecies) { species ->
+                                SpeciesCircleItem(species = species)
+                            }
+                        }
                     }
                 }
             }

@@ -1,5 +1,6 @@
 package com.example.life4pollinators.ui.screens.sightings
 
+import android.util.Log
 import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -49,7 +50,8 @@ data class SightingsState(
     val sightedPlantIds: Set<String> = emptySet(),
     val sightedInsectIds: Set<String> = emptySet(),
     val filteredSpecies: List<SpeciesItem> = emptyList(),
-    val isLoading: Boolean = true
+    val isLoading: Boolean = true,
+    val error: Int? = null
 )
 
 interface SightingsActions {
@@ -124,48 +126,75 @@ class SightingsViewModel(
 
     private fun loadAllSpecies() {
         viewModelScope.launch {
-            _state.update { it.copy(isLoading = true) }
+            _state.update { it.copy(isLoading = true, error = null) }  // Reset errore
 
-            val plants = plantsRepository.getPlants()
-            val insectGroups = insectsRepository.getInsectGroups()
-            val insects = insectGroups.flatMap { group ->
-                insectsRepository.getInsectsByGroup(group.id)
+            try {
+                val plants = plantsRepository.getPlants()
+                val insectGroups = insectsRepository.getInsectGroups()
+
+                // Controlla se le liste sono vuote (probabile errore di rete)
+                if (plants.isEmpty() && insectGroups.isEmpty()) {
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            error = R.string.network_error_connection
+                        )
+                    }
+                    return@launch
+                }
+
+                val insects = insectGroups.flatMap { group ->
+                    insectsRepository.getInsectsByGroup(group.id)
+                }
+
+                _state.update {
+                    it.copy(
+                        allPlants = plants,
+                        allInsects = insects,
+                        insectGroups = insectGroups,
+                        isLoading = false,
+                        error = null
+                    )
+                }
+
+                updateFilteredSpecies()
+            } catch (e: Exception) {
+                Log.e("SightingsViewModel", "Error loading species", e)
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        error = R.string.network_error_connection
+                    )
+                }
             }
-
-            _state.update {
-                it.copy(
-                    allPlants = plants,
-                    allInsects = insects,
-                    insectGroups = insectGroups,
-                    isLoading = false
-                )
-            }
-
-            updateFilteredSpecies()
         }
     }
 
     private fun loadUserSightings(userId: String) {
         viewModelScope.launch {
-            android.util.Log.d("SightingsVM", "Loading sightings for user: $userId")
+            try {
+                Log.d("SightingsVM", "Loading sightings for user: $userId")
 
-            val sightedPlants = sightingsRepository.getUserSightedSpecies(userId, "plant")
-            val sightedInsects = sightingsRepository.getUserSightedSpecies(userId, "insect")
+                val sightedPlants = sightingsRepository.getUserSightedSpecies(userId, "plant")
+                val sightedInsects = sightingsRepository.getUserSightedSpecies(userId, "insect")
 
-            android.util.Log.d("SightingsVM", "Sighted plants: $sightedPlants")
-            android.util.Log.d("SightingsVM", "Sighted insects: $sightedInsects")
+                Log.d("SightingsVM", "Sighted plants: $sightedPlants")
+                Log.d("SightingsVM", "Sighted insects: $sightedInsects")
 
-            _state.update {
-                it.copy(
-                    sightedPlantIds = sightedPlants,
-                    sightedInsectIds = sightedInsects
-                )
+                _state.update {
+                    it.copy(
+                        sightedPlantIds = sightedPlants,
+                        sightedInsectIds = sightedInsects
+                    )
+                }
+
+                Log.d("SightingsVM", "State updated. Plant IDs: ${_state.value.sightedPlantIds}")
+                Log.d("SightingsVM", "State updated. Insect IDs: ${_state.value.sightedInsectIds}")
+
+                updateFilteredSpecies()
+            } catch (e: Exception) {
+                Log.e("SightingsViewModel", "Error loading user sightings", e)
             }
-
-            android.util.Log.d("SightingsVM", "State updated. Plant IDs: ${_state.value.sightedPlantIds}")
-            android.util.Log.d("SightingsVM", "State updated. Insect IDs: ${_state.value.sightedInsectIds}")
-
-            updateFilteredSpecies()
         }
     }
 
