@@ -2,6 +2,7 @@ package com.example.life4pollinators.ui.screens.addSighting
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.life4pollinators.R
@@ -36,6 +37,8 @@ data class AddSightingState(
     val isDateInvalid: Boolean = false,
     val isTimeInvalid: Boolean = false,
     val isLocationInvalid: Boolean = false,
+    val isLoadingSuggestions: Boolean = false,
+    val suggestionsError: Int? = null,
     val isLoading: Boolean = false,
     val isSuccess: Boolean = false,
     val errorMessage: String? = null
@@ -90,21 +93,55 @@ class AddSightingViewModel(
             _state.update {
                 it.copy(
                     pollinatorQuery = query,
-                    isPollinatorInvalid = false
+                    isPollinatorInvalid = false,
+                    suggestionsError = null
                 )
             }
             if (query.isBlank()) {
-                _state.update { it.copy(pollinatorSuggestions = emptyList()) }
+                _state.update { it.copy(pollinatorSuggestions = emptyList(), isLoadingSuggestions = false) }
                 return
             }
+
+            _state.update { it.copy(isLoadingSuggestions = true, suggestionsError = null) }
+
             viewModelScope.launch {
-                val allInsects = insectsRepository.getInsectGroups()
-                    .flatMap { group -> insectsRepository.getInsectsByGroup(group.id) }
-                val suggestions = allInsects
-                    .filter { it.name.contains(query, ignoreCase = true) }
-                    .map { it.id to it.name }
-                    .take(10)
-                _state.update { it.copy(pollinatorSuggestions = suggestions) }
+                try {
+                    val allInsects = insectsRepository.getInsectGroups()
+                        .flatMap { group -> insectsRepository.getInsectsByGroup(group.id) }
+
+                    if (allInsects.isEmpty()) {
+                        _state.update {
+                            it.copy(
+                                pollinatorSuggestions = emptyList(),
+                                isLoadingSuggestions = false,
+                                suggestionsError = R.string.network_error_connection
+                            )
+                        }
+                        return@launch
+                    }
+
+                    val suggestions = allInsects
+                        .filter { it.name.contains(query, ignoreCase = true) }
+                        .map { it.id to it.name }
+                        .take(10)
+
+                    _state.update {
+                        it.copy(
+                            pollinatorSuggestions = suggestions,
+                            isLoadingSuggestions = false,
+                            suggestionsError = null
+                        )
+                    }
+                } catch (e: Exception) {
+                    Log.e("AddSightingViewModel", "Error loading pollinator suggestions", e)
+                    _state.update {
+                        it.copy(
+                            pollinatorSuggestions = emptyList(),
+                            isLoadingSuggestions = false,
+                            suggestionsError = R.string.network_error_connection
+                        )
+                    }
+                }
             }
         }
 
@@ -112,26 +149,60 @@ class AddSightingViewModel(
             _state.update {
                 it.copy(
                     plantQuery = query,
-                    isPlantInvalid = false
+                    isPlantInvalid = false,
+                    suggestionsError = null
                 )
             }
             if (query.isBlank()) {
-                _state.update { it.copy(plantSuggestions = emptyList()) }
+                _state.update { it.copy(plantSuggestions = emptyList(), isLoadingSuggestions = false) }
                 return
             }
+
+            _state.update { it.copy(isLoadingSuggestions = true, suggestionsError = null) }
+
             viewModelScope.launch {
-                val allPlants = plantsRepository.getPlants()
-                val suggestions = allPlants
-                    .filter {
-                        it.nameEn.contains(query, ignoreCase = true) ||
-                                it.nameIt.contains(query, ignoreCase = true)
+                try {
+                    val allPlants = plantsRepository.getPlants()
+
+                    if (allPlants.isEmpty()) {
+                        _state.update {
+                            it.copy(
+                                plantSuggestions = emptyList(),
+                                isLoadingSuggestions = false,
+                                suggestionsError = R.string.network_error_connection
+                            )
+                        }
+                        return@launch
                     }
-                    .map { plant ->
-                        val displayName = if (isItalian) plant.nameIt else plant.nameEn
-                        plant.id to displayName
+
+                    val suggestions = allPlants
+                        .filter {
+                            it.nameEn.contains(query, ignoreCase = true) ||
+                                    it.nameIt.contains(query, ignoreCase = true)
+                        }
+                        .map { plant ->
+                            val displayName = if (isItalian) plant.nameIt else plant.nameEn
+                            plant.id to displayName
+                        }
+                        .take(10)
+
+                    _state.update {
+                        it.copy(
+                            plantSuggestions = suggestions,
+                            isLoadingSuggestions = false,
+                            suggestionsError = null
+                        )
                     }
-                    .take(10)
-                _state.update { it.copy(plantSuggestions = suggestions) }
+                } catch (e: Exception) {
+                    Log.e("AddSightingViewModel", "Error loading plant suggestions", e)
+                    _state.update {
+                        it.copy(
+                            plantSuggestions = emptyList(),
+                            isLoadingSuggestions = false,
+                            suggestionsError = R.string.network_error_connection
+                        )
+                    }
+                }
             }
         }
 
@@ -142,7 +213,8 @@ class AddSightingViewModel(
                     selectedPollinatorName = name,
                     pollinatorQuery = name,
                     pollinatorSuggestions = emptyList(),
-                    isPollinatorInvalid = false
+                    isPollinatorInvalid = false,
+                    suggestionsError = null
                 )
             }
         }
@@ -154,7 +226,8 @@ class AddSightingViewModel(
                     selectedPlantName = name,
                     plantQuery = name,
                     plantSuggestions = emptyList(),
-                    isPlantInvalid = false
+                    isPlantInvalid = false,
+                    suggestionsError = null
                 )
             }
         }
@@ -166,7 +239,8 @@ class AddSightingViewModel(
                     selectedPollinatorName = null,
                     pollinatorQuery = "",
                     pollinatorSuggestions = emptyList(),
-                    isPollinatorInvalid = false
+                    isPollinatorInvalid = false,
+                    suggestionsError = null
                 )
             }
         }
@@ -178,7 +252,8 @@ class AddSightingViewModel(
                     selectedPlantName = null,
                     plantQuery = "",
                     plantSuggestions = emptyList(),
-                    isPlantInvalid = false
+                    isPlantInvalid = false,
+                    suggestionsError = null
                 )
             }
         }
@@ -256,35 +331,45 @@ class AddSightingViewModel(
             viewModelScope.launch {
                 _state.update { it.copy(isLoading = true, errorMessage = null) }
 
-                val imageUrl = imageRepository.uploadSightingImage(userId, s.imageUri!!, context)
-                if (imageUrl == null) {
-                    _state.update {
-                        it.copy(
-                            isLoading = false,
-                            errorMessage = context.getString(R.string.add_sighting_error_image_upload)
-                        )
+                try {
+                    val imageUrl = imageRepository.uploadSightingImage(userId, s.imageUri!!, context)
+                    if (imageUrl == null) {
+                        _state.update {
+                            it.copy(
+                                isLoading = false,
+                                errorMessage = context.getString(R.string.network_error_connection)
+                            )
+                        }
+                        return@launch
                     }
-                    return@launch
-                }
 
-                val success = sightingsRepository.addSighting(
-                    userId = userId,
-                    imageUrl = imageUrl,
-                    targetId = targetId!!,
-                    targetType = targetType!!,
-                    date = s.date!!,
-                    time = s.time!!,
-                    latitude = s.latitude!!,
-                    longitude = s.longitude!!
-                )
+                    val success = sightingsRepository.addSighting(
+                        userId = userId,
+                        imageUrl = imageUrl,
+                        targetId = targetId!!,
+                        targetType = targetType!!,
+                        date = s.date!!,
+                        time = s.time!!,
+                        latitude = s.latitude!!,
+                        longitude = s.longitude!!
+                    )
 
-                if (success) {
-                    _state.update { it.copy(isLoading = false, isSuccess = true) }
-                } else {
+                    if (success) {
+                        _state.update { it.copy(isLoading = false, isSuccess = true) }
+                    } else {
+                        _state.update {
+                            it.copy(
+                                isLoading = false,
+                                errorMessage = context.getString(R.string.network_error_connection)
+                            )
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e("AddSightingViewModel", "Error submitting sighting", e)
                     _state.update {
                         it.copy(
                             isLoading = false,
-                            errorMessage = context.getString(R.string.add_sighting_error_db)
+                            errorMessage = context.getString(R.string.network_error_connection)
                         )
                     }
                 }

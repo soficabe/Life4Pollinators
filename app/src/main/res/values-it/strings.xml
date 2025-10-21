@@ -87,7 +87,7 @@
     <string name="invalid_email_format">Formato email non valido</string>
     <string name="no_changes_to_save">Nessuna modifica da salvare</string>
     <string name="user_not_found">Utente non trovato</string>
-    <string name="error_loading_profile">Errore nel caricare il profilo</string>
+    <string name="error_loading_profile">Errore nel caricare il profilo. Controlla la connessione e riprova.</string>
     <string name="image_upload_error">Errore upload immagine</string>
     <string name="unexpected_error">Errore inatteso: %1$s</string>
     <string name="confirmation_email_sent">Una email di conferma è stata inviata a %1$s. Controlla la nuova casella per confermare il cambio.</string>
@@ -110,7 +110,7 @@
     <string name="newPassword">Nuova Password</string>
     <string name="confirmNewPassword">Conferma Nuova Password</string>
     <string name="saveString">Salva</string>
-    <string name="generic_change_psw_error">Cambio password fallito. Riprova.</string>
+    <string name="generic_change_psw_error">Cambio password fallito. Controlla la connessione e riprova.</string>
 
     <!-- Plants -->
     <string name="most_common_genera">Generi più comuni</string>
@@ -169,8 +169,6 @@
     <string name="add_sighting_success">Avvistamento inviato con successo!</string>
     <string name="add_sighting_error_missing_fields">Compila tutti i campi obbligatori</string>
     <string name="add_sighting_error_select_species">Seleziona un impollinatore o una pianta</string>
-    <string name="add_sighting_error_image_upload">Caricamento immagine fallito</string>
-    <string name="add_sighting_error_db">Errore database</string>
     <string name="add_sighting_selected_location">Seleziona Posizione</string>
     <string name="my_location_marker_title">Mia Posizione</string>
     <string name="add_sighting_image_section">Immagine</string>
@@ -222,7 +220,7 @@
     <!-- Leaderboard Screen -->
     <string name="leaderboard_title">Classifica Globale</string>
     <string name="leaderboard_empty">Nessun utente in classifica ancora</string>
-    <string name="leaderboard_error">Errore nel caricamento della classifica</string>
+    <string name="leaderboard_error">Errore nel caricamento della classifica. Controlla la connesione.</string>
     <string name="retry">Riprova</string>
     <string name="you">Tu</string>
 
