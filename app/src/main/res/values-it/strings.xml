@@ -218,13 +218,13 @@
     <string name="insects_loading_error">Errore caricamento insetti</string>
 
     <!-- Quiz Errors -->
-    <string name="quiz_error_not_found">Quiz non trovato</string>
-    <string name="quiz_error_load_groups">Impossibile caricare i gruppi di insetti</string>
-    <string name="quiz_error_load_insects">Impossibile caricare gli insetti</string>
+    <string name="quiz_error_not_found">Quiz non trovato. Controlla la connessione.</string>
+    <string name="quiz_error_load_groups">Impossibile caricare i dati. Controlla la connessione.</string>
+    <string name="quiz_error_load_insects">Impossibile caricare i dati. Controlla la connessione.</string>
     <string name="quiz_error_no_classification">Nessuna classificazione trovata</string>
     <string name="quiz_error_missing_data">Dati mancanti</string>
-    <string name="quiz_error_upload_image">Errore durante il caricamento dell\'immagine</string>
-    <string name="quiz_error_database">Errore durante l\'inserimento nel database</string>
+    <string name="quiz_error_upload_image">Errore durante il caricamento dell\'immagine. Controlla la connessione.</string>
+    <string name="quiz_error_database">Errore durante il salvataggio. Controlla la connessione.</string>
 
     <!-- Leaderboard Screen -->
     <string name="leaderboard_title">Classifica Globale</string>
@@ -232,4 +232,8 @@
     <string name="leaderboard_error">Errore nel caricamento della classifica</string>
     <string name="retry">Riprova</string>
     <string name="you">Tu</string>
+
+    <!-- Network and Connection Errors (General) -->
+    <string name="network_error_connection">Nessuna connessione internet. Controlla la connessione e riprova.</string>
+    <string name="error_loading_data">Errore nel caricamento dei dati. Controlla la connessione.</string>
 </resources>

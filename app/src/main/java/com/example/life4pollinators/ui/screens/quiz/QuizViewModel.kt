@@ -2,6 +2,7 @@ package com.example.life4pollinators.ui.screens.quiz
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.life4pollinators.R
@@ -49,10 +50,10 @@ data class QuizState(
     val selectedGroupId: String? = null,
     val insectsForSelection: List<Insect> = emptyList(),
     val loading: Boolean = false,
-    val error: Int? = null,  // Cambiato da String? a Int? per ID risorsa
+    val error: Int? = null,
     val isUploading: Boolean = false,
     val uploadSuccess: Boolean? = null,
-    val uploadError: Int? = null  // Cambiato da String? a Int? per ID risorsa
+    val uploadError: Int? = null
 )
 
 interface QuizActions {
@@ -90,39 +91,62 @@ class QuizViewModel(
                 return
             }
             viewModelScope.launch {
-                _state.update { it.copy(step = QuizStep.Start, photoUrl = photoUrl, loading = true) }
-                val quiz = quizRepository.getQuiz(type)
-                val rootId = quiz?.rootQuestionId
-                val rootQuestion = rootId?.let { quizRepository.getRootQuestion(it) }
-                if (rootQuestion != null) {
-                    val answers = quizRepository.getAnswers(rootQuestion.id)
-                    _state.update {
-                        it.copy(
-                            step = QuizStep.Question,
-                            currentQuestion = rootQuestion,
-                            answers = answers,
-                            loading = false
-                        )
+                _state.update { it.copy(step = QuizStep.Start, photoUrl = photoUrl, loading = true, error = null) }
+
+                try {
+                    val quiz = quizRepository.getQuiz(type)
+                    if (quiz == null) {
+                        _state.update { it.copy(error = R.string.network_error_connection, loading = false) }
+                        return@launch
                     }
-                } else {
-                    _state.update { it.copy(error = R.string.quiz_error_not_found, loading = false) }
+
+                    val rootId = quiz.rootQuestionId
+                    val rootQuestion = quizRepository.getRootQuestion(rootId)
+
+                    if (rootQuestion != null) {
+                        val answers = quizRepository.getAnswers(rootQuestion.id)
+                        if (answers.isEmpty()) {
+                            _state.update { it.copy(error = R.string.network_error_connection, loading = false) }
+                            return@launch
+                        }
+                        _state.update {
+                            it.copy(
+                                step = QuizStep.Question,
+                                currentQuestion = rootQuestion,
+                                answers = answers,
+                                loading = false,
+                                error = null
+                            )
+                        }
+                    } else {
+                        _state.update { it.copy(error = R.string.network_error_connection, loading = false) }
+                    }
+                } catch (e: Exception) {
+                    Log.e("QuizViewModel", "Error starting quiz", e)
+                    _state.update { it.copy(error = R.string.network_error_connection, loading = false) }
                 }
             }
         }
 
         override fun loadInsectGroups(photoUrl: String?) {
             viewModelScope.launch {
-                _state.update { it.copy(loading = true, photoUrl = photoUrl) }
+                _state.update { it.copy(loading = true, photoUrl = photoUrl, error = null) }
                 try {
                     val groups = insectsRepository.getInsectGroups()
+                    if (groups.isEmpty()) {
+                        _state.update { it.copy(error = R.string.quiz_error_load_groups, loading = false) }
+                        return@launch
+                    }
                     _state.update {
                         it.copy(
                             insectGroups = groups,
                             step = QuizStep.InsectTypeSelection,
-                            loading = false
+                            loading = false,
+                            error = null
                         )
                     }
                 } catch (e: Exception) {
+                    Log.e("QuizViewModel", "Error loading insect groups", e)
                     _state.update {
                         it.copy(
                             error = R.string.quiz_error_load_groups,
@@ -135,7 +159,8 @@ class QuizViewModel(
 
         override fun selectInsectType(groupName: String, groupId: String) {
             viewModelScope.launch {
-                _state.update { it.copy(loading = true, selectedInsectType = groupName, selectedGroupId = groupId) }
+                _state.update { it.copy(loading = true, selectedInsectType = groupName, selectedGroupId = groupId, error = null) }
+
                 val groupToQuizType = mapOf(
                     "Bees" to "bee",
                     "Butterflies" to "butterfly",
@@ -143,46 +168,58 @@ class QuizViewModel(
                     "Wasps" to "wasp"
                 )
                 val quizType = groupToQuizType[groupName]
-                if (quizType != null) {
-                    val quiz = quizRepository.getQuiz(quizType)
-                    if (quiz != null) {
-                        val rootId = quiz.rootQuestionId
-                        val rootQuestion = quizRepository.getRootQuestion(rootId)
-                        if (rootQuestion != null) {
-                            val answers = quizRepository.getAnswers(rootQuestion.id)
-                            _state.update {
-                                it.copy(
-                                    quizType = quizType,
-                                    originalQuizType = "insect",
-                                    step = QuizStep.Question,
-                                    currentQuestion = rootQuestion,
-                                    answers = answers,
-                                    loading = false
-                                )
+
+                try {
+                    if (quizType != null) {
+                        val quiz = quizRepository.getQuiz(quizType)
+                        if (quiz != null) {
+                            val rootId = quiz.rootQuestionId
+                            val rootQuestion = quizRepository.getRootQuestion(rootId)
+                            if (rootQuestion != null) {
+                                val answers = quizRepository.getAnswers(rootQuestion.id)
+                                if (answers.isEmpty()) {
+                                    _state.update { it.copy(error = R.string.network_error_connection, loading = false) }
+                                    return@launch
+                                }
+                                _state.update {
+                                    it.copy(
+                                        quizType = quizType,
+                                        originalQuizType = "insect",
+                                        step = QuizStep.Question,
+                                        currentQuestion = rootQuestion,
+                                        answers = answers,
+                                        loading = false,
+                                        error = null
+                                    )
+                                }
+                            } else {
+                                _state.update { it.copy(error = R.string.quiz_error_not_found, loading = false) }
                             }
                         } else {
                             _state.update { it.copy(error = R.string.quiz_error_not_found, loading = false) }
                         }
                     } else {
-                        _state.update { it.copy(error = R.string.quiz_error_not_found, loading = false) }
-                    }
-                } else {
-                    try {
                         val insects = insectsRepository.getInsectsByGroup(groupId)
+                        if (insects.isEmpty()) {
+                            _state.update { it.copy(error = R.string.quiz_error_load_insects, loading = false) }
+                            return@launch
+                        }
                         _state.update {
                             it.copy(
                                 insectsForSelection = insects,
                                 step = QuizStep.InsectsList,
-                                loading = false
+                                loading = false,
+                                error = null
                             )
                         }
-                    } catch (e: Exception) {
-                        _state.update {
-                            it.copy(
-                                error = R.string.quiz_error_load_insects,
-                                loading = false
-                            )
-                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e("QuizViewModel", "Error selecting insect type", e)
+                    _state.update {
+                        it.copy(
+                            error = R.string.network_error_connection,
+                            loading = false
+                        )
                     }
                 }
             }
@@ -209,50 +246,83 @@ class QuizViewModel(
 
         override fun answerQuestion(answer: QuizAnswer) {
             viewModelScope.launch {
-                _state.update { it.copy(loading = true, selectedAnswer = answer) }
-                val nextQuestion = quizRepository.getNextQuestion(answer)
-                if (nextQuestion != null) {
-                    val answers = quizRepository.getAnswers(nextQuestion.id)
-                    _state.update {
-                        it.copy(
-                            currentQuestion = nextQuestion,
-                            answers = answers,
-                            selectedAnswer = null,
-                            loading = false
-                        )
-                    }
-                } else {
-                    val targets = quizRepository.getTargets(answer.id)
-                    val targetsWithDetails = loadTargetDetails(targets)
-                    if (targetsWithDetails.size == 1) {
-                        _state.update {
-                            it.copy(
-                                step = QuizStep.Result,
-                                possibleTargets = targetsWithDetails,
-                                selectedTarget = targetsWithDetails.first(),
-                                loading = false
-                            )
+                _state.update { it.copy(loading = true, selectedAnswer = answer, error = null) }
+
+                try {
+                    val nextQuestion = quizRepository.getNextQuestion(answer)
+                    if (nextQuestion != null) {
+                        // Caso 1: C'è una prossima domanda
+                        val answers = quizRepository.getAnswers(nextQuestion.id)
+                        if (answers.isEmpty()) {
+                            _state.update { it.copy(error = R.string.network_error_connection, loading = false) }
+                            return@launch
                         }
-                    } else if (targetsWithDetails.size > 1) {
                         _state.update {
                             it.copy(
-                                step = QuizStep.TargetSelection,
-                                possibleTargets = targetsWithDetails,
-                                selectedTarget = null,
-                                loading = false
+                                currentQuestion = nextQuestion,
+                                answers = answers,
+                                selectedAnswer = null,
+                                loading = false,
+                                error = null
                             )
                         }
                     } else {
-                        _state.update {
-                            it.copy(
-                                step = QuizStep.Result,
-                                possibleTargets = emptyList(),
-                                selectedTarget = null,
-                                loading = false,
-                                error = R.string.quiz_error_no_classification
-                            )
+                        // Caso 2: È una risposta foglia, recupera i target
+                        val targets = quizRepository.getTargets(answer.id)
+
+                        // Se targets è vuoto, assume errore di connessione
+                        if (targets.isEmpty()) {
+                            _state.update {
+                                it.copy(
+                                    error = R.string.network_error_connection,
+                                    loading = false
+                                )
+                            }
+                            return@launch
+                        }
+
+                        val targetsWithDetails = loadTargetDetails(targets)
+
+                        // Se targetsWithDetails è vuoto ma targets non lo era,
+                        // significa che loadTargetDetails ha fallito
+                        if (targetsWithDetails.isEmpty()) {
+                            _state.update {
+                                it.copy(
+                                    error = R.string.network_error_connection,
+                                    loading = false
+                                )
+                            }
+                            return@launch
+                        }
+
+                        if (targetsWithDetails.size == 1) {
+                            // Un solo target → Risultato diretto
+                            _state.update {
+                                it.copy(
+                                    step = QuizStep.Result,
+                                    possibleTargets = targetsWithDetails,
+                                    selectedTarget = targetsWithDetails.first(),
+                                    loading = false,
+                                    error = null
+                                )
+                            }
+                        } else {
+                            // PIÙ TARGET → Selezione target
+                            _state.update {
+                                it.copy(
+                                    step = QuizStep.TargetSelection,
+                                    possibleTargets = targetsWithDetails,
+                                    selectedTarget = null,
+                                    loading = false,
+                                    error = null
+                                )
+                            }
                         }
                     }
+                } catch (e: Exception) {
+                    Log.e("QuizViewModel", "Error answering question", e)
+                    _state.update { it.copy(error = R.string.network_error_connection, loading = false) }
+                    return@launch
                 }
             }
         }
@@ -289,37 +359,51 @@ class QuizViewModel(
             }
             viewModelScope.launch {
                 _state.update { it.copy(isUploading = true, uploadSuccess = null, uploadError = null) }
-                val uri = Uri.parse(s.photoUrl)
-                val isRemote = s.photoUrl.startsWith("http")
-                val imageUrl: String? = if (isRemote) s.photoUrl
-                else imageRepository.uploadSightingImage(userId, uri, context)
-                if (imageUrl == null) {
+
+                try {
+                    val uri = Uri.parse(s.photoUrl)
+                    val isRemote = s.photoUrl.startsWith("http")
+                    val imageUrl: String? = if (isRemote) s.photoUrl
+                    else imageRepository.uploadSightingImage(userId, uri, context)
+
+                    if (imageUrl == null) {
+                        _state.update {
+                            it.copy(
+                                isUploading = false,
+                                uploadSuccess = false,
+                                uploadError = R.string.quiz_error_upload_image
+                            )
+                        }
+                        return@launch
+                    }
+
+                    val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+                    val success = sightingsRepository.addSighting(
+                        userId = userId,
+                        imageUrl = imageUrl,
+                        targetId = s.selectedTarget.target.targetId,
+                        targetType = s.selectedTarget.target.targetType,
+                        date = now.date,
+                        time = now.time,
+                        latitude = 0.0,
+                        longitude = 0.0
+                    )
+                    _state.update {
+                        it.copy(
+                            isUploading = false,
+                            uploadSuccess = success,
+                            uploadError = if (!success) R.string.quiz_error_database else null
+                        )
+                    }
+                } catch (e: Exception) {
+                    Log.e("QuizViewModel", "Error submitting quiz sighting", e)
                     _state.update {
                         it.copy(
                             isUploading = false,
                             uploadSuccess = false,
-                            uploadError = R.string.quiz_error_upload_image
+                            uploadError = R.string.network_error_connection
                         )
                     }
-                    return@launch
-                }
-                val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
-                val success = sightingsRepository.addSighting(
-                    userId = userId,
-                    imageUrl = imageUrl,
-                    targetId = s.selectedTarget.target.targetId,
-                    targetType = s.selectedTarget.target.targetType,
-                    date = now.date,
-                    time = now.time,
-                    latitude = 0.0,
-                    longitude = 0.0
-                )
-                _state.update {
-                    it.copy(
-                        isUploading = false,
-                        uploadSuccess = success,
-                        uploadError = if (!success) R.string.quiz_error_database else null
-                    )
                 }
             }
         }
@@ -327,29 +411,34 @@ class QuizViewModel(
 
     private suspend fun loadTargetDetails(targets: List<QuizAnswerTarget>): List<TargetWithDetails> {
         return targets.mapNotNull { target ->
-            when (target.targetType) {
-                "plant" -> {
-                    val plant = quizRepository.getPlant(target.targetId)
-                    plant?.let {
-                        TargetWithDetails(
-                            target = target,
-                            nameEn = it.nameEn,
-                            nameIt = it.nameIt,
-                            imageUrl = it.imageUrl
-                        )
+            try {
+                when (target.targetType) {
+                    "plant" -> {
+                        val plant = quizRepository.getPlant(target.targetId)
+                        plant?.let {
+                            TargetWithDetails(
+                                target = target,
+                                nameEn = it.nameEn,
+                                nameIt = it.nameIt,
+                                imageUrl = it.imageUrl
+                            )
+                        }
                     }
-                }
-                "insect", "bee", "wasp", "butterfly", "moth" -> {
-                    val insect = quizRepository.getInsect(target.targetId)
-                    insect?.let {
-                        TargetWithDetails(
-                            target = target,
-                            name = it.name,
-                            imageUrl = insect.insectImage
-                        )
+                    "insect", "bee", "wasp", "butterfly", "moth" -> {
+                        val insect = quizRepository.getInsect(target.targetId)
+                        insect?.let {
+                            TargetWithDetails(
+                                target = target,
+                                name = it.name,
+                                imageUrl = insect.insectImage
+                            )
+                        }
                     }
+                    else -> null
                 }
-                else -> null
+            } catch (e: Exception) {
+                Log.e("QuizViewModel", "Error loading target details: ${target.targetId}", e)
+                null
             }
         }
     }

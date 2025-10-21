@@ -218,13 +218,14 @@
     <string name="insects_loading_error">Error loading insects</string>
 
     <!-- Quiz Errors -->
-    <string name="quiz_error_not_found">Quiz not found</string>
-    <string name="quiz_error_load_groups">Failed to load insect groups</string>
-    <string name="quiz_error_load_insects">Failed to load insects</string>
+    <!-- Quiz Errors -->
+    <string name="quiz_error_not_found">Quiz not found. Check your connection.</string>
+    <string name="quiz_error_load_groups">Unable to load data. Check your connection.</string>
+    <string name="quiz_error_load_insects">Unable to load data. Check your connection.</string>
     <string name="quiz_error_no_classification">No classification found</string>
     <string name="quiz_error_missing_data">Missing data</string>
-    <string name="quiz_error_upload_image">Image upload error</string>
-    <string name="quiz_error_database">Database insertion error</string>
+    <string name="quiz_error_upload_image">Error uploading image. Check your connection.</string>
+    <string name="quiz_error_database">Error saving. Check your connection.</string>
 
     <!-- Leaderboard Screen -->
     <string name="leaderboard_title">Global Ranking</string>
@@ -232,4 +233,8 @@
     <string name="leaderboard_error">Error loading the ranking</string>
     <string name="retry">Try again</string>
     <string name="you">You</string>
+
+    <!-- Network and Connection Errors (General) -->
+    <string name="network_error_connection">No internet connection. Please check your connection and try again.</string>
+    <string name="error_loading_data">Error loading data. Please check your connection.</string>
 </resources>

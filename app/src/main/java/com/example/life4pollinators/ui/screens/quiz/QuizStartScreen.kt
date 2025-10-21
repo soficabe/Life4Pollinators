@@ -42,7 +42,10 @@ fun QuizStartScreen(
     val context = LocalContext.current
     var showImagePicker by rememberSaveable { mutableStateOf(false) }
 
-    // FIX: Usa rememberSaveable per mantenere la foto durante la rotazione
+    // Snackbar host per mostrare errori
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    // Usa rememberSaveable per mantenere la foto durante la rotazione
     var localPhoto by rememberSaveable(stateSaver = UriSaver) {
         mutableStateOf(state.photoUrl?.let { Uri.parse(it) })
     }
@@ -60,6 +63,13 @@ fun QuizStartScreen(
     LaunchedEffect(state.photoUrl) {
         if (state.photoUrl != null && localPhoto == null) {
             localPhoto = Uri.parse(state.photoUrl)
+        }
+    }
+
+    // Mostra errore di rete con Snackbar
+    LaunchedEffect(state.error) {
+        if (state.error != null) {
+            snackbarHostState.showSnackbar(context.getString(state.error))
         }
     }
 
@@ -104,7 +114,8 @@ fun QuizStartScreen(
                 selectedTab = NavBarTab.Home,
                 navController = navController
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
         Column(
             modifier = Modifier

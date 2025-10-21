@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -32,12 +33,21 @@ fun QuizInsectTypeSelectionScreen(
     navController: NavHostController
 ) {
     val locale = Locale.getDefault().language
+    val context = LocalContext.current
 
     var showExitDialog by rememberSaveable { mutableStateOf(false) }
+
+    val snackbarHostState = remember { SnackbarHostState() }
 
     // Gestione del back button con dialog di conferma
     BackHandler {
         showExitDialog = true
+    }
+
+    LaunchedEffect(state.error) {
+        if (state.error != null) {
+            snackbarHostState.showSnackbar(context.getString(state.error))
+        }
     }
 
     LaunchedEffect(state.step) {
@@ -55,7 +65,8 @@ fun QuizInsectTypeSelectionScreen(
                 showBackButton = false,
                 showSettingsButton = false
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
         Column(
             modifier = Modifier

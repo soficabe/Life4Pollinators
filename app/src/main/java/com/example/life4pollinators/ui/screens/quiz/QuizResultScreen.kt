@@ -10,7 +10,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CheckCircle
-import androidx.compose.material.icons.outlined.Cancel
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.ImageSearch
 import androidx.compose.material.icons.outlined.Refresh
@@ -52,6 +51,46 @@ fun QuizResultScreen(
         }
     }
 
+    // Controllo di sicurezza all'inizio
+    val selectedTarget = state.selectedTarget
+    if (selectedTarget == null) {
+        // Fallback - non dovrebbe mai accadere con i nostri fix
+        Scaffold(
+            topBar = {
+                AppBar(
+                    navController = navController,
+                    showBackButton = false,
+                    showSettingsButton = false
+                )
+            }
+        ) { padding ->
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = stringResource(R.string.quiz_error_no_classification),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(onClick = {
+                        actions.resetQuiz()
+                        navController.navigate(L4PRoute.Home) {
+                            popUpTo(L4PRoute.Home) { inclusive = false }
+                        }
+                    }) {
+                        Text(stringResource(R.string.back_to_home))
+                    }
+                }
+            }
+        }
+        return
+    }
+
     Scaffold (
         topBar = {
             AppBar(
@@ -69,310 +108,213 @@ fun QuizResultScreen(
                 .padding(horizontal = 20.dp, vertical = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            if (state.selectedTarget != null) {
-                // Badge compatto con icona e testo
-                Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    color = MaterialTheme.colorScheme.primaryContainer
-                ) {
-                    Row(
-                        modifier = Modifier.padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.CheckCircle,
-                            contentDescription = null,
-                            modifier = Modifier.size(24.dp),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = stringResource(R.string.quiz_result_identified),
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                val displayName = if (!state.selectedTarget.name.isNullOrEmpty()) {
-                    state.selectedTarget.name
-                } else {
-                    if (locale == "it") state.selectedTarget.nameIt else state.selectedTarget.nameEn
-                }
-
-                displayName?.let {
-                    Text(
-                        text = it,
-                        style = MaterialTheme.typography.headlineMedium,
-                        color = MaterialTheme.colorScheme.primary,
-                        textAlign = TextAlign.Center
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                state.selectedTarget.imageUrl?.let { imageUrl ->
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                    ) {
-                        Column {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(240.dp)
-                                    .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Image(
-                                    painter = rememberAsyncImagePainter(imageUrl),
-                                    contentDescription = stringResource(R.string.quiz_identified_photo),
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentScale = ContentScale.Fit
-                                )
-                            }
-                            Text(
-                                text = stringResource(R.string.quiz_identified_photo),
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(12.dp)
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                // Sezione bottoni con gerarchia visiva
-                if (state.photoUrl != null) {
-                    Button(
-                        onClick = { showLensDialog = true },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(48.dp),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.ImageSearch,
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = stringResource(R.string.quiz_open_with_lens),
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(12.dp))
-                }
-
-                // Bottone carica come avvistamento (azione principale)
-                if (isAuthenticated && state.photoUrl != null) {
-                    Button(
-                        onClick = {
-                            actions.submitQuizSighting(context, userId)
-                        },
-                        enabled = !state.isUploading,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(48.dp),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Upload,
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = stringResource(R.string.upload_sighting),
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                    }
-
-                    if (state.isUploading) {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-                    }
-                    if (state.uploadSuccess == true) {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = stringResource(R.string.sighting_uploaded),
-                            color = MaterialTheme.colorScheme.primary,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    }
-                    if (state.uploadSuccess == false) {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = state.uploadError?.let { stringResource(it) } ?: stringResource(R.string.sighting_upload_error),
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(12.dp))
-                }
-
-                OutlinedButton(
-                    onClick = {
-                        actions.resetQuizKeepingPhoto()
-                        navController.navigate("quizStart/${state.originalQuizType}") {
-                            popUpTo(L4PRoute.Home) { inclusive = false }
-                        }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp),
-                    shape = RoundedCornerShape(12.dp)
+            // Badge successo
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                color = MaterialTheme.colorScheme.primaryContainer
+            ) {
+                Row(
+                    modifier = Modifier.padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Outlined.Refresh,
+                        imageVector = Icons.Outlined.CheckCircle,
                         contentDescription = null,
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(24.dp),
+                        tint = MaterialTheme.colorScheme.primary
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = stringResource(R.string.quiz_try_again),
-                        style = MaterialTheme.typography.bodyLarge
+                        text = stringResource(R.string.quiz_result_identified),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 }
+            }
 
-                Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-                OutlinedButton(
-                    onClick = {
-                        actions.resetQuiz()
-                        navController.navigate(L4PRoute.Home) {
-                            popUpTo(L4PRoute.Home) { inclusive = false }
-                        }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Home,
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = stringResource(R.string.back_to_home),
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                }
-
+            // Nome del target - safe access
+            val displayName = if (!selectedTarget.name.isNullOrEmpty()) {
+                selectedTarget.name
             } else {
-                // Badge compatto per errore
-                Surface(
+                if (locale == "it") selectedTarget.nameIt else selectedTarget.nameEn
+            }
+
+            displayName?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    textAlign = TextAlign.Center
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Immagine del target
+            selectedTarget.imageUrl?.let { imageUrl ->
+                Card(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    color = MaterialTheme.colorScheme.errorContainer
+                    shape = RoundedCornerShape(16.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
-                    Row(
-                        modifier = Modifier.padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Cancel,
-                            contentDescription = null,
-                            modifier = Modifier.size(24.dp),
-                            tint = MaterialTheme.colorScheme.error
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = stringResource(R.string.quiz_result_no_classification),
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onErrorContainer,
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                state.photoUrl?.let { photoUrl ->
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                    ) {
-                        Column {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(240.dp)
-                                    .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
-                            ) {
-                                Image(
-                                    painter = rememberAsyncImagePainter(Uri.parse(photoUrl)),
-                                    contentDescription = stringResource(R.string.quiz_your_photo),
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentScale = ContentScale.Crop
-                                )
-                            }
-                            Text(
-                                text = stringResource(R.string.quiz_your_photo),
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(12.dp)
+                    Column {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(240.dp)
+                                .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Image(
+                                painter = rememberAsyncImagePainter(imageUrl),
+                                contentDescription = stringResource(R.string.quiz_identified_photo),
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Fit
                             )
                         }
+                        Text(
+                            text = stringResource(R.string.quiz_identified_photo),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(12.dp)
+                        )
                     }
                 }
+            }
 
-                Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
+            // Bottone Google Lens
+            if (state.photoUrl != null) {
+                Button(
+                    onClick = { showLensDialog = true },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.ImageSearch,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = stringResource(R.string.quiz_open_with_lens),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+
+            // Bottone carica avvistamento
+            if (isAuthenticated && state.photoUrl != null) {
                 Button(
                     onClick = {
-                        actions.resetQuizKeepingPhoto()
-                        navController.navigate("quizStart/${state.originalQuizType}") {
-                            popUpTo(L4PRoute.Home) { inclusive = false }
-                        }
+                        actions.submitQuizSighting(context, userId)
                     },
+                    enabled = !state.isUploading,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(48.dp),
                     shape = RoundedCornerShape(12.dp)
                 ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Upload,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = stringResource(R.string.quiz_restart),
+                        text = stringResource(R.string.upload_sighting),
                         style = MaterialTheme.typography.bodyLarge
                     )
                 }
 
+                if (state.isUploading) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                }
+                if (state.uploadSuccess == true) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = stringResource(R.string.sighting_uploaded),
+                        color = MaterialTheme.colorScheme.primary,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+                if (state.uploadSuccess == false) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = state.uploadError?.let { stringResource(it) } ?: stringResource(R.string.sighting_upload_error),
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
                 Spacer(modifier = Modifier.height(12.dp))
+            }
 
-                OutlinedButton(
-                    onClick = {
-                        actions.resetQuiz()
-                        navController.navigate(L4PRoute.Home) {
-                            popUpTo(L4PRoute.Home) { inclusive = false }
-                        }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Text(
-                        text = stringResource(R.string.back_to_home),
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                }
+            // Bottone riprova
+            OutlinedButton(
+                onClick = {
+                    actions.resetQuizKeepingPhoto()
+                    navController.navigate("quizStart/${state.originalQuizType}") {
+                        popUpTo(L4PRoute.Home) { inclusive = false }
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Refresh,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = stringResource(R.string.quiz_try_again),
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Bottone home
+            OutlinedButton(
+                onClick = {
+                    actions.resetQuiz()
+                    navController.navigate(L4PRoute.Home) {
+                        popUpTo(L4PRoute.Home) { inclusive = false }
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Home,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = stringResource(R.string.back_to_home),
+                    style = MaterialTheme.typography.bodyLarge
+                )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
         }
     }
 
+    // Dialog Google Lens
     if (showLensDialog && state.photoUrl != null) {
         AlertDialog(
             onDismissRequest = { showLensDialog = false },

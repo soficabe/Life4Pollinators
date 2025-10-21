@@ -23,7 +23,6 @@ import com.example.life4pollinators.R
 import com.example.life4pollinators.ui.composables.AppBar
 import com.example.life4pollinators.ui.composables.ExitQuizDialog
 import com.example.life4pollinators.ui.navigation.L4PRoute
-
 import java.util.Locale
 
 @Composable
@@ -143,17 +142,10 @@ fun QuizTargetSelectionScreen(
                                 Spacer(modifier = Modifier.width(16.dp))
                             }
 
-                            targetWithDetails.name?.let {
-                                Text(
-                                    text = it,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
+                            val displayName = targetWithDetails.name?.takeIf { it.isNotEmpty() }
+                                ?: if (locale == "it") targetWithDetails.nameIt else targetWithDetails.nameEn
 
-                            val name = if (locale == "it") targetWithDetails.nameIt else targetWithDetails.nameEn
-
-                            name?.let {
+                            displayName?.let {
                                 Text(
                                     text = it,
                                     style = MaterialTheme.typography.bodyLarge,
