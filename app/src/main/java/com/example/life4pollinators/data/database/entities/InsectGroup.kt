@@ -3,6 +3,18 @@ package com.example.life4pollinators.data.database.entities
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+/**
+ * Rappresenta un gruppo di insetti (es. Bees, Butterflies, Beetles).
+ *
+ * @property id Identificativo univoco del gruppo.
+ * @property nameEn Nome del gruppo in inglese.
+ * @property nameIt Nome del gruppo in italiano.
+ * @property imageUrlEn URL infografica in inglese.
+ * @property imageUrlIt URL infografica in italiano.
+ * @property infoEn Testo informativo sul gruppo in inglese.
+ * @property infoIt Testo informativo sul gruppo in italiano.
+ * @property groupImageUrl URL immagine rappresentativa del gruppo.
+ */
 @Serializable
 data class InsectGroup(
     @SerialName("id")

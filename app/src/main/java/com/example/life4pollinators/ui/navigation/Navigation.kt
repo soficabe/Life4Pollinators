@@ -179,53 +179,61 @@ fun L4PNavGraph(
             SettingsScreen(settingsState, settingsViewModel.actions, isAuthenticated, navController)
         }
 
+        // Schermata lista delle piante visibili nella parte didattica
         composable<L4PRoute.PlantsList> {
             val plantsListVM = koinViewModel<PlantsListViewModel>()
             val plantsListState by plantsListVM.state.collectAsStateWithLifecycle()
             PlantsListScreen(plantsListState, isAuthenticated, navController)
         }
 
+        // Schermate info generali sulle piante
         composable<L4PRoute.PlantsGeneralInfo> {
             val plantsGeneralInfoVM = koinViewModel<PlantsGeneralInfoViewModel>()
             val plantsGeneralInfoState by plantsGeneralInfoVM.state.collectAsStateWithLifecycle()
             PlantGeneralInfoScreen(plantsGeneralInfoState, isAuthenticated, navController)
         }
 
+        // Schermata di dettaglio di una certa specie di pianta
         composable<L4PRoute.PlantDetail> {
             val plantDetailViewModel = koinViewModel<PlantDetailViewModel>()
             val plantDetailState by plantDetailViewModel.state.collectAsStateWithLifecycle()
             PlantDetailScreen(plantDetailState, isAuthenticated, navController)
         }
 
+        // Schermata lista dei gruppi di insetti consultabili nella parte didattica
         composable<L4PRoute.InsectGroupsList> {
             val insectGroupsListVM = koinViewModel<InsectGroupsListViewModel>()
             val insectGroupsListState by insectGroupsListVM.state.collectAsStateWithLifecycle()
             InsectGroupsListScreen(insectGroupsListState, isAuthenticated, navController)
         }
 
+        // Schermata info generali sugli insetti
         composable<L4PRoute.InsectsGeneralInfo> {
             InsectsGeneralInfoScreen(isAuthenticated, navController)
         }
 
+        // Schermata lista delle specie di insetti di un certo gruppo
         composable<L4PRoute.InsectsList> {
             val insectsListVM = koinViewModel<InsectsListViewModel>()
             val insectsListState by insectsListVM.state.collectAsStateWithLifecycle()
             InsectsListScreen(insectsListState, isAuthenticated, navController)
         }
 
+        // Schermata info di un certo gruppo di insetti
         composable<L4PRoute.InsectGroupInfo> {
             val insectGroupInfoVM = koinViewModel<InsectGroupInfoViewModel>()
             val insectGroupInfoState by insectGroupInfoVM.state.collectAsStateWithLifecycle()
             InsectGroupInfoScreen(insectGroupInfoState, isAuthenticated, navController)
         }
 
+        // Schermata di dettaglio di una certa specie di insetto
         composable<L4PRoute.InsectDetail> {
             val insectDetailVM = koinViewModel<InsectDetailViewModel>()
             val insectDetailState by insectDetailVM.state.collectAsStateWithLifecycle()
             InsectDetailScreen(insectDetailState, isAuthenticated, navController)
         }
 
-        // Quiz Routes
+        // Schermata Quiz Start
         composable("quizStart/{type}") { backStackEntry ->
             val type = backStackEntry.arguments?.getString("type") ?: ""
             LaunchedEffect(type) {
@@ -235,26 +243,31 @@ fun L4PNavGraph(
             QuizStartScreen(quizState, quizViewModel.actions, isAuthenticated, navController)
         }
 
+        // Schermata di selezione del gruppo di insetto di cui si vuole fare il quiz
         composable<L4PRoute.QuizInsectTypeSelection> {
             val quizState by quizViewModel.state.collectAsStateWithLifecycle()
             QuizInsectTypeSelectionScreen(quizState, quizViewModel.actions, navController)
         }
 
+        // Schermata di selezione della specie di insetto nel quiz
         composable<L4PRoute.QuizInsectsList> {
             val quizState by quizViewModel.state.collectAsStateWithLifecycle()
             QuizInsectsListScreen(quizState, quizViewModel.actions, navController)
         }
 
+        // Schermata Quiz Question
         composable<L4PRoute.QuizQuestion> {
             val quizState by quizViewModel.state.collectAsStateWithLifecycle()
             QuizQuestionScreen(quizState, quizViewModel.actions, navController)
         }
 
+        // Schermata di selezione del target (specie) nel quiz
         composable<L4PRoute.QuizTargetSelection> {
             val quizState by quizViewModel.state.collectAsStateWithLifecycle()
             QuizTargetSelectionScreen(quizState, quizViewModel.actions, navController)
         }
 
+        // Schermata Quiz Result
         composable<L4PRoute.QuizResult> {
             val quizState by quizViewModel.state.collectAsStateWithLifecycle()
             QuizResultScreen(quizState, quizViewModel.actions, isAuthenticated, userId ?: "", navController)
@@ -274,6 +287,7 @@ fun L4PNavGraph(
             EditProfileScreen(editProfileState, editProfileVM.actions, navController)
         }
 
+        // Schermata form di caricamento avvistamento
         composable<L4PRoute.AddSighting> {
             val addSightingVM = koinViewModel<AddSightingViewModel>()
             val addSightingState by addSightingVM.state.collectAsStateWithLifecycle()
@@ -286,6 +300,7 @@ fun L4PNavGraph(
             )
         }
 
+        // Schermata collezione di avvistamenti
         composable<L4PRoute.Sightings> {
             val sightingsVM = koinViewModel<SightingsViewModel>()
             val sightingsState by sightingsVM.state.collectAsStateWithLifecycle()
@@ -297,6 +312,7 @@ fun L4PNavGraph(
             )
         }
 
+        // Schermata classifica utenti
         composable<L4PRoute.Leaderboard> {
             val leaderboardVM = koinViewModel<LeaderboardViewModel>()
             val leaderboardState by leaderboardVM.state.collectAsStateWithLifecycle()

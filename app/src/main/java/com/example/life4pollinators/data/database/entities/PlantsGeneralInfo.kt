@@ -3,6 +3,20 @@ package com.example.life4pollinators.data.database.entities
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+/**
+ * Contenuti informativi generali sulle piante (usati nella sezione didattica).
+ *
+ * @property id Identificativo univoco dell'elemento informativo.
+ * @property nameEn Titolo/etichetta in inglese.
+ * @property nameIt Titolo/etichetta in italiano.
+ * @property imageUrlEn URL infografica in inglese.
+ * @property imageUrlIt URL infografica in italiano.
+ * @property infoEn Testo informativo in inglese .
+ * @property infoIt Testo informativo in italiano.
+ *
+ * Questa entity non rappresenta una singola specie ma informazioni generalizzate
+ * da mostrare nella sezione Learn per la parte di Info sulle piante.
+ */
 @Serializable
 data class PlantsGeneralInfo(
     @SerialName("id")
