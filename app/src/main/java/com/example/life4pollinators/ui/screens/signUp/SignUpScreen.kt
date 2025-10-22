@@ -27,7 +27,10 @@ import com.example.life4pollinators.ui.navigation.L4PRoute
 
 /**
  * Schermata di registrazione utente con email/password.
- * Ora mostra errori per campo in caso di validazione lato client.
+ *
+ * @param state Stato della UI
+ * @param actions Azioni per manipolare lo stato
+ * @param navController Controller di navigazione
  */
 @Composable
 fun SignUpScreen(

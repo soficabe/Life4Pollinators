@@ -21,7 +21,7 @@ sealed interface UpdateUserProfileResult {
 
 /**
  * Repository per la gestione dei dati utente nel database:
- * recupero e l'aggiornamento dei dati utente (diversi dall'autenticazione) su Supabase.
+ * recupero e aggiornamento dei dati utente su Supabase.
  */
 class UserRepository(
     private val supabase: SupabaseClient

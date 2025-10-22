@@ -16,6 +16,12 @@ import kotlinx.coroutines.launch
 
 /**
  * Stato della schermata impostazioni.
+ *
+ * @param theme Tema attuale selezionato
+ * @param isAuthenticated True se l'utente è loggato
+ * @param changePasswordResult Risultato ultimo cambio password
+ * @param isChangingPassword True se il cambio password è in corso
+ * @param changePasswordError Id risorsa errore cambio password
  */
 data class SettingsState(
     val theme: Theme = Theme.System,

@@ -89,7 +89,7 @@ fun rememberCameraLauncher(
         val imageFile = File.createTempFile("tmp_image", ".jpg", context.externalCacheDir)
         val uri = FileProvider.getUriForFile(context, context.packageName + ".provider", imageFile)
         photoUri = uri
-        photoFile = imageFile // PATCH: salviamo il file temporaneo per copiarlo nella galleria dopo
+        photoFile = imageFile // salviamo il file temporaneo per copiarlo nella galleria dopo
         cameraLauncher.launch(uri)
     }
     return launchCamera

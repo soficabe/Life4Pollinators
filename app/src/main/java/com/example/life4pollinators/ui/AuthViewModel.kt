@@ -32,9 +32,4 @@ class AuthViewModel(
                 (status as? SessionStatus.Authenticated)?.session?.user?.id
             }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
-
-    // Flusso per ottenere direttamente l'oggetto utente autenticato
-    // val currentUser = authRepository.sessionStatus
-    //     .map { status -> (status as? SessionStatus.Authenticated)?.session?.user }
-    //     .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 }

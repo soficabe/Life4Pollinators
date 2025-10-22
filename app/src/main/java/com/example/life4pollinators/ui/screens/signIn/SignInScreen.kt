@@ -35,6 +35,11 @@ import org.koin.compose.koinInject
 
 /**
  * Schermata di login utente con validazione lato client e feedback per campo.
+ * Permette l'accesso tramite email/password o Google.
+ *
+ * @param state Stato corrente della schermata di login
+ * @param actions Interfaccia delle azioni disponibili
+ * @param navController Controller di navigazione
  */
 @OptIn(AuthUiExperimental::class)
 @Composable
@@ -43,16 +48,22 @@ fun SignInScreen(
     actions: SignInActions,
     navController: NavHostController
 ) {
+    // Ottiene il client Supabase tramite Koin per la gestione dell'autenticazione
     val supabaseClient: SupabaseClient = koinInject()
 
     val scrollState = rememberScrollState()
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
+    // Stato per Snackbar (messaggi temporanei)
     val snackbarHostState = remember { SnackbarHostState() }
+    // Messaggio da mostrare nella snackbar (se presente)
     var snackbarMessage by remember { mutableStateOf<String?>(null) }
 
+    // Gestisce la navigazione post-login
     LaunchedEffect(state.signInResult) {
         when (state.signInResult) {
-            SignInResult.Loading -> {}
+            SignInResult.Loading -> {
+                // Stato di caricamento - nessuna azione richiesta
+            }
             SignInResult.Success -> {
                 navController.navigate(L4PRoute.Home) {
                     popUpTo(L4PRoute.SignIn) { inclusive = true }
@@ -63,9 +74,11 @@ fun SignInScreen(
         }
     }
 
+    // Messaggi localizzati per errori nella login Google
     val closedByUserMsg = stringResource(R.string.login_cancelled_by_user)
     val networkErrorMsg = stringResource(R.string.network_error)
 
+    // Integrazione del login con Google tramite Supabase Compose Auth
     val googleAuthState = supabaseClient.composeAuth.rememberSignInWithGoogle(
         onResult = { result ->
             when (result) {
@@ -87,6 +100,7 @@ fun SignInScreen(
         }
     )
 
+    // Mostra la snackbar se c'è un messaggio da mostrare
     LaunchedEffect(snackbarMessage) {
         snackbarMessage?.let {
             snackbarHostState.showSnackbar(it)
@@ -208,6 +222,7 @@ fun SignInScreen(
                         }
                     }
 
+                    // Pulsante per andare alla schermata di registrazione
                     TextButton(
                         onClick = { navController.navigate(L4PRoute.SignUp) },
                         modifier = Modifier.align(Alignment.CenterHorizontally)
@@ -222,6 +237,7 @@ fun SignInScreen(
 
             Spacer(Modifier.height(24.dp))
 
+            // Separatore visivo "oppure"
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -233,11 +249,13 @@ fun SignInScreen(
 
             Spacer(Modifier.height(16.dp))
 
+            // Bottone per login con Google
             OutlinedButton(
                 onClick = { googleAuthState.startFlow() },
                 content = { ProviderButtonContent(provider = Google) }
             )
 
+            // Pulsante per continuare senza login
             TextButton(
                 onClick = { navController.navigate(L4PRoute.Home) },
                 modifier = Modifier.padding(top = 8.dp)
@@ -248,6 +266,7 @@ fun SignInScreen(
                 )
             }
 
+            // Snackbar per messaggi informativi/di errore temporanei
             SnackbarHost(hostState = snackbarHostState)
         }
     }

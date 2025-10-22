@@ -283,6 +283,15 @@ fun SettingsClickable(
     }
 }
 
+/**
+ * Dialog per la selezione del tema (scuro, chiaro, sistema).
+ *
+ * @param title Titolo del dialog
+ * @param options Lista delle opzioni tema disponibili
+ * @param selectedOption Tema attualmente selezionato
+ * @param onOptionSelected Callback al cambio di selezione
+ * @param onDismiss Callback per chiusura dialog
+ */
 @Composable
 fun ThemeRadioOptionsDialog(
     title: String,
@@ -450,7 +459,7 @@ fun ChangePasswordDialog(
  * @param onConfirm Callback al click su "Conferma"
  * @param onDismiss Callback per chiusura dialog
  * @param isLoading
- * @param error to show
+ * @param error
  */
 @Composable
 fun LogoutConfirmationDialog(

@@ -62,8 +62,4 @@ class ImageRepository(private val storage: Storage) {
             fileName = fileName
         )
     }
-
-    // In futuro:
-    // suspend fun uploadInsectPhoto(...) = uploadImage(..., bucket = "insect-photos", fileName = ...)
-    // suspend fun uploadPlantPhoto(...) = uploadImage(..., bucket = "plant-photos", fileName = ...)
 }

@@ -54,7 +54,6 @@ fun QuizResultScreen(
     // Controllo di sicurezza all'inizio
     val selectedTarget = state.selectedTarget
     if (selectedTarget == null) {
-        // Fallback - non dovrebbe mai accadere con i nostri fix
         Scaffold(
             topBar = {
                 AppBar(

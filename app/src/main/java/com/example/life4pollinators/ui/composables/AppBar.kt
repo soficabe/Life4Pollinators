@@ -42,7 +42,7 @@ fun AppBar(
 ) {
     val backStackEntry by navController.currentBackStackEntryAsState()
 
-    // Usa il titolo personalizzato se fornito, altrimenti quello di default
+    // Usa il titolo personalizzato se fornito, altrimenti lo determina in base alla rotta attuale
     val title = personalizedTitle ?: when {
         backStackEntry?.destination?.hasRoute<L4PRoute.Home>() == true ->
             stringResource(R.string.title_learn)
@@ -88,6 +88,7 @@ fun AppBar(
             )
         },
         navigationIcon = {
+            // Mostra il pulsante back solo se non siamo in Home e c'è una schermata precedente
             if(showBackButton && title != stringResource(R.string.title_learn) && navController.previousBackStackEntry != null) {
                 IconButton(onClick = {
                     if (onBackClick != null) {
@@ -101,6 +102,7 @@ fun AppBar(
             }
         },
         actions = {
+            // Mostra il pulsante settings solo se non siamo già su Settings
             if(showSettingsButton && title != stringResource(R.string.title_settings)) {
                 IconButton(onClick = {navController.navigate(L4PRoute.Settings)}) {
                     Icon(Icons.Outlined.Settings, "Settings")

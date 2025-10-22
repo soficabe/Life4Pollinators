@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /**
- * Stato della schermata di login.
+ * Stato della schermata di SignIn.
  * Include errori per campo per validazione lato client.
  */
 data class SignInState(
@@ -45,6 +45,7 @@ class SignInViewModel(
     private val _state = MutableStateFlow(SignInState())
     val state = _state.asStateFlow()
 
+    //Implementazione azioni di SignIn
     val actions = object : SignInActions {
         override fun setEmail(email: String) {
             _state.update { it.copy(email = email, emailError = null, errorMessageRes = null) }
@@ -94,11 +95,13 @@ class SignInViewModel(
 
             viewModelScope.launch {
                 try {
+                    // Chiamata al repository
                     val result = authRepository.signIn(
                         email = currentState.email,
                         password = currentState.psw
                     )
 
+                    // Aggiornamento stato con risultato
                     _state.update {
                         it.copy(
                             signInResult = result,
@@ -108,7 +111,9 @@ class SignInViewModel(
 
                     // Gestione messaggi di errore specifici
                     when (result) {
-                        SignInResult.Loading -> {}
+                        SignInResult.Loading -> {
+                            // Stato di caricamento
+                        }
                         SignInResult.Success -> {
                             _state.update { it.copy(errorMessageRes = null) }
                         }
@@ -129,6 +134,7 @@ class SignInViewModel(
                         }
                     }
                 } catch (e: Exception) {
+                    // Gestione errori imprevisti
                     _state.update {
                         it.copy(
                             signInResult = SignInResult.Error.UnknownError(e),

@@ -16,6 +16,10 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import com.example.life4pollinators.R
 
+/**
+ * Stato della schermata di modifica profilo.
+ * Contiene tutti i dati inseriti, stati di caricamento e messaggi di feedback.
+ */
 data class EditProfileState(
     val user: User? = null,
     val username: String = "",
@@ -37,6 +41,9 @@ data class EditProfileState(
     val lastNameError: Int? = null,
     val emailError: Int? = null
 ) {
+    /**
+     * True se almeno un campo è stato modificato rispetto ai dati originali.
+     */
     val hasChanges: Boolean
         get() = user?.let {
             username != it.username ||
@@ -47,6 +54,10 @@ data class EditProfileState(
         } ?: false
 }
 
+/**
+ * Azioni disponibili nella schermata di modifica profilo.
+ * Permettono di aggiornare i campi, resettare ai dati originali, gestire l'immagine e salvare le modifiche.
+ */
 interface EditProfileActions {
     fun setUsername(username: String)
     fun setFirstName(firstName: String)
@@ -63,6 +74,10 @@ interface EditProfileActions {
     fun onProfileImageSelected(uri: Uri, context: Context)
 }
 
+/**
+ * ViewModel per la schermata di editing profilo.
+ * Gestisce il caricamento e la validazione dei dati, la logica di salvataggio e l'upload dell'immagine profilo.
+ */
 class EditProfileViewModel(
     private val authRepository: AuthRepository,
     private val userRepository: UserRepository,
@@ -185,6 +200,9 @@ class EditProfileViewModel(
         viewModelScope.launch { loadUserDataInternal() }
     }
 
+    /**
+     * Carica i dati utente autenticato dal repository.
+     */
     private suspend fun loadUserDataInternal() {
         _state.update { it.copy(isLoading = true, errorMessageRes = null, errorMessageArg = null) }
         try {

@@ -57,7 +57,7 @@ class SignUpViewModel (
     private val _state = MutableStateFlow(SignUpState())
     val state = _state.asStateFlow()
 
-    //Implementazione azioni di registrazione
+    // Implementazione azioni di registrazione
     val actions = object : SignUpActions {
         override fun setUsername(username: String) =
             _state.update { it.copy(username = username.trim(), usernameError = null, errorMessage = null) }

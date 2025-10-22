@@ -25,6 +25,17 @@ import com.example.life4pollinators.ui.composables.BottomNavBar
 import com.example.life4pollinators.ui.composables.ProfileIcon
 import com.example.life4pollinators.ui.navigation.L4PRoute
 
+/**
+ * Schermata profilo utente.
+ *
+ * Visualizza i dati principali dell'utente autenticato (username, nome, cognome, email, immagine).
+ * Mostra statistiche (avvistamenti, quiz svolti) e badge di ranking giornaliero e settimanale.
+ * Permette di accedere all'editing del profilo tramite bottone.
+ *
+ * @param state Stato corrente del profilo utente
+ * @param actions Interfaccia delle azioni disponibili
+ * @param navController Controller di navigazione Compose
+ */
 @Composable
 fun ProfileScreen(
     state: ProfileState,
@@ -35,6 +46,7 @@ fun ProfileScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
 
+    // Aggiorna il profilo quando la schermata viene caricata
     LaunchedEffect(Unit) {
         actions.refreshProfile()
     }
@@ -72,6 +84,7 @@ fun ProfileScreen(
                     "$img?t=${System.currentTimeMillis()}"
             }
 
+            // Avatar utente (con loader se necessario)
             ProfileIcon(
                 imageUrl = profileImageUrl,
                 isClickable = false,
@@ -80,6 +93,7 @@ fun ProfileScreen(
 
             Spacer(Modifier.height(8.dp))
 
+            // Username
             Text(
                 "@${state.user?.username ?: ""}",
                 style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
@@ -88,6 +102,7 @@ fun ProfileScreen(
 
             Spacer(Modifier.height(6.dp))
 
+            // Dati anagrafici
             Column(
                 verticalArrangement = Arrangement.spacedBy(2.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -219,6 +234,15 @@ fun ProfileScreen(
     }
 }
 
+
+/**
+ * Card per mostrare una statistica del profilo (ad esempio avvistamenti)
+ *
+ * @param value Valore numerico/stringa da mostrare
+ * @param label Etichetta della statistica
+ * @param modifier Modifier Compose
+ * @param color Colore di sfondo della card
+ */
 @Composable
 fun ProfileStatCard(
     value: String,
