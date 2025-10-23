@@ -15,7 +15,8 @@ class QuizRepository(
     private val plantTable = supabase.from("plant")
     private val insectTable = supabase.from("insect")
 
-    // Recupera il quiz per tipo ("plant", "insect", ecc)
+    // Recupera il quiz per tipo ("plant", "bee", "butterfly", "moth" o "wasp")
+    // (per i gruppi beetle, beefly e hoverfly non esiste un quiz nel db)
     suspend fun getQuiz(type: String): Quiz? {
         return try {
             println("Cerco quiz type: '$type'")

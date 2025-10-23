@@ -62,10 +62,9 @@ class LeaderboardViewModel(
                     val authUser = authRepository.getAuthUser()
                     val currentUserId = authUser.id
 
-                    // Recupera tutti gli utenti e tutti gli avvistamenti
+                    // Recupera TUTTI gli utenti registrati
                     val allUsers = userRepository.getAllUsers()
 
-                    // Nessun utente nel database
                     if (allUsers.isEmpty()) {
                         _state.update {
                             it.copy(
@@ -77,44 +76,50 @@ class LeaderboardViewModel(
                         return@launch
                     }
 
-                    val allSightings = sightingsRepository.getAllSightings()
+                    // Calcola i ranking degli utenti con sightings
+                    val rankingsMap = sightingsRepository.calculateAllUserRankings()
 
-                    // Raggruppa gli avvistamenti per utente
-                    val sightingsByUser = allSightings.groupBy { it.userId }
+                    // Determina la posizione per utenti senza sightings
+                    val lastPosition = sightingsRepository.getPositionForUsersWithoutSightings()
 
-                    // Calcola i punteggi per TUTTI gli utenti
-                    val userScores = allUsers.map { user ->
-                        val userSightings = sightingsByUser[user.id] ?: emptyList()
-                        val uniqueSpecies = userSightings
-                            .map { it.targetId }
-                            .toSet()
-                            .size
-                        val totalSightings = userSightings.size
-                        val score = (uniqueSpecies * 10) + totalSightings
-
-                        Triple(user.id, score, user.username)
-                    }
-                        // Ordina per: 1) punteggio decrescente, 2) username alfabetico (per stabilità)
-                        .sortedWith(compareByDescending<Triple<String, Int, String>> { it.second }
-                            .thenBy { it.third })
-
-                    // Crea le entry della leaderboard gestendo i pari merito
+                    // Crea le entry della leaderboard
                     val entries = mutableListOf<LeaderboardEntry>()
-                    var currentPosition = 1
 
-                    userScores.forEachIndexed { index, (userId, score, username) ->
-                        // Se non è il primo e ha un punteggio DIVERSO dal precedente, incrementa la posizione
-                        if (index > 0 && userScores[index - 1].second != score) {
-                            currentPosition++
+                    // Utenti CON sightings: raggruppa per posizione e ordina alfabeticamente
+                    val usersWithSightings = allUsers.filter { rankingsMap.containsKey(it.id) }
+
+                    val entriesByPosition = usersWithSightings
+                        .map { user ->
+                            val ranking = rankingsMap[user.id]!!
+                            LeaderboardEntry(
+                                userId = user.id,
+                                username = user.username,
+                                position = ranking.position,
+                                score = ranking.userScore.score,
+                                isCurrentUser = user.id == currentUserId
+                            )
                         }
+                        .groupBy { it.position }
 
+                    // Aggiungi in ordine di posizione, ordinando alfabeticamente dentro ogni gruppo
+                    entriesByPosition.keys.sorted().forEach { position ->
+                        val usersAtPosition = entriesByPosition[position]!!.sortedBy { it.username.lowercase() }
+                        entries.addAll(usersAtPosition)
+                    }
+
+                    // Utenti SENZA sightings: ordina alfabeticamente
+                    val usersWithoutSightings = allUsers
+                        .filter { !rankingsMap.containsKey(it.id) }
+                        .sortedBy { it.username.lowercase() }
+
+                    usersWithoutSightings.forEach { user ->
                         entries.add(
                             LeaderboardEntry(
-                                userId = userId,
-                                username = username,
-                                position = currentPosition,
-                                score = score,
-                                isCurrentUser = userId == currentUserId
+                                userId = user.id,
+                                username = user.username,
+                                position = lastPosition,
+                                score = 0,
+                                isCurrentUser = user.id == currentUserId
                             )
                         )
                     }

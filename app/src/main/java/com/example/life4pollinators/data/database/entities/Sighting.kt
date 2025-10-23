@@ -11,7 +11,7 @@ import kotlinx.datetime.Instant
  * @property userId ID dell'utente che ha registrato l'avvistamento.
  * @property imageUrl URL dell'immagine caricata nello storage.
  * @property targetId ID della specie target avvistata (plant/insect).
- * @property targetType Tipo del target (es. "plant" o insect ("bee", "beetle", "wasp" ecc.).
+ * @property targetType Tipo del target ("plant" o "insect").
  * @property isValidated Flag che indica se l'avvistamento è stato validato da qualcuno con l'accesso al db.
  * @property createdAt Timestamp di creazione (Instant), fornito/gestito dal backend.
  * @property date Campo per la data.

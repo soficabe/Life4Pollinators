@@ -26,6 +26,29 @@ import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 
+/**
+ * Dialog fullscreen con mappa interattiva per selezione posizione.
+ *
+ * Utilizza OpenStreetMap (OSMDroid) per mostrare una mappa interattiva.
+ *
+ * Funzionalità:
+ * - Tap su mappa per selezionare posizione
+ * - FAB per centrarsi sulla posizione corrente (GPS)
+ * - Marker rosso per posizione selezionata
+ * - Marker blu per posizione utente (se disponibile)
+ * - Gestione permessi location con dialog informativi
+ * - Zoom e pan tramite touch gestures
+ *
+ * Comportamento iniziale:
+ * - Se c'è una posizione già selezionata: zoom su quella
+ * - Altrimenti: mostra l'Italia intera (zoom out)
+ * - Se ha permessi: carica automaticamente posizione utente
+ *
+ * @param initialLatitude Latitudine iniziale (se già selezionata)
+ * @param initialLongitude Longitudine iniziale (se già selezionata)
+ * @param onLocationSelected Callback con coordinate selezionate
+ * @param onDismiss Callback di chiusura dialog
+ */
 @SuppressLint("QueryPermissionsNeeded")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,11 +61,15 @@ fun LocationMapDialog(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
+    // Service per gestione GPS
     val locationService = remember { LocationService(context) }
     val userCoordinates by locationService.coordinates.collectAsState()
     val isLoadingLocation by locationService.isLoadingLocation.collectAsState()
 
+    // Riferimento alla MapView per controllo programmatico
     var mapViewInstance: MapView? by remember { mutableStateOf(null) }
+
+    // Posizione selezionata dall'utente
     var selectedLocation by remember {
         mutableStateOf(
             if (initialLatitude != null && initialLongitude != null) {
@@ -51,53 +78,64 @@ fun LocationMapDialog(
         )
     }
 
+    // Stati per dialogs di warning
     var showLocationDisabledWarning by remember { mutableStateOf(false) }
     var showPermissionDeniedWarning by remember { mutableStateOf(false) }
     var showPermissionPermanentlyDeniedWarning by remember { mutableStateOf(false) }
 
-    // Carica la posizione utente all'apertura se il permesso è già garantito
+    // Carica posizione utente all'apertura se permesso già garantito
     LaunchedEffect(Unit) {
-        val hasPermission = context.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) ==
-                android.content.pm.PackageManager.PERMISSION_GRANTED ||
-                context.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) ==
-                android.content.pm.PackageManager.PERMISSION_GRANTED
+        val hasPermission = context.checkSelfPermission(
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == android.content.pm.PackageManager.PERMISSION_GRANTED ||
+                context.checkSelfPermission(
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ) == android.content.pm.PackageManager.PERMISSION_GRANTED
 
         if (hasPermission) {
             scope.launch {
                 try {
                     locationService.getCurrentLocation()
                 } catch (ex: Exception) {
-                    // Silenzioso, non importa se fallisce
+                    // Silenzioso: non importa se fallisce
                 }
             }
         }
     }
 
+    // Gestione permessi location
     val locationPermission = rememberMultiplePermissions(
-        listOf(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION)
+        listOf(
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        )
     ) { statuses ->
         when {
+            // Almeno un permesso concesso
             statuses.any { it.value.isGranted } -> {
                 scope.launch {
                     try {
                         val coords = locationService.getCurrentLocation()
                         coords?.let {
                             selectedLocation = it
+                            // Anima la mappa verso la posizione trovata
                             mapViewInstance?.controller?.animateTo(
                                 GeoPoint(it.latitude, it.longitude),
-                                15.0,
-                                500L
+                                15.0, // Zoom level
+                                500L  // Durata animazione (ms)
                             )
                         }
                     } catch (ex: SecurityException) {
-                        // Handled
+                        // Gestito
                     } catch (ex: IllegalStateException) {
                         showLocationDisabledWarning = true
                     }
                 }
             }
+            // Tutti i permessi negati permanentemente
             statuses.all { it.value == PermissionStatus.PermanentlyDenied } ->
                 showPermissionPermanentlyDeniedWarning = true
+            // Permessi negati
             else ->
                 showPermissionDeniedWarning = true
         }
@@ -105,7 +143,7 @@ fun LocationMapDialog(
 
     Dialog(
         onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
+        properties = DialogProperties(usePlatformDefaultWidth = false) // Fullscreen
     ) {
         Scaffold(
             topBar = {
@@ -117,6 +155,7 @@ fun LocationMapDialog(
                         }
                     },
                     actions = {
+                        // Pulsante conferma (disabilitato se nessuna selezione)
                         IconButton(
                             onClick = {
                                 selectedLocation?.let {
@@ -131,6 +170,7 @@ fun LocationMapDialog(
                     }
                 )
             },
+            // FAB per centrarsi su posizione corrente
             floatingActionButton = {
                 FloatingActionButton(
                     modifier = Modifier.padding(bottom = 64.dp),
@@ -174,36 +214,45 @@ fun LocationMapDialog(
                     .fillMaxSize()
                     .padding(padding)
             ) {
-                // Mappa OSM
+                // Mappa OSM integrata tramite AndroidView
                 AndroidView(
                     factory = { ctx ->
                         MapView(ctx).apply {
-                            setTileSource(TileSourceFactory.MAPNIK)
-                            setMultiTouchControls(true)
+                            setTileSource(TileSourceFactory.MAPNIK) // Stile mappa
+                            setMultiTouchControls(true) // Pinch-to-zoom
 
-                            // Centro Italia: Roma approssimativamente
+                            // Centro Italia: Roma (approssimativo)
                             val italyCenterPoint = GeoPoint(41.9028, 12.4964)
 
-                            // Se c'è già una posizione selezionata, mostra quella
+                            // Determina punto di partenza
                             val startPoint = selectedLocation?.let {
                                 GeoPoint(it.latitude, it.longitude)
                             } ?: italyCenterPoint
 
-                            // Zoom: se c'è una selezione zoom più vicino, altrimenti vista Italia
+                            // Zoom: se c'è selezione zoom vicino, altrimenti vista Italia
                             val startZoom = if (selectedLocation != null) 15.0 else 6.0
 
                             controller.setZoom(startZoom)
                             controller.setCenter(startPoint)
 
+                            // Overlay per catturare tap sulla mappa
                             overlays.add(object : org.osmdroid.views.overlay.Overlay() {
                                 override fun onSingleTapConfirmed(
                                     e: android.view.MotionEvent,
                                     mapView: MapView
                                 ): Boolean {
+                                    // Converti pixel tap in coordinate geografiche
                                     val projection = mapView.projection
-                                    val geoPoint = projection.fromPixels(e.x.toInt(), e.y.toInt()) as GeoPoint
-                                    selectedLocation = Coordinates(geoPoint.latitude, geoPoint.longitude)
-                                    mapView.invalidate()
+                                    val geoPoint = projection.fromPixels(
+                                        e.x.toInt(),
+                                        e.y.toInt()
+                                    ) as GeoPoint
+
+                                    selectedLocation = Coordinates(
+                                        geoPoint.latitude,
+                                        geoPoint.longitude
+                                    )
+                                    mapView.invalidate() // Ridisegna mappa
                                     return true
                                 }
                             })
@@ -212,23 +261,27 @@ fun LocationMapDialog(
                         }
                     },
                     update = { mapView ->
+                        // Rimuovi tutti i marker esistenti
                         mapView.overlays.removeAll { it is Marker }
 
-                        // Marker posizione selezionata
+                        // Marker posizione selezionata (rosso)
                         selectedLocation?.let { coords ->
                             val selectedMarker = Marker(mapView).apply {
                                 position = GeoPoint(coords.latitude, coords.longitude)
                                 setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
                                 title = context.getString(R.string.add_sighting_selected_location)
-                                icon = ContextCompat.getDrawable(context, R.drawable.ic_marker_default)
+                                icon = ContextCompat.getDrawable(
+                                    context,
+                                    R.drawable.ic_marker_default
+                                )
                             }
                             mapView.overlays.add(selectedMarker)
                         }
 
-                        // Marker posizione utente (sempre visibile se disponibile)
+                        // Marker posizione utente (blu) se disponibile e diversa da quella selezionata
                         userCoordinates?.let { userCoords ->
                             val isSameLocation = selectedLocation?.let {
-                                distanceBetween(it, userCoords) < 10.0
+                                distanceBetween(it, userCoords) < 10.0 // Soglia 10 metri
                             } ?: false
 
                             if (!isSameLocation) {
@@ -236,7 +289,10 @@ fun LocationMapDialog(
                                     position = GeoPoint(userCoords.latitude, userCoords.longitude)
                                     setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
                                     title = context.getString(R.string.my_location_marker_title)
-                                    icon = ContextCompat.getDrawable(context, R.drawable.ic_my_location_marker)
+                                    icon = ContextCompat.getDrawable(
+                                        context,
+                                        R.drawable.ic_my_location_marker
+                                    )
                                 }
                                 mapView.overlays.add(userMarker)
                             }
@@ -249,7 +305,7 @@ fun LocationMapDialog(
                         .weight(1f)
                 )
 
-                // Info box in basso
+                // Info box in basso con coordinate selezionate
                 Surface(
                     color = MaterialTheme.colorScheme.surfaceVariant,
                     modifier = Modifier.fillMaxWidth()
@@ -260,7 +316,10 @@ fun LocationMapDialog(
                     ) {
                         selectedLocation?.let {
                             Text(
-                                text = "Lat: %.4f, Lng: %.4f".format(it.latitude, it.longitude),
+                                text = "Lat: %.4f, Lng: %.4f".format(
+                                    it.latitude,
+                                    it.longitude
+                                ),
                                 style = MaterialTheme.typography.bodyMedium
                             )
                             Text(
@@ -280,7 +339,9 @@ fun LocationMapDialog(
         }
     }
 
-    // Dialogs di warning
+    // ========== DIALOGS DI WARNING ==========
+
+    // GPS disabilitato
     if (showLocationDisabledWarning) {
         AlertDialog(
             title = { Text(stringResource(R.string.gps_disabled_title)) },
@@ -300,6 +361,7 @@ fun LocationMapDialog(
         )
     }
 
+    // Permesso negato
     if (showPermissionDeniedWarning) {
         AlertDialog(
             title = { Text(stringResource(R.string.location_permission_denied_title)) },
@@ -319,13 +381,16 @@ fun LocationMapDialog(
         )
     }
 
+    // Permesso negato permanentemente
     if (showPermissionPermanentlyDeniedWarning) {
         AlertDialog(
             title = { Text(stringResource(R.string.permission_required_title)) },
             text = { Text(stringResource(R.string.permission_permanently_denied_message)) },
             confirmButton = {
                 TextButton(onClick = {
-                    val intent = android.content.Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                    val intent = android.content.Intent(
+                        android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+                    ).apply {
                         data = android.net.Uri.fromParts("package", context.packageName, null)
                         flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK
                     }

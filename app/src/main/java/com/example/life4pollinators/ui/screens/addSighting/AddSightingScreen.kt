@@ -31,19 +31,40 @@ import com.example.life4pollinators.ui.composables.AppBar
 import com.example.life4pollinators.ui.composables.BottomNavBar
 import com.example.life4pollinators.ui.composables.ImagePickerDialog
 import com.example.life4pollinators.ui.composables.LocationMapDialog
+import com.example.life4pollinators.ui.composables.MaterialDatePickerDialog
+import com.example.life4pollinators.ui.composables.MaterialTimePickerDialog
 import com.example.life4pollinators.utils.LocationService
 import com.example.life4pollinators.utils.PermissionStatus
 import com.example.life4pollinators.utils.rememberCameraLauncher
 import com.example.life4pollinators.utils.rememberGalleryLauncher
 import com.example.life4pollinators.utils.rememberMultiplePermissions
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.LocalTime
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
-import java.time.ZoneId
 
+/**
+ * Schermata form per aggiungere un nuovo avvistamento.
+ *
+ * Form multi-sezione con:
+ * - Selezione immagine (camera/gallery)
+ * - Selezione data e ora (date/time pickers)
+ * - Selezione posizione (GPS o mappa)
+ * - Selezione specie (autocomplete con suggerimenti)
+ *
+ * Caratteristiche:
+ * - Validazione real-time con evidenziazione errori
+ * - Gestione permessi (location)
+ * - Autocomplete ricerca piante/impollinatori
+ * - Feedback visivo per ogni campo
+ * - Gestione stati loading/success/error
+ *
+ * La schermata gestisce diversi launcher e permission requests,
+ * con dialog di warning per permessi negati o GPS disabilitato.
+ *
+ * @param state Stato del form gestito dal ViewModel
+ * @param actions Azioni disponibili per modificare lo stato
+ * @param userId ID dell'utente autenticato
+ * @param isAuthenticated Flag autenticazione (per bottom bar)
+ * @param navController Controller di navigazione
+ */
 @Composable
 fun AddSightingScreen(
     state: AddSightingState,
@@ -56,6 +77,7 @@ fun AddSightingScreen(
     val scope = rememberCoroutineScope()
     val locationService = remember { LocationService(context) }
 
+    // Stati locali per dialogs e UI temporanei
     var errorMessage by rememberSaveable { mutableStateOf<String?>(null) }
     var showMapDialog by rememberSaveable { mutableStateOf(false) }
     var showImagePicker by rememberSaveable { mutableStateOf(false) }
@@ -68,6 +90,7 @@ fun AddSightingScreen(
     var showPermissionDeniedWarning by rememberSaveable { mutableStateOf(false) }
     var showPermissionPermanentlyDeniedWarning by rememberSaveable { mutableStateOf(false) }
 
+    // Launcher per fotocamera
     val cameraLauncher = rememberCameraLauncher(
         onPhotoReady = { uri ->
             actions.setImageUri(uri)
@@ -80,16 +103,22 @@ fun AddSightingScreen(
         }
     )
 
+    // Launcher per galleria
     val galleryLauncher = rememberGalleryLauncher { uri ->
         actions.setImageUri(uri)
         errorMessage = null
         showImagePicker = false
     }
 
+    // Gestione permessi di localizzazione
     val locationPermission = rememberMultiplePermissions(
-        listOf(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION)
+        listOf(
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        )
     ) { statuses ->
         when {
+            // Almeno un permesso garantito: richiedi posizione
             statuses.any { it.value.isGranted } -> {
                 scope.launch {
                     isLoadingLocation = true
@@ -97,15 +126,19 @@ fun AddSightingScreen(
                         val coords = locationService.getCurrentLocation()
                         coords?.let { actions.setLocation(it.latitude, it.longitude) }
                     } catch (_: SecurityException) {
+                        // Permesso revocato dopo la concessione
                     } catch (ex: IllegalStateException) {
+                        // GPS disabilitato
                         showLocationDisabledWarning = true
                     } finally {
                         isLoadingLocation = false
                     }
                 }
             }
+            // Tutti i permessi negati permanentemente
             statuses.all { it.value == PermissionStatus.PermanentlyDenied } ->
                 showPermissionPermanentlyDeniedWarning = true
+            // Permessi negati (prima volta o temporaneamente)
             else -> showPermissionDeniedWarning = true
         }
     }
@@ -129,10 +162,11 @@ fun AddSightingScreen(
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
 
-            // Image section
+            // SEZIONE 1: Immagine
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
+                // Bordo rosso se campo invalido
                 border = if (state.isImageInvalid) {
                     BorderStroke(2.dp, MaterialTheme.colorScheme.error)
                 } else null
@@ -141,6 +175,7 @@ fun AddSightingScreen(
                     modifier = Modifier.padding(14.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
+                    // Intestazione sezione
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
@@ -148,9 +183,11 @@ fun AddSightingScreen(
                         Text(
                             text = stringResource(R.string.add_sighting_image_section),
                             style = MaterialTheme.typography.titleSmall,
-                            color = if (state.isImageInvalid) MaterialTheme.colorScheme.error
+                            color = if (state.isImageInvalid)
+                                MaterialTheme.colorScheme.error
                             else MaterialTheme.colorScheme.primary
                         )
+                        // Asterisco rosso per campo obbligatorio
                         if (state.isImageInvalid) {
                             Text(
                                 text = "*",
@@ -160,6 +197,7 @@ fun AddSightingScreen(
                         }
                     }
 
+                    // Preview immagine se selezionata
                     if (state.imageUri != null) {
                         Box(
                             modifier = Modifier
@@ -175,6 +213,7 @@ fun AddSightingScreen(
                                 contentScale = ContentScale.Crop
                             )
                         }
+                        // Pulsante per cambiare immagine
                         OutlinedButton(
                             onClick = { showImagePicker = true },
                             modifier = Modifier.fillMaxWidth()
@@ -188,6 +227,7 @@ fun AddSightingScreen(
                             Text(stringResource(R.string.change_image))
                         }
                     } else {
+                        // Pulsante per selezionare immagine
                         Button(
                             onClick = { showImagePicker = true },
                             modifier = Modifier.fillMaxWidth()
@@ -202,6 +242,7 @@ fun AddSightingScreen(
                         }
                     }
 
+                    // Messaggio errore generico (es. errore camera)
                     errorMessage?.let {
                         Text(
                             text = it,
@@ -212,7 +253,7 @@ fun AddSightingScreen(
                 }
             }
 
-            // Date & Time section
+            // SEZIONE 2: Data e Ora
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
@@ -244,10 +285,12 @@ fun AddSightingScreen(
                         }
                     }
 
+                    // Campi data e ora affiancati
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
+                        // Campo data (readonly, apre DatePicker)
                         OutlinedTextField(
                             value = state.date?.toString() ?: "",
                             onValueChange = {},
@@ -266,6 +309,7 @@ fun AddSightingScreen(
                             singleLine = true
                         )
 
+                        // Campo ora (readonly, apre TimePicker)
                         OutlinedTextField(
                             value = state.time?.toString() ?: "",
                             onValueChange = {},
@@ -287,7 +331,7 @@ fun AddSightingScreen(
                 }
             }
 
-            // Location section
+            // SEZIONE 3: Posizione
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
@@ -306,7 +350,8 @@ fun AddSightingScreen(
                         Text(
                             text = stringResource(R.string.add_sighting_location_section),
                             style = MaterialTheme.typography.titleSmall,
-                            color = if (state.isLocationInvalid) MaterialTheme.colorScheme.error
+                            color = if (state.isLocationInvalid)
+                                MaterialTheme.colorScheme.error
                             else MaterialTheme.colorScheme.primary
                         )
                         if (state.isLocationInvalid) {
@@ -318,18 +363,23 @@ fun AddSightingScreen(
                         }
                     }
 
+                    // Pulsanti per selezione posizione
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
+                        // Pulsante GPS (posizione corrente)
                         OutlinedButton(
                             onClick = {
                                 if (locationPermission.statuses.any { it.value.isGranted }) {
+                                    // Permesso già garantito: richiedi posizione
                                     scope.launch {
                                         isLoadingLocation = true
                                         try {
                                             val coords = locationService.getCurrentLocation()
-                                            coords?.let { actions.setLocation(it.latitude, it.longitude) }
+                                            coords?.let {
+                                                actions.setLocation(it.latitude, it.longitude)
+                                            }
                                         } catch (ex: SecurityException) {
                                             showPermissionDeniedWarning = true
                                         } catch (ex: IllegalStateException) {
@@ -339,6 +389,7 @@ fun AddSightingScreen(
                                         }
                                     }
                                 } else {
+                                    // Richiedi permessi
                                     locationPermission.launchPermissionRequest()
                                 }
                             },
@@ -354,6 +405,7 @@ fun AddSightingScreen(
                             Text(stringResource(R.string.add_sighting_current_location_short))
                         }
 
+                        // Pulsante mappa (selezione manuale)
                         OutlinedButton(
                             onClick = { showMapDialog = true },
                             modifier = Modifier.weight(1f)
@@ -368,6 +420,7 @@ fun AddSightingScreen(
                         }
                     }
 
+                    // Indicatore loading durante acquisizione GPS
                     if (isLoadingLocation) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -386,8 +439,13 @@ fun AddSightingScreen(
                             )
                         }
                     } else if (state.latitude != null && state.longitude != null) {
+                        // Mostra coordinate selezionate
                         Text(
-                            text = stringResource(R.string.add_sighting_lat_lng, state.latitude, state.longitude),
+                            text = stringResource(
+                                R.string.add_sighting_lat_lng,
+                                state.latitude,
+                                state.longitude
+                            ),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.primary
                         )
@@ -395,7 +453,7 @@ fun AddSightingScreen(
                 }
             }
 
-            // Species selection section
+            // SEZIONE 4: Selezione Specie (Impollinatore O Pianta)
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
@@ -427,26 +485,33 @@ fun AddSightingScreen(
                         }
                     }
 
-                    // Pollinator
+                    // Campo Impollinatore con Autocomplete
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Box {
                             OutlinedTextField(
                                 value = state.pollinatorQuery,
                                 onValueChange = {
-                                    if (state.selectedPollinatorId != null && it != state.selectedPollinatorName) {
+                                    // Se l'utente modifica il testo dopo aver selezionato,
+                                    // cancella la selezione
+                                    if (state.selectedPollinatorId != null &&
+                                        it != state.selectedPollinatorName) {
                                         actions.clearPollinator()
                                     }
                                     actions.onPollinatorQueryChange(it)
-                                    showPollinatorDropdown = it.isNotBlank() && state.selectedPollinatorId == null
+                                    // Mostra dropdown solo se c'è testo e nessuna selezione
+                                    showPollinatorDropdown = it.isNotBlank() &&
+                                            state.selectedPollinatorId == null
                                 },
                                 label = { Text(stringResource(R.string.add_sighting_pollinator_hint)) },
                                 modifier = Modifier.fillMaxWidth(),
+                                // Disabilitato se è selezionata una pianta
                                 enabled = state.selectedPlantId == null,
                                 isError = state.isPollinatorInvalid,
                                 supportingText = if (state.isPollinatorInvalid) {
                                     { Text(stringResource(R.string.validation_select_pollinator)) }
                                 } else null,
                                 trailingIcon = {
+                                    // Icona X per cancellare
                                     if (state.pollinatorQuery.isNotBlank()) {
                                         IconButton(onClick = {
                                             actions.clearPollinator()
@@ -456,8 +521,12 @@ fun AddSightingScreen(
                                         }
                                     }
                                 },
-                                keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
+                                keyboardOptions = KeyboardOptions.Default.copy(
+                                    imeAction = ImeAction.Next
+                                ),
+                                // ReadOnly se già selezionato (permette solo cancellazione)
                                 readOnly = state.selectedPollinatorId != null,
+                                // Colori personalizzati quando selezionato (bordo blu)
                                 colors = if (state.selectedPollinatorId != null) {
                                     OutlinedTextFieldDefaults.colors(
                                         disabledTextColor = MaterialTheme.colorScheme.onSurface,
@@ -470,8 +539,10 @@ fun AddSightingScreen(
                                 singleLine = true
                             )
 
+                            // Dropdown menu con suggerimenti
                             DropdownMenu(
-                                expanded = showPollinatorDropdown && state.pollinatorSuggestions.isNotEmpty(),
+                                expanded = showPollinatorDropdown &&
+                                        state.pollinatorSuggestions.isNotEmpty(),
                                 onDismissRequest = { showPollinatorDropdown = false },
                                 modifier = Modifier.fillMaxWidth(0.9f)
                             ) {
@@ -487,8 +558,10 @@ fun AddSightingScreen(
                             }
                         }
 
-                        // Errore suggerimenti pollinator
-                        if (state.suggestionsError != null && state.pollinatorQuery.isNotBlank() && state.selectedPollinatorId == null) {
+                        // Errore caricamento suggerimenti impollinatori
+                        if (state.suggestionsError != null &&
+                            state.pollinatorQuery.isNotBlank() &&
+                            state.selectedPollinatorId == null) {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -512,21 +585,26 @@ fun AddSightingScreen(
                         }
                     }
 
-                    // Plant
+                    // Campo Pianta con Autocomplete
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Box {
                             OutlinedTextField(
                                 value = state.plantQuery,
                                 onValueChange = {
-                                    if (state.selectedPlantId != null && it != state.selectedPlantName) {
+                                    if (state.selectedPlantId != null &&
+                                        it != state.selectedPlantName) {
                                         actions.clearPlant()
                                     }
                                     actions.onPlantQueryChange(it)
-                                    showPlantDropdown = it.isNotBlank() && state.selectedPlantId == null
+                                    showPlantDropdown = it.isNotBlank() &&
+                                            state.selectedPlantId == null
                                 },
                                 label = { Text(stringResource(R.string.add_sighting_plant_hint)) },
                                 modifier = Modifier.fillMaxWidth(),
-                                enabled = state.pollinatorQuery.isBlank() && state.selectedPollinatorId == null,
+                                // Disabilitato se c'è testo nel campo impollinatore
+                                // o è selezionato un impollinatore
+                                enabled = state.pollinatorQuery.isBlank() &&
+                                        state.selectedPollinatorId == null,
                                 isError = state.isPlantInvalid,
                                 supportingText = if (state.isPlantInvalid) {
                                     { Text(stringResource(R.string.validation_select_plant)) }
@@ -541,7 +619,9 @@ fun AddSightingScreen(
                                         }
                                     }
                                 },
-                                keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
+                                keyboardOptions = KeyboardOptions.Default.copy(
+                                    imeAction = ImeAction.Done
+                                ),
                                 readOnly = state.selectedPlantId != null,
                                 colors = if (state.selectedPlantId != null) {
                                     OutlinedTextFieldDefaults.colors(
@@ -555,8 +635,10 @@ fun AddSightingScreen(
                                 singleLine = true
                             )
 
+                            // Dropdown suggerimenti piante (limitato a 5 risultati)
                             DropdownMenu(
-                                expanded = showPlantDropdown && state.plantSuggestions.isNotEmpty(),
+                                expanded = showPlantDropdown &&
+                                        state.plantSuggestions.isNotEmpty(),
                                 onDismissRequest = { showPlantDropdown = false },
                                 modifier = Modifier.fillMaxWidth(0.9f)
                             ) {
@@ -572,8 +654,10 @@ fun AddSightingScreen(
                             }
                         }
 
-                        // Errore suggerimenti plant
-                        if (state.suggestionsError != null && state.plantQuery.isNotBlank() && state.selectedPlantId == null) {
+                        // Errore caricamento suggerimenti piante
+                        if (state.suggestionsError != null &&
+                            state.plantQuery.isNotBlank() &&
+                            state.selectedPlantId == null) {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -599,7 +683,7 @@ fun AddSightingScreen(
                 }
             }
 
-            // Submit button
+            // Pulsante Submit
             Button(
                 onClick = { actions.submitSighting(context, userId) },
                 enabled = !state.isLoading,
@@ -609,6 +693,7 @@ fun AddSightingScreen(
                 shape = RoundedCornerShape(12.dp)
             ) {
                 if (state.isLoading) {
+                    // Mostra spinner durante upload
                     CircularProgressIndicator(
                         modifier = Modifier.size(24.dp),
                         color = MaterialTheme.colorScheme.onPrimary,
@@ -622,6 +707,7 @@ fun AddSightingScreen(
                 }
             }
 
+            // Messaggio errore generico (sotto il pulsante submit)
             state.errorMessage?.let {
                 Text(
                     text = it,
@@ -631,6 +717,7 @@ fun AddSightingScreen(
                 )
             }
 
+            // Messaggio successo (auto-chiude dopo 2 secondi)
             if (state.isSuccess) {
                 LaunchedEffect(Unit) {
                     kotlinx.coroutines.delay(2000)
@@ -648,7 +735,9 @@ fun AddSightingScreen(
         }
     }
 
-    // Image Picker Dialog
+    // ========== DIALOGS ==========
+
+    // Dialog selezione sorgente immagine (Camera/Gallery)
     if (showImagePicker) {
         ImagePickerDialog(
             onDismiss = { showImagePicker = false },
@@ -663,7 +752,7 @@ fun AddSightingScreen(
         )
     }
 
-    // Map Dialog
+    // Dialog mappa per selezione manuale posizione
     if (showMapDialog) {
         LocationMapDialog(
             initialLatitude = state.latitude,
@@ -699,7 +788,9 @@ fun AddSightingScreen(
         )
     }
 
-    // Location permission dialogs
+    // ========== PERMISSION WARNINGS DIALOGS ==========
+
+    // Warning: GPS disabilitato
     if (showLocationDisabledWarning) {
         AlertDialog(
             title = { Text(stringResource(R.string.gps_disabled_title)) },
@@ -719,6 +810,7 @@ fun AddSightingScreen(
         )
     }
 
+    // Warning: Permesso location negato
     if (showPermissionDeniedWarning) {
         AlertDialog(
             title = { Text(stringResource(R.string.location_permission_denied_title)) },
@@ -738,13 +830,17 @@ fun AddSightingScreen(
         )
     }
 
+    // Warning: Permesso location negato permanentemente
     if (showPermissionPermanentlyDeniedWarning) {
         AlertDialog(
             title = { Text(stringResource(R.string.permission_required_title)) },
             text = { Text(stringResource(R.string.permission_permanently_denied_message)) },
             confirmButton = {
                 TextButton(onClick = {
-                    val intent = android.content.Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                    // Apri le impostazioni dell'app
+                    val intent = android.content.Intent(
+                        android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+                    ).apply {
                         data = android.net.Uri.fromParts("package", context.packageName, null)
                         flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK
                     }
@@ -762,88 +858,4 @@ fun AddSightingScreen(
             onDismissRequest = { showPermissionPermanentlyDeniedWarning = false }
         )
     }
-}
-
-@Composable
-fun MaterialDatePickerDialog(
-    initialValue: LocalDate?,
-    onDateSelected: (LocalDate) -> Unit,
-    onDismiss: () -> Unit
-) {
-    val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
-
-    val pickerState = rememberDatePickerState(
-        initialSelectedDateMillis = initialValue?.let {
-            java.time.LocalDate.of(it.year, it.monthNumber, it.dayOfMonth)
-                .atStartOfDay(ZoneId.systemDefault())
-                .toInstant()
-                .toEpochMilli()
-        },
-        selectableDates = object : SelectableDates {
-            override fun isSelectableDate(utcTimeMillis: Long): Boolean {
-                val date = java.time.Instant.ofEpochMilli(utcTimeMillis)
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalDate()
-                val kotlinDate = LocalDate(date.year, date.monthValue, date.dayOfMonth)
-                return kotlinDate <= today
-            }
-        }
-    )
-
-    DatePickerDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    val millis = pickerState.selectedDateMillis
-                    if (millis != null) {
-                        val date = java.time.Instant.ofEpochMilli(millis)
-                            .atZone(ZoneId.systemDefault())
-                            .toLocalDate()
-                        onDateSelected(LocalDate(date.year, date.monthValue, date.dayOfMonth))
-                    }
-                    onDismiss()
-                }
-            ) { Text("Ok") }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
-        }
-    ) {
-        DatePicker(state = pickerState)
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun MaterialTimePickerDialog(
-    initialValue: LocalTime?,
-    onTimeSelected: (LocalTime) -> Unit,
-    onDismiss: () -> Unit
-) {
-    val initialHour = initialValue?.hour ?: 12
-    val initialMinute = initialValue?.minute ?: 0
-    val pickerState = rememberTimePickerState(
-        initialHour = initialHour,
-        initialMinute = initialMinute,
-        is24Hour = false
-    )
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    onTimeSelected(LocalTime(pickerState.hour, pickerState.minute))
-                    onDismiss()
-                }
-            ) { Text("Ok") }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
-        },
-        text = {
-            TimePicker(state = pickerState)
-        }
-    )
 }

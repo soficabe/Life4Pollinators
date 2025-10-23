@@ -382,7 +382,11 @@ class QuizViewModel(
                         userId = userId,
                         imageUrl = imageUrl,
                         targetId = s.selectedTarget.target.targetId,
-                        targetType = s.selectedTarget.target.targetType,
+                        targetType =
+                        when (s.selectedTarget.target.targetType) {
+                            "bee", "butterfly", "moth", "wasp" -> "insect"
+                            else -> s.selectedTarget.target.targetType
+                        },
                         date = now.date,
                         time = now.time,
                         latitude = 0.0,

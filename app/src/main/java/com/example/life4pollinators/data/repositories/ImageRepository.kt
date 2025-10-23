@@ -8,7 +8,9 @@ import io.github.jan.supabase.storage.Storage
 /**
  * Repository per la gestione dell’upload delle immagini su Supabase Storage.
  */
-class ImageRepository(private val storage: Storage) {
+class ImageRepository(
+    private val storage: Storage
+) {
     private suspend fun uploadImage(
         uri: Uri,
         context: Context,
