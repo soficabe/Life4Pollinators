@@ -20,6 +20,25 @@ import com.example.life4pollinators.ui.composables.SectionCard
 import com.example.life4pollinators.ui.composables.SectionCardSize
 import com.example.life4pollinators.ui.navigation.L4PRoute
 
+/**
+ * Schermata home (principale) dell'applicazione Life4Pollinators.
+ *
+ * È il punto di ingresso principale dell'app dopo login/registrazione.
+ * Fornisce accesso rapido a tutte le funzionalità principali.
+ *
+ * Struttura:
+ * 1. Sezione "Learn About":
+ *    - Piante per impollinatori
+ *    - Insetti impollinatori
+ *
+ * 2. Sezione "Test Your Skills":
+ *    - Quiz piante
+ *    - Quiz insetti
+ *
+ * @param isAuthenticated Flag che indica se l'utente è autenticato.
+ *                        Passato alla BottomNavBar per mostrare/nascondere tab protette.
+ * @param navController Controller di navigazione per routing tra schermate
+ */
 @Composable
 fun HomeScreen(
     isAuthenticated: Boolean,
@@ -33,7 +52,7 @@ fun HomeScreen(
         bottomBar = {
             BottomNavBar(
                 isAuthenticated = isAuthenticated,
-                selectedTab = NavBarTab.Home,
+                selectedTab = NavBarTab.Home, // Tab Home selezionata
                 navController = navController
             )
         }
@@ -42,14 +61,16 @@ fun HomeScreen(
             Modifier
                 .padding(padding)
                 .padding(horizontal = 16.dp, vertical = 24.dp)
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(rememberScrollState()) // Scrollabile se contenuti lunghi
         ) {
-
+            // Titolo sezione "Learn About"
             Text(
                 stringResource(R.string.learn_about),
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
+
+            // Card Piante
             SectionCard(
                 title = stringResource(R.string.plants),
                 imageRes = painterResource(R.drawable.plants),
@@ -57,7 +78,10 @@ fun HomeScreen(
                 onClick = { navController.navigate(L4PRoute.PlantsList) },
                 cardSize = SectionCardSize.Large
             )
+
             Spacer(Modifier.height(8.dp))
+
+            // Card Insetti
             SectionCard(
                 title = stringResource(R.string.insects),
                 imageRes = painterResource(R.drawable.insects),
@@ -65,12 +89,18 @@ fun HomeScreen(
                 onClick = { navController.navigate(L4PRoute.InsectGroupsList) },
                 cardSize = SectionCardSize.Large
             )
+
+            // Separatore tra sezioni
             Spacer(Modifier.height(24.dp))
+
+            // Titolo sezione "Test your classification skills"
             Text(
                 stringResource(R.string.test_your_classification_skills),
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
+
+            // Card Quiz Piante
             SectionCard(
                 title = stringResource(R.string.plants_quiz),
                 imageRes = painterResource(R.drawable.plants),
@@ -78,7 +108,10 @@ fun HomeScreen(
                 onClick = { navController.navigate("quizStart/plant") },
                 cardSize = SectionCardSize.Small
             )
+
             Spacer(Modifier.height(8.dp))
+
+            // Card Quiz Insetti
             SectionCard(
                 title = stringResource(R.string.insects_quiz),
                 imageRes = painterResource(R.drawable.insects),
@@ -86,6 +119,7 @@ fun HomeScreen(
                 onClick = { navController.navigate("quizStart/insect") },
                 cardSize = SectionCardSize.Small
             )
+
             Spacer(Modifier.height(8.dp))
         }
     }
