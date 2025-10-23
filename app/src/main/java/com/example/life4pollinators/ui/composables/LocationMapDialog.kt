@@ -78,11 +78,6 @@ fun LocationMapDialog(
         )
     }
 
-    // Stati per dialogs di warning
-    var showLocationDisabledWarning by remember { mutableStateOf(false) }
-    var showPermissionDeniedWarning by remember { mutableStateOf(false) }
-    var showPermissionPermanentlyDeniedWarning by remember { mutableStateOf(false) }
-
     // Carica posizione utente all'apertura se permesso già garantito
     LaunchedEffect(Unit) {
         val hasPermission = context.checkSelfPermission(
@@ -103,309 +98,198 @@ fun LocationMapDialog(
         }
     }
 
-    // Gestione permessi location
-    val locationPermission = rememberMultiplePermissions(
-        listOf(
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.ACCESS_FINE_LOCATION
+    // Funzione helper per animare la mappa verso le coordinate
+    val animateMapToLocation: (Coordinates) -> Unit = { coords ->
+        mapViewInstance?.controller?.animateTo(
+            GeoPoint(coords.latitude, coords.longitude),
+            15.0, // Zoom level
+            500L  // Durata animazione (ms)
         )
-    ) { statuses ->
-        when {
-            // Almeno un permesso concesso
-            statuses.any { it.value.isGranted } -> {
-                scope.launch {
-                    try {
-                        val coords = locationService.getCurrentLocation()
-                        coords?.let {
-                            selectedLocation = it
-                            // Anima la mappa verso la posizione trovata
-                            mapViewInstance?.controller?.animateTo(
-                                GeoPoint(it.latitude, it.longitude),
-                                15.0, // Zoom level
-                                500L  // Durata animazione (ms)
-                            )
-                        }
-                    } catch (ex: SecurityException) {
-                        // Gestito
-                    } catch (ex: IllegalStateException) {
-                        showLocationDisabledWarning = true
-                    }
-                }
-            }
-            // Tutti i permessi negati permanentemente
-            statuses.all { it.value == PermissionStatus.PermanentlyDenied } ->
-                showPermissionPermanentlyDeniedWarning = true
-            // Permessi negati
-            else ->
-                showPermissionDeniedWarning = true
-        }
     }
 
-    Dialog(
-        onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false) // Fullscreen
-    ) {
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = { Text(stringResource(R.string.select_location)) },
-                    navigationIcon = {
-                        IconButton(onClick = onDismiss) {
-                            Icon(Icons.Default.Close, contentDescription = "Close")
-                        }
-                    },
-                    actions = {
-                        // Pulsante conferma (disabilitato se nessuna selezione)
-                        IconButton(
-                            onClick = {
-                                selectedLocation?.let {
-                                    onLocationSelected(it.latitude, it.longitude)
-                                    onDismiss()
-                                }
-                            },
-                            enabled = selectedLocation != null
-                        ) {
-                            Icon(Icons.Default.Check, contentDescription = "Confirm")
-                        }
-                    }
-                )
-            },
-            // FAB per centrarsi su posizione corrente
-            floatingActionButton = {
-                FloatingActionButton(
-                    modifier = Modifier.padding(bottom = 64.dp),
-                    onClick = {
-                        if (locationPermission.statuses.any { it.value.isGranted }) {
-                            scope.launch {
-                                try {
-                                    val coords = locationService.getCurrentLocation()
-                                    coords?.let {
-                                        selectedLocation = it
-                                        mapViewInstance?.controller?.animateTo(
-                                            GeoPoint(it.latitude, it.longitude),
-                                            15.0,
-                                            500L
-                                        )
-                                    }
-                                } catch (ex: SecurityException) {
-                                    showPermissionDeniedWarning = true
-                                } catch (ex: IllegalStateException) {
-                                    showLocationDisabledWarning = true
-                                }
+    LocationPermissionHandler(
+        locationService = locationService,
+        onLocationObtained = { coords ->
+            selectedLocation = coords
+            animateMapToLocation(coords)
+        },
+        onLoadingChange = { /* isLoadingLocation già gestito dal service */ }
+    ) { requestLocation ->
+
+        Dialog(
+            onDismissRequest = onDismiss,
+            properties = DialogProperties(usePlatformDefaultWidth = false) // Fullscreen
+        ) {
+            Scaffold(
+                topBar = {
+                    TopAppBar(
+                        title = { Text(stringResource(R.string.select_location)) },
+                        navigationIcon = {
+                            IconButton(onClick = onDismiss) {
+                                Icon(Icons.Default.Close, contentDescription = "Close")
                             }
-                        } else {
-                            locationPermission.launchPermissionRequest()
+                        },
+                        actions = {
+                            // Pulsante conferma (disabilitato se nessuna selezione)
+                            IconButton(
+                                onClick = {
+                                    selectedLocation?.let {
+                                        onLocationSelected(it.latitude, it.longitude)
+                                        onDismiss()
+                                    }
+                                },
+                                enabled = selectedLocation != null
+                            ) {
+                                Icon(Icons.Default.Check, contentDescription = "Confirm")
+                            }
                         }
-                    }
-                ) {
-                    if (isLoadingLocation) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(24.dp),
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    } else {
-                        Icon(Icons.Default.MyLocation, contentDescription = "My Location")
+                    )
+                },
+                // FAB per centrarsi su posizione corrente
+                floatingActionButton = {
+                    FloatingActionButton(
+                        modifier = Modifier.padding(bottom = 64.dp),
+                        onClick = { requestLocation() }
+                    ) {
+                        if (isLoadingLocation) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        } else {
+                            Icon(Icons.Default.MyLocation, contentDescription = "My Location")
+                        }
                     }
                 }
-            }
-        ) { padding ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-            ) {
-                // Mappa OSM integrata tramite AndroidView
-                AndroidView(
-                    factory = { ctx ->
-                        MapView(ctx).apply {
-                            setTileSource(TileSourceFactory.MAPNIK) // Stile mappa
-                            setMultiTouchControls(true) // Pinch-to-zoom
+            ) { padding ->
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding)
+                ) {
+                    // Mappa OSM integrata tramite AndroidView
+                    AndroidView(
+                        factory = { ctx ->
+                            MapView(ctx).apply {
+                                setTileSource(TileSourceFactory.MAPNIK) // Stile mappa
+                                setMultiTouchControls(true) // Pinch-to-zoom
 
-                            // Centro Italia: Roma (approssimativo)
-                            val italyCenterPoint = GeoPoint(41.9028, 12.4964)
+                                // Centro Italia: Roma (approssimativo)
+                                val italyCenterPoint = GeoPoint(41.9028, 12.4964)
 
-                            // Determina punto di partenza
-                            val startPoint = selectedLocation?.let {
-                                GeoPoint(it.latitude, it.longitude)
-                            } ?: italyCenterPoint
+                                // Determina punto di partenza
+                                val startPoint = selectedLocation?.let {
+                                    GeoPoint(it.latitude, it.longitude)
+                                } ?: italyCenterPoint
 
-                            // Zoom: se c'è selezione zoom vicino, altrimenti vista Italia
-                            val startZoom = if (selectedLocation != null) 15.0 else 6.0
+                                // Zoom: se c'è selezione zoom vicino, altrimenti vista Italia
+                                val startZoom = if (selectedLocation != null) 15.0 else 6.0
 
-                            controller.setZoom(startZoom)
-                            controller.setCenter(startPoint)
+                                controller.setZoom(startZoom)
+                                controller.setCenter(startPoint)
 
-                            // Overlay per catturare tap sulla mappa
-                            overlays.add(object : org.osmdroid.views.overlay.Overlay() {
-                                override fun onSingleTapConfirmed(
-                                    e: android.view.MotionEvent,
-                                    mapView: MapView
-                                ): Boolean {
-                                    // Converti pixel tap in coordinate geografiche
-                                    val projection = mapView.projection
-                                    val geoPoint = projection.fromPixels(
-                                        e.x.toInt(),
-                                        e.y.toInt()
-                                    ) as GeoPoint
+                                // Overlay per catturare tap sulla mappa
+                                overlays.add(object : org.osmdroid.views.overlay.Overlay() {
+                                    override fun onSingleTapConfirmed(
+                                        e: android.view.MotionEvent,
+                                        mapView: MapView
+                                    ): Boolean {
+                                        // Converti pixel tap in coordinate geografiche
+                                        val projection = mapView.projection
+                                        val geoPoint = projection.fromPixels(
+                                            e.x.toInt(),
+                                            e.y.toInt()
+                                        ) as GeoPoint
 
-                                    selectedLocation = Coordinates(
-                                        geoPoint.latitude,
-                                        geoPoint.longitude
-                                    )
-                                    mapView.invalidate() // Ridisegna mappa
-                                    return true
-                                }
-                            })
+                                        selectedLocation = Coordinates(
+                                            geoPoint.latitude,
+                                            geoPoint.longitude
+                                        )
+                                        mapView.invalidate() // Ridisegna mappa
+                                        return true
+                                    }
+                                })
 
-                            mapViewInstance = this
-                        }
-                    },
-                    update = { mapView ->
-                        // Rimuovi tutti i marker esistenti
-                        mapView.overlays.removeAll { it is Marker }
-
-                        // Marker posizione selezionata (rosso)
-                        selectedLocation?.let { coords ->
-                            val selectedMarker = Marker(mapView).apply {
-                                position = GeoPoint(coords.latitude, coords.longitude)
-                                setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-                                title = context.getString(R.string.add_sighting_selected_location)
-                                icon = ContextCompat.getDrawable(
-                                    context,
-                                    R.drawable.ic_marker_default
-                                )
+                                mapViewInstance = this
                             }
-                            mapView.overlays.add(selectedMarker)
-                        }
+                        },
+                        update = { mapView ->
+                            // Rimuovi tutti i marker esistenti
+                            mapView.overlays.removeAll { it is Marker }
 
-                        // Marker posizione utente (blu) se disponibile e diversa da quella selezionata
-                        userCoordinates?.let { userCoords ->
-                            val isSameLocation = selectedLocation?.let {
-                                distanceBetween(it, userCoords) < 10.0 // Soglia 10 metri
-                            } ?: false
-
-                            if (!isSameLocation) {
-                                val userMarker = Marker(mapView).apply {
-                                    position = GeoPoint(userCoords.latitude, userCoords.longitude)
-                                    setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
-                                    title = context.getString(R.string.my_location_marker_title)
+                            // Marker posizione selezionata (rosso)
+                            selectedLocation?.let { coords ->
+                                val selectedMarker = Marker(mapView).apply {
+                                    position = GeoPoint(coords.latitude, coords.longitude)
+                                    setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                                    title = context.getString(R.string.add_sighting_selected_location)
                                     icon = ContextCompat.getDrawable(
                                         context,
-                                        R.drawable.ic_my_location_marker
+                                        R.drawable.ic_marker_default
                                     )
                                 }
-                                mapView.overlays.add(userMarker)
+                                mapView.overlays.add(selectedMarker)
                             }
-                        }
 
-                        mapView.invalidate()
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                )
+                            // Marker posizione utente (blu) se disponibile e diversa da quella selezionata
+                            userCoordinates?.let { userCoords ->
+                                val isSameLocation = selectedLocation?.let {
+                                    distanceBetween(it, userCoords) < 10.0 // Soglia 10 metri
+                                } ?: false
 
-                // Info box in basso con coordinate selezionate
-                Surface(
-                    color = MaterialTheme.colorScheme.surfaceVariant,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                                if (!isSameLocation) {
+                                    val userMarker = Marker(mapView).apply {
+                                        position = GeoPoint(userCoords.latitude, userCoords.longitude)
+                                        setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
+                                        title = context.getString(R.string.my_location_marker_title)
+                                        icon = ContextCompat.getDrawable(
+                                            context,
+                                            R.drawable.ic_my_location_marker
+                                        )
+                                    }
+                                    mapView.overlays.add(userMarker)
+                                }
+                            }
+
+                            mapView.invalidate()
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                    )
+
+                    // Info box in basso con coordinate selezionate
+                    Surface(
+                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        selectedLocation?.let {
-                            Text(
-                                text = "Lat: %.4f, Lng: %.4f".format(
-                                    it.latitude,
-                                    it.longitude
-                                ),
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                            Text(
-                                text = stringResource(R.string.tap_to_change_location),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        } ?: run {
-                            Text(
-                                text = stringResource(R.string.tap_to_select_location),
-                                style = MaterialTheme.typography.bodyMedium
-                            )
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            selectedLocation?.let {
+                                Text(
+                                    text = "Lat: %.4f, Lng: %.4f".format(
+                                        it.latitude,
+                                        it.longitude
+                                    ),
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                                Text(
+                                    text = stringResource(R.string.tap_to_change_location),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            } ?: run {
+                                Text(
+                                    text = stringResource(R.string.tap_to_select_location),
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            }
                         }
                     }
                 }
             }
         }
-    }
-
-    // ========== DIALOGS DI WARNING ==========
-
-    // GPS disabilitato
-    if (showLocationDisabledWarning) {
-        AlertDialog(
-            title = { Text(stringResource(R.string.gps_disabled_title)) },
-            text = { Text(stringResource(R.string.gps_disabled_message)) },
-            confirmButton = {
-                TextButton(onClick = {
-                    locationService.openLocationSettings()
-                    showLocationDisabledWarning = false
-                }) { Text(stringResource(R.string.enable)) }
-            },
-            dismissButton = {
-                TextButton(onClick = { showLocationDisabledWarning = false }) {
-                    Text(stringResource(R.string.cancel))
-                }
-            },
-            onDismissRequest = { showLocationDisabledWarning = false }
-        )
-    }
-
-    // Permesso negato
-    if (showPermissionDeniedWarning) {
-        AlertDialog(
-            title = { Text(stringResource(R.string.location_permission_denied_title)) },
-            text = { Text(stringResource(R.string.location_permission_denied_message)) },
-            confirmButton = {
-                TextButton(onClick = {
-                    locationPermission.launchPermissionRequest()
-                    showPermissionDeniedWarning = false
-                }) { Text(stringResource(R.string.grant)) }
-            },
-            dismissButton = {
-                TextButton(onClick = { showPermissionDeniedWarning = false }) {
-                    Text(stringResource(R.string.cancel))
-                }
-            },
-            onDismissRequest = { showPermissionDeniedWarning = false }
-        )
-    }
-
-    // Permesso negato permanentemente
-    if (showPermissionPermanentlyDeniedWarning) {
-        AlertDialog(
-            title = { Text(stringResource(R.string.permission_required_title)) },
-            text = { Text(stringResource(R.string.permission_permanently_denied_message)) },
-            confirmButton = {
-                TextButton(onClick = {
-                    val intent = android.content.Intent(
-                        android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS
-                    ).apply {
-                        data = android.net.Uri.fromParts("package", context.packageName, null)
-                        flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK
-                    }
-                    if (intent.resolveActivity(context.packageManager) != null) {
-                        context.startActivity(intent)
-                    }
-                    showPermissionPermanentlyDeniedWarning = false
-                }) { Text(stringResource(R.string.settings)) }
-            },
-            dismissButton = {
-                TextButton(onClick = { showPermissionPermanentlyDeniedWarning = false }) {
-                    Text(stringResource(R.string.cancel))
-                }
-            },
-            onDismissRequest = { showPermissionPermanentlyDeniedWarning = false }
-        )
     }
 }
