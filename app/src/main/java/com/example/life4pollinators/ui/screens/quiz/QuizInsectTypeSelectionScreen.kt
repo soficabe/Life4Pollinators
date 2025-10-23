@@ -26,6 +26,21 @@ import com.example.life4pollinators.ui.composables.ExitQuizDialog
 import com.example.life4pollinators.ui.navigation.L4PRoute
 import java.util.Locale
 
+/**
+ * Schermata selezione tipo di insetto.
+ *
+ * Mostra tutti i gruppi di insetti disponibili:
+ * - CON QUIZ: Bees, Butterflies, Moths, Wasps
+ * - SENZA QUIZ: Beetles, Bee flies, Hoverflies
+ *
+ * Navigazione:
+ * - Gruppi con quiz → QuizStep.Question
+ * - Gruppi senza quiz → QuizStep.InsectsList
+ *
+ * @param state Stato quiz condiviso
+ * @param actions Azioni quiz
+ * @param navController Controller navigazione
+ */
 @Composable
 fun QuizInsectTypeSelectionScreen(
     state: QuizState,
@@ -39,17 +54,19 @@ fun QuizInsectTypeSelectionScreen(
 
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Gestione del back button con dialog di conferma
+    // BackHandler con dialog conferma uscita
     BackHandler {
         showExitDialog = true
     }
 
+    // Mostra errori con Snackbar
     LaunchedEffect(state.error) {
         if (state.error != null) {
             snackbarHostState.showSnackbar(context.getString(state.error))
         }
     }
 
+    // Navigazione automatica basata su step
     LaunchedEffect(state.step) {
         when (state.step) {
             QuizStep.Question -> navController.navigate(L4PRoute.QuizQuestion)
@@ -73,7 +90,7 @@ fun QuizInsectTypeSelectionScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            // Photo preview at top
+            // Preview foto in alto
             state.photoUrl?.let { photoUrl ->
                 Card(
                     modifier = Modifier
@@ -106,7 +123,7 @@ fun QuizInsectTypeSelectionScreen(
                 }
             }
 
-            // Insect type selection
+            // Lista gruppi insetti
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -115,6 +132,7 @@ fun QuizInsectTypeSelectionScreen(
                     .padding(horizontal = 16.dp)
             ) {
                 if (state.loading) {
+                    // Stato loading
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -126,6 +144,7 @@ fun QuizInsectTypeSelectionScreen(
                 } else {
                     Spacer(modifier = Modifier.height(8.dp))
 
+                    // Titolo domanda
                     Text(
                         text = stringResource(R.string.quiz_which_insect_type),
                         style = MaterialTheme.typography.titleLarge,
@@ -134,11 +153,14 @@ fun QuizInsectTypeSelectionScreen(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
+                    // Card per ogni gruppo
                     state.insectGroups.forEach { group ->
                         val displayName = if (locale == "it") group.nameIt else group.nameEn
 
                         Card(
-                            onClick = { actions.selectInsectType(group.nameEn, group.id) },
+                            onClick = {
+                                actions.selectInsectType(group.nameEn, group.id)
+                            },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(vertical = 6.dp),
@@ -153,6 +175,7 @@ fun QuizInsectTypeSelectionScreen(
                                     .padding(16.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
+                                // Immagine gruppo
                                 group.groupImageUrl?.let { imageUrl ->
                                     Box(
                                         modifier = Modifier
@@ -170,6 +193,7 @@ fun QuizInsectTypeSelectionScreen(
                                     Spacer(modifier = Modifier.width(16.dp))
                                 }
 
+                                // Nome gruppo localizzato
                                 Text(
                                     text = displayName,
                                     style = MaterialTheme.typography.bodyLarge,
@@ -185,7 +209,7 @@ fun QuizInsectTypeSelectionScreen(
         }
     }
 
-    // Dialog di conferma uscita
+    // Dialog conferma uscita
     if (showExitDialog) {
         ExitQuizDialog(
             onDismiss = { showExitDialog = false },

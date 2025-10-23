@@ -41,7 +41,7 @@ import com.example.life4pollinators.utils.rememberGalleryLauncher
  * - Selezione specie (autocomplete con suggerimenti)
  *
  * Caratteristiche:
- * - Validazione real-time con evidenziazione errori
+ * - Validazione con evidenziazione errori
  * - Gestione permessi (location)
  * - Autocomplete ricerca piante/impollinatori
  * - Feedback visivo per ogni campo

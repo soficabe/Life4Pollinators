@@ -32,6 +32,33 @@ import com.example.life4pollinators.ui.composables.AppBar
 import com.example.life4pollinators.ui.navigation.L4PRoute
 import java.util.Locale
 
+/**
+ * Schermata risultato finale del quiz.
+ *
+ * Mostra:
+ * - Nome della specie identificata
+ * - Immagine della specie
+ * - Pulsante "Apri con Google Lens" (per verifica)
+ * - Pulsante "Carica avvistamento" (se autenticato)
+ * - Pulsante "Riprova" (mantiene foto)
+ * - Pulsante "Torna alla home"
+ *
+ * Funzionalità speciali:
+ *  1. Google Lens: Condivide la foto con app esterne per verifica risultato
+ *  2. Upload avvistamento: Salva rapidamente come sighting
+ *     - Usa data/ora corrente
+ *     - Coordinate 0,0 (placeholder, non richieste nel quiz)
+ *
+ * Gestione errori:
+ * - Se selectedTarget == null: mostra errore e pulsante home (non dovrebbe succedere mai)
+ * - Se upload fallisce: mostra messaggio errore con possibilità retry
+ *
+ * @param state Stato quiz con selectedTarget popolato
+ * @param actions Azioni quiz
+ * @param isAuthenticated Flag autenticazione per upload sighting
+ * @param userId ID utente per upload sighting
+ * @param navController Controller navigazione
+ */
 @Composable
 fun QuizResultScreen(
     state: QuizState,
@@ -44,6 +71,7 @@ fun QuizResultScreen(
     val context = LocalContext.current
     var showLensDialog by rememberSaveable { mutableStateOf(false) }
 
+    // BackHandler: torna alla home resettando quiz
     BackHandler {
         actions.resetQuiz()
         navController.navigate(L4PRoute.Home) {
@@ -51,7 +79,7 @@ fun QuizResultScreen(
         }
     }
 
-    // Controllo di sicurezza all'inizio
+    // Controllo sicurezza: selectedTarget deve essere presente
     val selectedTarget = state.selectedTarget
     if (selectedTarget == null) {
         Scaffold(
@@ -135,7 +163,8 @@ fun QuizResultScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Nome del target - safe access
+            // Nome specie identificata
+            // Gestisce sia insetti (name) che piante (nameIt/nameEn)
             val displayName = if (!selectedTarget.name.isNullOrEmpty()) {
                 selectedTarget.name
             } else {
@@ -187,7 +216,7 @@ fun QuizResultScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Bottone Google Lens
+            // Pulsante Google Lens (verifica con AI esterna)
             if (state.photoUrl != null) {
                 Button(
                     onClick = { showLensDialog = true },
@@ -210,7 +239,7 @@ fun QuizResultScreen(
                 Spacer(modifier = Modifier.height(12.dp))
             }
 
-            // Bottone carica avvistamento
+            // Pulsante carica avvistamento (solo se autenticato)
             if (isAuthenticated && state.photoUrl != null) {
                 Button(
                     onClick = {
@@ -234,10 +263,13 @@ fun QuizResultScreen(
                     )
                 }
 
+                // Progress bar durante upload
                 if (state.isUploading) {
                     Spacer(modifier = Modifier.height(8.dp))
                     LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
                 }
+
+                // Messaggio successo upload
                 if (state.uploadSuccess == true) {
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
@@ -246,10 +278,13 @@ fun QuizResultScreen(
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
+
+                // Messaggio errore upload
                 if (state.uploadSuccess == false) {
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = state.uploadError?.let { stringResource(it) } ?: stringResource(R.string.sighting_upload_error),
+                        text = state.uploadError?.let { stringResource(it) }
+                            ?: stringResource(R.string.sighting_upload_error),
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodyMedium
                     )
@@ -257,7 +292,7 @@ fun QuizResultScreen(
                 Spacer(modifier = Modifier.height(12.dp))
             }
 
-            // Bottone riprova
+            // Pulsante riprova (mantiene foto)
             OutlinedButton(
                 onClick = {
                     actions.resetQuizKeepingPhoto()
@@ -284,7 +319,7 @@ fun QuizResultScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Bottone home
+            // Pulsante home (reset completo)
             OutlinedButton(
                 onClick = {
                     actions.resetQuiz()
@@ -332,11 +367,15 @@ fun QuizResultScreen(
             confirmButton = {
                 Button(onClick = {
                     showLensDialog = false
+                    // Intent condivisione immagine con app esterne
                     val intent = Intent(Intent.ACTION_SEND).apply {
                         type = "image/*"
                         putExtra(Intent.EXTRA_STREAM, Uri.parse(state.photoUrl))
                     }
-                    val chooser = Intent.createChooser(intent, context.getString(R.string.quiz_open_with_lens_chooser))
+                    val chooser = Intent.createChooser(
+                        intent,
+                        context.getString(R.string.quiz_open_with_lens_chooser)
+                    )
                     context.startActivity(chooser)
                 }) {
                     Text(stringResource(R.string.quiz_open_with_lens_continue))

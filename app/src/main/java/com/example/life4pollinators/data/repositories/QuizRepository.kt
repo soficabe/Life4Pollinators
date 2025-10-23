@@ -5,9 +5,24 @@ import com.example.life4pollinators.data.database.entities.*
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
 
+/**
+ * Repository per la gestione dei quiz e degli alberi decisionali.
+ *
+ * Responsabilità:
+ * - Navigazione nell'albero decisionale del quiz
+ * - Recupero domande, risposte e target
+ * - Caricamento entità correlate (Plant, Insect)
+ * - Gestione dei diversi tipi di quiz
+ *
+ * Architettura Quiz:
+ * Quiz → Root Question → Answers → Next Questions → ... → Leaf Answers → Target/s -> Result
+ *
+ * @param supabase Client Supabase per accesso al database
+ */
 class QuizRepository(
     supabase: SupabaseClient
 ) {
+    // Riferimenti alle tabelle del database
     private val quizTable = supabase.from("quiz")
     private val questionTable = supabase.from("quiz_question")
     private val answerTable = supabase.from("quiz_answer")
@@ -15,15 +30,31 @@ class QuizRepository(
     private val plantTable = supabase.from("plant")
     private val insectTable = supabase.from("insect")
 
-    // Recupera il quiz per tipo ("plant", "bee", "butterfly", "moth" o "wasp")
-    // (per i gruppi beetle, beefly e hoverfly non esiste un quiz nel db)
+    /**
+     * Recupera il quiz per tipo.
+     *
+     * Tipi supportati con quiz:
+     * - "plant": Quiz per identificare piante
+     * - "bee": Quiz per identificare api
+     * - "butterfly": Quiz per identificare farfalle
+     * - "moth": Quiz per identificare falene
+     * - "wasp": Quiz per identificare vespe
+     *
+     * Tipi SENZA quiz (usano lista diretta):
+     * - "beetle": Coleotteri
+     * - "beefly": Bombilidi
+     * - "hoverfly": Sirfidi
+     *
+     * @param type Tipo del quiz da recuperare
+     * @return Quiz entity se trovato, null altrimenti
+     */
     suspend fun getQuiz(type: String): Quiz? {
         return try {
-            println("Cerco quiz type: '$type'")
+            println("Cerco quiz type: '$type'") // Debug log
             val quiz = quizTable.select {
                 filter { Quiz::type eq type }
             }.decodeList<Quiz>()
-            println("Quiz trovati: $quiz")
+            println("Quiz trovati: $quiz") // Debug log
             quiz.firstOrNull()
         } catch (e: Exception) {
             Log.e("QuizRepository", "Error fetching quiz for type: $type", e)
@@ -31,13 +62,22 @@ class QuizRepository(
         }
     }
 
-    // Recupera la domanda root dal quiz
+    /**
+     * Recupera la domanda radice (root) del quiz.
+     *
+     * La root question è il punto di partenza dell'albero decisionale.
+     * Tutte le altre domande sono raggiungibili da questa attraverso
+     * le risposte e i nextQuestion link.
+     *
+     * @param rootQuestionId ID della domanda root (dal Quiz.rootQuestionId)
+     * @return QuizQuestion entity se trovata, null altrimenti
+     */
     suspend fun getRootQuestion(rootQuestionId: String): QuizQuestion? {
         return try {
             val result = questionTable.select {
                 filter { QuizQuestion::id eq rootQuestionId }
             }.decodeList<QuizQuestion>()
-            println("Result for getRootQuestion($rootQuestionId): $result")
+            println("Result for getRootQuestion($rootQuestionId): $result") // Debug log
             result.firstOrNull()
         } catch (e: Exception) {
             Log.e("QuizRepository", "Error fetching root question: $rootQuestionId", e)
@@ -45,7 +85,15 @@ class QuizRepository(
         }
     }
 
-    // Recupera tutte le risposte per una domanda
+    /**
+     * Recupera tutte le risposte disponibili per una domanda.
+     *
+     * Ogni domanda ha almeno 2 risposte.
+     * Le risposte vengono mostrate all'utente come opzioni cliccabili.
+     *
+     * @param questionId ID della domanda corrente
+     * @return Lista di QuizAnswer per la domanda (vuota in caso di errore)
+     */
     suspend fun getAnswers(questionId: String): List<QuizAnswer> {
         return try {
             answerTable.select {
@@ -57,7 +105,16 @@ class QuizRepository(
         }
     }
 
-    // Recupera la domanda successiva per una risposta, se esiste
+    /**
+     * Recupera la domanda successiva per una risposta selezionata.
+     *
+     * Determina il prossimo passo nell'albero decisionale:
+     * - Se answer.nextQuestion != null: recupera la prossima domanda
+     * - Se answer.nextQuestion == null: la risposta è una foglia (risultato)
+     *
+     * @param answer Risposta selezionata dall'utente
+     * @return QuizQuestion successiva se esiste, null se risposta foglia o errore
+     */
     suspend fun getNextQuestion(answer: QuizAnswer): QuizQuestion? {
         val nextId = answer.nextQuestion
         return if (nextId != null) {
@@ -72,7 +129,17 @@ class QuizRepository(
         } else null
     }
 
-    // Recupera i target associati a una risposta foglia
+    /**
+     * Recupera i target associati a una risposta foglia.
+     *
+     * Utilizzato quando l'utente arriva al risultato finale del quiz.
+     * Una risposta foglia può avere:
+     * - 1 target: risultato univoco (es. "Ape mellifera")
+     * - N target: risultati multipli tra cui scegliere (es. "Possibili: Ape A, Ape B, Ape C")
+     *
+     * @param answerId ID della risposta foglia (answer.nextQuestion == null)
+     * @return Lista di QuizAnswerTarget con le specie suggerite (vuota in caso di errore)
+     */
     suspend fun getTargets(answerId: String): List<QuizAnswerTarget> {
         return try {
             answerTargetTable.select {
@@ -84,29 +151,11 @@ class QuizRepository(
         }
     }
 
-    // Recupera oggetto target, ad esempio la pianta corrispondente
-    suspend fun getTargetObject(targetId: String, targetType: String): Any? {
-        return try {
-            when (targetType) {
-                "plant" -> {
-                    plantTable.select {
-                        filter { Plant::id eq targetId }
-                    }.decodeList<Plant>().firstOrNull()
-                }
-                "insect" -> {
-                    insectTable.select {
-                        filter { Insect::id eq targetId }
-                    }.decodeList<Insect>().firstOrNull()
-                }
-                else -> null
-            }
-        } catch (e: Exception) {
-            Log.e("QuizRepository", "Error fetching target object: $targetId, type: $targetType", e)
-            null
-        }
-    }
-
-    // Recupera una pianta per ID
+    /**
+     * Recupera una pianta specifica per ID.
+     *
+     * Usato per caricare i dettagli completi di una pianta target.
+     */
     suspend fun getPlant(plantId: String): Plant? {
         return try {
             plantTable.select {
@@ -118,7 +167,11 @@ class QuizRepository(
         }
     }
 
-    // Recupera un insetto per ID
+    /**
+     * Recupera un insetto specifico per ID.
+     *
+     * Usato per caricare i dettagli completi di un insetto target.
+     */
     suspend fun getInsect(insectId: String): Insect? {
         return try {
             insectTable.select {
@@ -127,32 +180,6 @@ class QuizRepository(
         } catch (e: Exception) {
             Log.e("QuizRepository", "Error fetching insect: $insectId", e)
             null
-        }
-    }
-
-    // Recupera più piante per lista di ID
-    suspend fun getPlants(plantIds: List<String>): List<Plant> {
-        if (plantIds.isEmpty()) return emptyList()
-        return try {
-            plantTable.select {
-                filter { Plant::id isIn plantIds }
-            }.decodeList<Plant>()
-        } catch (e: Exception) {
-            Log.e("QuizRepository", "Error fetching plants list", e)
-            emptyList()
-        }
-    }
-
-    // Recupera più insetti per lista di ID
-    suspend fun getInsects(insectIds: List<String>): List<Insect> {
-        if (insectIds.isEmpty()) return emptyList()
-        return try {
-            insectTable.select {
-                filter { Insect::id isIn insectIds }
-            }.decodeList<Insect>()
-        } catch (e: Exception) {
-            Log.e("QuizRepository", "Error fetching insects list", e)
-            emptyList()
         }
     }
 }

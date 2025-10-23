@@ -25,6 +25,19 @@ import com.example.life4pollinators.ui.composables.ExitQuizDialog
 import com.example.life4pollinators.ui.navigation.L4PRoute
 import java.util.Locale
 
+/**
+ * Schermata selezione target multipli.
+ *
+ * Mostrata quando una risposta foglia ha più di un target associato.
+ * Permette all'utente di scegliere quale specie corrisponde meglio
+ * alla sua osservazione.
+ *
+ * Al click → selectTarget() → QuizStep.Result
+ *
+ * @param state Stato quiz con possibleTargets popolato
+ * @param actions Azioni quiz
+ * @param navController Controller navigazione
+ */
 @Composable
 fun QuizTargetSelectionScreen(
     state: QuizState,
@@ -34,8 +47,7 @@ fun QuizTargetSelectionScreen(
     val locale = Locale.getDefault().language
     var showExitDialog by remember { mutableStateOf(false) }
 
-    // BackHandler con dialog - l'utente ha già completato il quiz,
-    // ma potrebbe voler ripensarci sulla selezione
+    // BackHandler con dialog - l'utente potrebbe voler ripensarci
     BackHandler {
         showExitDialog = true
     }
@@ -54,7 +66,7 @@ fun QuizTargetSelectionScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            // Photo preview at top
+            // Preview foto
             state.photoUrl?.let { photoUrl ->
                 Card(
                     modifier = Modifier
@@ -87,7 +99,7 @@ fun QuizTargetSelectionScreen(
                 }
             }
 
-            // Target selection
+            // Lista target
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -97,6 +109,7 @@ fun QuizTargetSelectionScreen(
             ) {
                 Spacer(modifier = Modifier.height(8.dp))
 
+                // Istruzioni
                 Text(
                     text = stringResource(R.string.quiz_select_match),
                     style = MaterialTheme.typography.titleLarge,
@@ -105,6 +118,7 @@ fun QuizTargetSelectionScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
+                // Card per ogni target suggerito
                 state.possibleTargets.forEach { targetWithDetails ->
                     Card(
                         onClick = {
@@ -125,6 +139,7 @@ fun QuizTargetSelectionScreen(
                                 .padding(16.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
+                            // Immagine target
                             targetWithDetails.imageUrl?.let { imageUrl ->
                                 Box(
                                     modifier = Modifier
@@ -142,6 +157,7 @@ fun QuizTargetSelectionScreen(
                                 Spacer(modifier = Modifier.width(16.dp))
                             }
 
+                            // Nome target (gestisce sia insetti che piante)
                             val displayName = targetWithDetails.name?.takeIf { it.isNotEmpty() }
                                 ?: if (locale == "it") targetWithDetails.nameIt else targetWithDetails.nameEn
 
@@ -161,7 +177,7 @@ fun QuizTargetSelectionScreen(
         }
     }
 
-    // Dialog di conferma uscita
+    // Dialog uscita
     if (showExitDialog) {
         ExitQuizDialog(
             onDismiss = { showExitDialog = false },

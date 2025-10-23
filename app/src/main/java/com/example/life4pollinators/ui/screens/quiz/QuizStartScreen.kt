@@ -32,6 +32,26 @@ import com.example.life4pollinators.ui.navigation.L4PRoute
 import com.example.life4pollinators.utils.rememberCameraLauncher
 import com.example.life4pollinators.utils.rememberGalleryLauncher
 
+/**
+ * Schermata iniziale del quiz per caricamento foto.
+ *
+ * Permette all'utente di:
+ * - Scattare una foto con la fotocamera
+ * - Selezionare una foto dalla galleria
+ * - Visualizzare preview della foto selezionata
+ * - Avviare il quiz con la foto caricata
+ *
+ * Flusso:
+ * 1. Utente carica foto
+ * 2. Preview visualizzata
+ * 3. Pulsante "Inizia" diventa disponibile
+ * 4. Click "Inizia" → startQuiz() → navigazione automatica
+ *
+ * @param state Stato del quiz dal ViewModel condiviso
+ * @param actions Azioni disponibili per modificare lo stato
+ * @param isAuthenticated Flag autenticazione utente
+ * @param navController Controller di navigazione
+ */
 @Composable
 fun QuizStartScreen(
     state: QuizState,
@@ -45,7 +65,7 @@ fun QuizStartScreen(
     // Snackbar host per mostrare errori
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Usa rememberSaveable per mantenere la foto durante la rotazione
+    // Stato locale per la foto (sopravvive a rotazione con rememberSaveable)
     var localPhoto by rememberSaveable(stateSaver = UriSaver) {
         mutableStateOf(state.photoUrl?.let { Uri.parse(it) })
     }
@@ -53,26 +73,27 @@ fun QuizStartScreen(
     var errorMessage by rememberSaveable { mutableStateOf<String?>(null) }
     var quizStarted by rememberSaveable { mutableStateOf(false) }
 
-    // Gestione del back button - resetta il quiz quando si va indietro
+    // BackHandler: reset quiz quando si preme indietro
     BackHandler {
         actions.resetQuiz()
         navController.popBackStack()
     }
 
-    // Effect per sincronizzare localPhoto con state.photoUrl
+    // Sincronizza localPhoto con state.photoUrl
     LaunchedEffect(state.photoUrl) {
         if (state.photoUrl != null && localPhoto == null) {
             localPhoto = Uri.parse(state.photoUrl)
         }
     }
 
-    // Mostra errore di rete con Snackbar
+    // Mostra errori di rete con Snackbar
     LaunchedEffect(state.error) {
         if (state.error != null) {
             snackbarHostState.showSnackbar(context.getString(state.error))
         }
     }
 
+    // Launcher fotocamera con gestione callback
     val launchCamera = rememberCameraLauncher(
         onPhotoReady = { uri ->
             localPhoto = uri
@@ -85,12 +106,14 @@ fun QuizStartScreen(
         }
     )
 
+    // Launcher galleria
     val launchGallery = rememberGalleryLauncher { uri ->
         localPhoto = uri
         showImagePicker = false
         errorMessage = null
     }
 
+    // Titolo dinamico in base al tipo di quiz
     val titleRes = when (state.quizType) {
         "plant" -> R.string.quiz_start_title_plant
         "insect" -> R.string.quiz_start_title_insect
@@ -127,6 +150,7 @@ fun QuizStartScreen(
         ) {
             Spacer(modifier = Modifier.height(8.dp))
 
+            // Titolo
             Text(
                 text = stringResource(titleRes),
                 style = MaterialTheme.typography.titleMedium,
@@ -135,7 +159,7 @@ fun QuizStartScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Photo display area
+            // Area preview foto
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -145,6 +169,7 @@ fun QuizStartScreen(
                 contentAlignment = Alignment.Center
             ) {
                 if (localPhoto != null) {
+                    // Mostra preview foto
                     Image(
                         painter = rememberAsyncImagePainter(localPhoto),
                         contentDescription = stringResource(R.string.quiz_selected_photo),
@@ -152,6 +177,7 @@ fun QuizStartScreen(
                         contentScale = ContentScale.Crop
                     )
                 } else {
+                    // Placeholder icona fotocamera
                     Icon(
                         imageVector = Icons.Outlined.PhotoCamera,
                         contentDescription = null,
@@ -161,6 +187,7 @@ fun QuizStartScreen(
                 }
             }
 
+            // Messaggio errore
             errorMessage?.let {
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
@@ -172,8 +199,9 @@ fun QuizStartScreen(
 
             Spacer(modifier = Modifier.height(48.dp))
 
-            // Bottom buttons
+            // Pulsanti azioni
             if (localPhoto == null) {
+                // Nessuna foto: mostra pulsante "Carica foto"
                 Button(
                     onClick = { showImagePicker = true },
                     modifier = Modifier
@@ -194,8 +222,10 @@ fun QuizStartScreen(
                     )
                 }
             } else {
+                // Foto presente: pulsante "Inizia quiz"
                 Button(
                     onClick = {
+                        // Comportamento diverso per piante vs insetti
                         if (state.quizType == "insect") {
                             actions.loadInsectGroups(localPhoto.toString())
                         } else {
@@ -216,6 +246,7 @@ fun QuizStartScreen(
 
                 Spacer(modifier = Modifier.height(10.dp))
 
+                // Pulsante "Cambia foto"
                 OutlinedButton(
                     onClick = { showImagePicker = true },
                     modifier = Modifier
@@ -234,7 +265,7 @@ fun QuizStartScreen(
         }
     }
 
-    // Image picker dialog
+    // Dialog selezione sorgente immagine
     if (showImagePicker) {
         ImagePickerDialog(
             onDismiss = { showImagePicker = false },
@@ -249,7 +280,7 @@ fun QuizStartScreen(
         )
     }
 
-    // Navigate when quiz is ready
+    // Navigazione automatica quando quiz è pronto
     LaunchedEffect(state.step, state.loading, quizStarted) {
         if (quizStarted && !state.loading) {
             when (state.step) {
@@ -267,7 +298,17 @@ fun QuizStartScreen(
     }
 }
 
-// Saver personalizzato per Uri
+/**
+ * Saver personalizzato per Uri.
+ *
+ * Necessario perché Uri non è Parcelable di default,
+ * ma rememberSaveable richiede serializzazione per sopravvivere
+ * a configuration changes (rotazione schermo).
+ *
+ * Converte:
+ * - save: Uri → String (toString)
+ * - restore: String → Uri (Uri.parse)
+ */
 private val UriSaver = androidx.compose.runtime.saveable.Saver<Uri?, String>(
     save = { it?.toString() },
     restore = { it.let { Uri.parse(it) } }

@@ -26,6 +26,29 @@ import com.example.life4pollinators.ui.composables.ExitQuizDialog
 import com.example.life4pollinators.ui.navigation.L4PRoute
 import java.util.Locale
 
+/**
+ * Schermata domanda del quiz (cuore dell'albero decisionale).
+ *
+ * Mostra:
+ * - Preview foto dell'utente in alto
+ * - Testo domanda corrente (localizzato IT/EN)
+ * - Immagine illustrativa della domanda (opzionale)
+ * - Lista di risposte cliccabili con immagini opzionali
+ *
+ * Comportamento al click risposta:
+ * 1. actions.answerQuestion(answer) chiamata
+ * 2. ViewModel determina il prossimo step:
+ *    - Se answer.nextQuestion != null → carica nuova domanda (rimane su questa screen)
+ *    - Se answer.nextQuestion == null (foglia):
+ *      a. Un solo target → QuizStep.Result (navigazione automatica)
+ *      b. Più target → QuizStep.TargetSelection (navigazione automatica)
+ *
+ * La navigazione è automatica tramite LaunchedEffect che osserva state.step.
+ *
+ * @param state Stato quiz condiviso
+ * @param actions Azioni quiz
+ * @param navController Controller navigazione
+ */
 @Composable
 fun QuizQuestionScreen(
     state: QuizState,
@@ -38,17 +61,19 @@ fun QuizQuestionScreen(
 
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Gestione del back button con dialog di conferma
+    // BackHandler con dialog conferma uscita
     BackHandler {
         showExitDialog = true
     }
 
+    // Mostra errori con Snackbar
     LaunchedEffect(state.error) {
         if (state.error != null) {
             snackbarHostState.showSnackbar(context.getString(state.error))
         }
     }
 
+    // Navigazione automatica basata su step
     LaunchedEffect(state.step) {
         when (state.step) {
             QuizStep.TargetSelection -> navController.navigate(L4PRoute.QuizTargetSelection)
@@ -72,7 +97,7 @@ fun QuizQuestionScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            // Photo preview at top
+            // Preview foto in alto
             state.photoUrl?.let { photoUrl ->
                 Card(
                     modifier = Modifier
@@ -105,7 +130,7 @@ fun QuizQuestionScreen(
                 }
             }
 
-            // Question and answers
+            // Sezione domanda e risposte
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -114,6 +139,7 @@ fun QuizQuestionScreen(
                     .padding(horizontal = 16.dp)
             ) {
                 if (state.loading || state.currentQuestion == null) {
+                    // Stato loading
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -125,6 +151,7 @@ fun QuizQuestionScreen(
                 } else {
                     Spacer(modifier = Modifier.height(8.dp))
 
+                    // Testo domanda (localizzato)
                     Text(
                         text = if (locale == "it")
                             state.currentQuestion.questionTextIt
@@ -136,6 +163,7 @@ fun QuizQuestionScreen(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
+                    // Lista risposte
                     state.answers.forEach { answer ->
                         Card(
                             onClick = { actions.answerQuestion(answer) },
@@ -152,6 +180,7 @@ fun QuizQuestionScreen(
                                     .fillMaxWidth()
                                     .padding(16.dp)
                             ) {
+                                // Immagine risposta (opzionale)
                                 if (answer.imageUrl != null) {
                                     Box(
                                         modifier = Modifier
@@ -170,6 +199,7 @@ fun QuizQuestionScreen(
                                     Spacer(modifier = Modifier.height(12.dp))
                                 }
 
+                                // Testo risposta (localizzato)
                                 Text(
                                     text = if (locale == "it")
                                         answer.answerTextIt
@@ -188,7 +218,7 @@ fun QuizQuestionScreen(
         }
     }
 
-    // Dialog di conferma uscita
+    // Dialog uscita
     if (showExitDialog) {
         ExitQuizDialog(
             onDismiss = { showExitDialog = false },

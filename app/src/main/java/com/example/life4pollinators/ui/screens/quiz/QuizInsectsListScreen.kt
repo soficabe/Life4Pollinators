@@ -24,6 +24,23 @@ import com.example.life4pollinators.ui.composables.ExitQuizDialog
 import com.example.life4pollinators.ui.composables.InsectCard
 import com.example.life4pollinators.ui.navigation.L4PRoute
 
+/**
+ * Schermata lista insetti per gruppi senza quiz.
+ *
+ * Usata per:
+ * - Beetles (Coleotteri)
+ * - Beeflies (Bombilidi)
+ * - Hoverflies (Sirfidi)
+ *
+ * Questi gruppi non hanno albero decisionale,
+ * quindi l'utente seleziona direttamente dalla lista completa.
+ *
+ * Al click su un insetto → selectedTarget → QuizStep.Result
+ *
+ * @param state Stato quiz condiviso
+ * @param actions Azioni quiz
+ * @param navController Controller navigazione
+ */
 @Composable
 fun QuizInsectsListScreen(
     state: QuizState,
@@ -32,11 +49,12 @@ fun QuizInsectsListScreen(
 ) {
     var showExitDialog by rememberSaveable { mutableStateOf(false) }
 
-    // Gestione del back button con dialog di conferma
+    // BackHandler con dialog conferma
     BackHandler {
         showExitDialog = true
     }
 
+    // Navigazione automatica quando risultato pronto
     LaunchedEffect(state.step) {
         if (state.step == QuizStep.Result) {
             navController.navigate(L4PRoute.QuizResult)
@@ -57,7 +75,7 @@ fun QuizInsectsListScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            // Photo preview at top
+            // Preview foto
             state.photoUrl?.let { photoUrl ->
                 Card(
                     modifier = Modifier
@@ -90,7 +108,7 @@ fun QuizInsectsListScreen(
                 }
             }
 
-            // Instructions
+            // Istruzioni
             Column(
                 modifier = Modifier.padding(horizontal = 16.dp)
             ) {
@@ -103,10 +121,9 @@ fun QuizInsectsListScreen(
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
-            // Insects list
+            // Lista insetti
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
+                modifier = Modifier.fillMaxSize()
             ) {
                 when {
                     state.loading -> CircularProgressIndicator(Modifier.align(Alignment.Center))
@@ -125,6 +142,7 @@ fun QuizInsectsListScreen(
                                 InsectCard(
                                     insect = insect,
                                     onClick = {
+                                        // Selezione diretta → risultato
                                         actions.selectInsectFromList(insect)
                                     }
                                 )
@@ -136,7 +154,7 @@ fun QuizInsectsListScreen(
         }
     }
 
-    // Dialog di conferma uscita
+    // Dialog uscita
     if (showExitDialog) {
         ExitQuizDialog(
             onDismiss = { showExitDialog = false },
