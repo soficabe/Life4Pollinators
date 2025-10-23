@@ -9,12 +9,20 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
+/**
+ * Stato della schermata lista gruppi insetti.
+ */
 data class InsectGroupsListState(
     val insectGroups: List<InsectGroup> = emptyList(),
     val isLoading: Boolean = false,
     val error: Int? = null
 )
 
+/**
+ * ViewModel per la schermata lista gruppi insetti.
+ *
+ * Carica automaticamente tutti i gruppi all'avvio.
+ */
 class InsectGroupsListViewModel(
     private val repository: InsectsRepository
 ) : ViewModel() {
@@ -26,6 +34,9 @@ class InsectGroupsListViewModel(
         loadInsectGroups()
     }
 
+    /**
+     * Carica i gruppi di insetti dal repository.
+     */
     private fun loadInsectGroups() {
         _state.value = _state.value.copy(isLoading = true, error = null)
         viewModelScope.launch {

@@ -7,12 +7,27 @@ import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
 import java.util.Locale
 
-class InsectsRepository (
+/**
+ * Repository per la gestione degli insetti e dei loro gruppi nel database.
+ *
+ * Gestisce:
+ * - Lista gruppi di insetti (Api, Farfalle, ecc.)
+ * - Lista insetti per gruppo
+ * - Dettagli singolo insetto
+ * - Conteggio totale insetti
+ *
+ * @param supabase Client per accesso al database Supabase
+ */
+class InsectsRepository(
     supabase: SupabaseClient
 ) {
+    // Riferimenti alle tabelle del database
     private val insectsTable = supabase.from("insect")
     private val insectGroupsTable = supabase.from("insect_group")
 
+    /**
+     * Conta il numero totale di insetti nel database.
+     */
     suspend fun getTotalInsectsCount(): Int {
         return try {
             insectsTable.select().decodeList<Insect>().size
@@ -22,6 +37,9 @@ class InsectsRepository (
         }
     }
 
+    /**
+     * Recupera tutti i gruppi di insetti, ordinati alfabeticamente in base alla lingua.
+     */
     suspend fun getInsectGroups(): List<InsectGroup> {
         return try {
             insectGroupsTable.select().decodeList<InsectGroup>().sortedBy {
@@ -33,6 +51,12 @@ class InsectsRepository (
         }
     }
 
+    /**
+     * Recupera tutti gli insetti appartenenti a un gruppo specifico.
+     *
+     * @param groupId ID del gruppo di insetti
+     * @return Lista di insetti del gruppo, ordinati per nome
+     */
     suspend fun getInsectsByGroup(groupId: String): List<Insect> {
         return try {
             insectsTable.select {
@@ -44,6 +68,12 @@ class InsectsRepository (
         }
     }
 
+    /**
+     * Recupera un insetto specifico tramite il suo ID.
+     *
+     * @param insectId ID univoco dell'insetto
+     * @return Entity Insect se trovato
+     */
     suspend fun getInsectById(insectId: String): Insect? {
         return try {
             insectsTable.select {
@@ -55,6 +85,12 @@ class InsectsRepository (
         }
     }
 
+    /**
+     * Recupera le informazioni di un gruppo di insetti tramite il suo ID.
+     *
+     * @param groupId ID univoco del gruppo di insetti
+     * @return Entity InsectGroup se trovato
+     */
     suspend fun getInsectGroupById(groupId: String): InsectGroup? {
         return try {
             insectGroupsTable.select {

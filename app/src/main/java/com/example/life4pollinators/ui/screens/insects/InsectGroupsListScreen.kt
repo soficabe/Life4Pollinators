@@ -42,6 +42,12 @@ import com.example.life4pollinators.ui.composables.ErrorMessage
 import com.example.life4pollinators.ui.navigation.L4PRoute
 import java.util.Locale
 
+/**
+ * Schermata lista gruppi di insetti.
+ *
+ * Mostra tutti i gruppi disponibili (Api, Farfalle, ecc.) in una lista scrollabile.
+ * FAB per navigare alle info generali sugli insetti.
+ */
 @Composable
 fun InsectGroupsListScreen(
     state: InsectGroupsListState,
@@ -52,6 +58,7 @@ fun InsectGroupsListScreen(
         topBar = {
             AppBar(navController)
         },
+        // FAB per info generali
         floatingActionButton = {
             FloatingActionButton(onClick = { navController.navigate(L4PRoute.InsectsGeneralInfo) }) {
                 Icon(Icons.Outlined.Info, contentDescription = "Info")
@@ -78,6 +85,7 @@ fun InsectGroupsListScreen(
                     ErrorMessage(errorResId = state.error)
                 }
                 else -> {
+                    // Lista gruppi
                     LazyColumn(
                         modifier = Modifier
                             .padding(horizontal = 12.dp, vertical = 12.dp),
@@ -87,8 +95,8 @@ fun InsectGroupsListScreen(
                             InsectGroupCard(
                                 insectGroup = insectGroup,
                                 onClick = {
-                                    navController
-                                        .navigate(L4PRoute.InsectsList(insectGroup.id))
+                                    // Naviga alla lista insetti del gruppo
+                                    navController.navigate(L4PRoute.InsectsList(insectGroup.id))
                                 }
                             )
                         }
@@ -99,6 +107,9 @@ fun InsectGroupsListScreen(
     }
 }
 
+/**
+ * Card per visualizzare un singolo gruppo di insetti nella lista.
+ */
 @Composable
 fun InsectGroupCard(
     insectGroup: InsectGroup,
@@ -118,7 +129,9 @@ fun InsectGroupCard(
                 .background(MaterialTheme.colorScheme.surfaceContainer)
                 .padding(16.dp)
         ) {
+            // Nome gruppo localizzato
             val insectGroupName = if (Locale.getDefault().language == "it") insectGroup.nameIt else insectGroup.nameEn
+
             Text(
                 insectGroupName,
                 style = MaterialTheme.typography.titleLarge.copy(
@@ -126,7 +139,10 @@ fun InsectGroupCard(
                 ),
                 modifier = Modifier.weight(1f)
             )
+
             Spacer(modifier = Modifier.width(16.dp))
+
+            // Immagine gruppo
             Box(
                 modifier = Modifier
                     .size(72.dp)

@@ -22,6 +22,18 @@ import com.example.life4pollinators.ui.composables.ErrorMessage
 import com.example.life4pollinators.ui.composables.ZoomOverlayImage
 import java.util.Locale
 
+/**
+ * Schermata informazioni su un gruppo di insetti.
+ *
+ * Mostra:
+ * - Immagine illustrativa del gruppo (localizzata IT/EN)
+ * - Testo informativo sul gruppo (localizzato IT/EN)
+ * - Zoom fullscreen dell'immagine al click
+ *
+ * @param state Stato contenente le informazioni del gruppo (testi, immagini localizzate)
+ * @param isAuthenticated Indica se l'utente è autenticato (per bottom bar)
+ * @param navController Controller di navigazione per back navigation
+ */
 @Composable
 fun InsectGroupInfoScreen(
     state: InsectGroupInfoState,
@@ -31,18 +43,20 @@ fun InsectGroupInfoScreen(
     val group = state.group
     val locale = Locale.getDefault().language
 
-    // Gestione zoom overlay
+    // Stato per overlay zoom
     var showZoom by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
             AppBar(
                 navController,
+                // Titolo personalizzato in base alla lingua
                 personalizedTitle = group?.let {
                     if (locale == "it")
                         "Info ${it.nameIt}"
                     else
-                        "${it.nameEn} Info" }
+                        "${it.nameEn} Info"
+                }
             )
         },
         bottomBar = {
@@ -64,6 +78,7 @@ fun InsectGroupInfoScreen(
                     ErrorMessage(errorResId = state.error)
                 }
                 group != null -> {
+                    // Contenuti localizzati
                     val imageUrl = if (locale == "it") group.imageUrlIt else group.imageUrlEn
                     val imageDesc = if (locale == "it") group.nameIt else group.nameEn
                     val info = if (locale == "it") group.infoIt else group.infoEn
@@ -75,6 +90,7 @@ fun InsectGroupInfoScreen(
                             .padding(24.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
+                        // Card immagine gruppo
                         Card(
                             shape = RoundedCornerShape(18.dp),
                             elevation = CardDefaults.cardElevation(12.dp),
@@ -84,7 +100,7 @@ fun InsectGroupInfoScreen(
                                 .align(Alignment.CenterHorizontally)
                         ) {
                             AsyncImage(
-                                model = imageUrl ?: group.groupImageUrl,
+                                model = imageUrl ?: group.groupImageUrl, // Fallback a groupImageUrl
                                 contentDescription = imageDesc,
                                 modifier = Modifier
                                     .fillMaxSize()
@@ -93,7 +109,10 @@ fun InsectGroupInfoScreen(
                                 contentScale = ContentScale.Fit
                             )
                         }
+
                         Spacer(Modifier.height(20.dp))
+
+                        // Testo informativo
                         Text(
                             info ?: "",
                             style = MaterialTheme.typography.bodyLarge,
@@ -101,7 +120,7 @@ fun InsectGroupInfoScreen(
                         )
                     }
 
-                    // Overlay zoomabile
+                    // Overlay zoom
                     if (showZoom) {
                         ZoomOverlayImage(
                             imageUrl = imageUrl,

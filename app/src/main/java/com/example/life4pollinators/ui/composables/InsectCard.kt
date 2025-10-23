@@ -26,12 +26,19 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.life4pollinators.data.database.entities.Insect
 
+/**
+ * Card riutilizzabile per mostrare un insetto nella lista.
+ *
+ * @param insect Entity dell'insetto da visualizzare
+ * @param onClick Callback eseguita al tap sulla card
+ */
 @Composable
 fun InsectCard(
     insect: Insect,
     onClick: () -> Unit
 ) {
     val name = insect.name
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -46,6 +53,7 @@ fun InsectCard(
                 .background(MaterialTheme.colorScheme.surfaceContainer)
                 .padding(16.dp)
         ) {
+            // Nome insetto
             Text(
                 name,
                 style = MaterialTheme.typography.titleLarge.copy(
@@ -53,7 +61,10 @@ fun InsectCard(
                 ),
                 modifier = Modifier.weight(1f)
             )
+
             Spacer(modifier = Modifier.width(16.dp))
+
+            // Immagine insetto con sfondo bianco
             Box(
                 modifier = Modifier
                     .size(72.dp)

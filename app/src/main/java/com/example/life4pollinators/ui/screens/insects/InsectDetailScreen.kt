@@ -19,6 +19,16 @@ import com.example.life4pollinators.ui.composables.ErrorMessage
 import com.example.life4pollinators.ui.composables.ZoomOverlayImage
 import java.util.Locale
 
+/**
+ * Schermata di dettaglio di un insetto specifico.
+ *
+ * Mostra l'immagine localizzata (IT/EN) dell'insetto centrata.
+ * L'immagine è cliccabile per attivare lo zoom fullscreen.
+ *
+ * @param state Stato contenente i dati dell'insetto
+ * @param isAuthenticated Indica se l'utente è autenticato
+ * @param navController Controller di navigazione
+ */
 @Composable
 fun InsectDetailScreen(
     state: InsectDetailState,
@@ -28,8 +38,10 @@ fun InsectDetailScreen(
     val insect = state.insect
     val locale = Locale.getDefault().language
 
+    // Titolo nella AppBar (nome insetto)
     val title = insect?.name ?: ""
 
+    // Stato per gestire overlay zoom
     var showZoom by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -48,12 +60,19 @@ fun InsectDetailScreen(
                 .padding(padding)
         ) {
             when {
+                // Caricamento
                 state.isLoading -> CircularProgressIndicator(Modifier.align(Alignment.Center))
+
+                // Errore
                 state.error != null -> {
                     ErrorMessage(errorResId = state.error)
                 }
+
+                // Visualizzazione insetto
                 insect != null -> {
+                    // Selezione immagine localizzata
                     val imageUrl = if (locale == "it") insect.imageIt else insect.imageEn
+
                     Column(
                         Modifier
                             .fillMaxSize()
@@ -61,6 +80,7 @@ fun InsectDetailScreen(
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
+                        // Card con immagine insetto
                         Card(
                             shape = RoundedCornerShape(18.dp),
                             elevation = CardDefaults.cardElevation(12.dp),
@@ -75,11 +95,12 @@ fun InsectDetailScreen(
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .clip(RoundedCornerShape(16.dp))
-                                    .clickable { showZoom = true }
+                                    .clickable { showZoom = true } // Click per zoom
                             )
                         }
                     }
 
+                    // Overlay zoom se attivo
                     if (showZoom) {
                         ZoomOverlayImage(
                             imageUrl = imageUrl,

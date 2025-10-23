@@ -19,6 +19,14 @@ import com.example.life4pollinators.ui.composables.InsectCard
 import com.example.life4pollinators.ui.navigation.L4PRoute
 import java.util.Locale
 
+/**
+ * Schermata lista insetti di un gruppo specifico.
+ *
+ * Mostra tutti gli insetti appartenenti al gruppo selezionato.
+ * FAB per navigare alle info del gruppo.
+ *
+ * Il titolo della AppBar mostra il nome del gruppo (localizzato).
+ */
 @Composable
 fun InsectsListScreen(
     state: InsectsListState,
@@ -32,7 +40,7 @@ fun InsectsListScreen(
     Scaffold(
         topBar = { AppBar(navController, personalizedTitle = groupName) },
         floatingActionButton = {
-            // Mostra FAB solo se groupId non è null
+            // FAB visibile solo se groupId è disponibile
             if (groupId != null) {
                 FloatingActionButton(
                     onClick = {
@@ -62,6 +70,7 @@ fun InsectsListScreen(
                     ErrorMessage(errorResId = state.error)
                 }
                 else -> {
+                    // Lista insetti del gruppo
                     LazyColumn(
                         modifier = Modifier
                             .padding(horizontal = 12.dp, vertical = 12.dp),
@@ -71,9 +80,7 @@ fun InsectsListScreen(
                             InsectCard(
                                 insect = insect,
                                 onClick = {
-                                    navController.navigate(
-                                        L4PRoute.InsectDetail(insect.id)
-                                    )
+                                    navController.navigate(L4PRoute.InsectDetail(insect.id))
                                 }
                             )
                         }

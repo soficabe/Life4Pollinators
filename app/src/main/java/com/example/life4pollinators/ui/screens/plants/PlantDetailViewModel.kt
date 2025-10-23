@@ -33,10 +33,8 @@ data class PlantDetailState(
  * Il ViewModel utilizza SavedStateHandle per recuperare il parametro `plantId`
  * passato tramite navigation type-safe (L4PRoute.PlantDetail).
  *
- * Se l'ID è presente, avvia automaticamente il caricamento nel blocco init{}.
- *
  * @property plantsRepository Repository per accesso ai dati delle piante
- * @property savedStateHandle Handle per recuperare parametri di navigazione
+ * @param savedStateHandle Handle per recuperare parametri di navigazione
  */
 class PlantDetailViewModel(
     private val plantsRepository: PlantsRepository,

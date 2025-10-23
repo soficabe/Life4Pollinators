@@ -14,7 +14,7 @@ import java.util.Locale
  *
  * Utilizza Supabase Postgrest per le query al database.
  *
- * @property supabase Client Supabase per accesso al database
+ * @param supabase Client Supabase per accesso al database
  */
 class PlantsRepository(
     supabase: SupabaseClient
