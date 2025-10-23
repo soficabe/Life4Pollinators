@@ -11,6 +11,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
+/**
+ * Composable riutilizzabile per mostrare messaggi di errore centrati.
+ *
+ * Visualizza un'icona "CloudOff" e un messaggio localizzato in posizione centrale.
+ * Utilizzato quando si verificano errori di rete o quando i dati non sono disponibili.
+ *
+ * @param errorResId ID della risorsa stringa da visualizzare come messaggio d'errore
+ * @param modifier Modificatore opzionale per personalizzare layout e stile
+ */
 @Composable
 fun ErrorMessage(
     errorResId: Int,
@@ -23,15 +32,17 @@ fun ErrorMessage(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        // Icona di errore
         Icon(
             imageVector = Icons.Outlined.CloudOff,
-            contentDescription = null,
+            contentDescription = "No connection Icon",
             modifier = Modifier.size(80.dp),
             tint = MaterialTheme.colorScheme.error
         )
 
         Spacer(modifier = Modifier.height(24.dp))
 
+        // Messaggio d'errore localizzato
         Text(
             text = stringResource(errorResId),
             style = MaterialTheme.typography.titleLarge,

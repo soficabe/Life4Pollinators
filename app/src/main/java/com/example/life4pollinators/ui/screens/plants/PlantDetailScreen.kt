@@ -24,6 +24,19 @@ import com.example.life4pollinators.ui.composables.ErrorMessage
 import com.example.life4pollinators.ui.composables.ZoomOverlayImage
 import java.util.Locale
 
+/**
+ * Schermata di dettaglio di una specifica pianta.
+ *
+ * Visualizza:
+ * - Immagine della pianta (cliccabile per zoom)
+ * - Generi più comuni
+ * - Gruppi di impollinatori associati
+ * - Badge per piante diverse/invasive
+ *
+ * @param state Stato contenente i dati della pianta e gruppi impollinatori
+ * @param isAuthenticated Indica se l'utente è autenticato (per bottom bar)
+ * @param navController Controller di navigazione per gestire back navigation
+ */
 @Composable
 fun PlantDetailScreen(
     state: PlantDetailState,
@@ -34,6 +47,8 @@ fun PlantDetailScreen(
     val pollinatorGroups = state.pollinatorGroups
     val locale = Locale.getDefault().language
     val scrollState = rememberScrollState()
+
+    // Nome localizzato della pianta per visualizzazione
     val plantName = if (locale == "it") plant?.nameIt else plant?.nameEn
 
     Scaffold(
@@ -57,18 +72,26 @@ fun PlantDetailScreen(
                 .padding(padding)
         ) {
             when {
+                // Stato di caricamento
                 state.isLoading -> CircularProgressIndicator(Modifier.align(Alignment.Center))
+
+                // Gestione errore
                 state.error != null -> {
                     ErrorMessage(errorResId = state.error)
                 }
+
+                // Visualizzazione dati pianta
                 plant != null -> {
+                    // Stato per controllare la visibilità dell'overlay zoom
                     var showZoom by remember { mutableStateOf(false) }
+
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
                             .verticalScroll(scrollState)
                             .padding(24.dp)
                     ) {
+                        // Card immagine principale (cliccabile per zoom)
                         Card(
                             shape = RoundedCornerShape(18.dp),
                             elevation = CardDefaults.cardElevation(12.dp),
@@ -87,27 +110,56 @@ fun PlantDetailScreen(
                                 contentScale = ContentScale.Fit
                             )
                         }
+
                         Spacer(Modifier.height(20.dp))
 
-                        Text("${stringResource(R.string.most_common_genera)}:", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                        Text(plant.commonGenera, style = MaterialTheme.typography.bodyMedium)
+                        // Sezione generi più comuni
+                        Text(
+                            "${stringResource(R.string.most_common_genera)}:",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            plant.commonGenera,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
                         Spacer(Modifier.height(16.dp))
 
+                        // Sezione gruppi di impollinatori
                         if (pollinatorGroups.isNotEmpty()) {
-                            Text("${stringResource(R.string.pollinator_groups)}:", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                            Text(pollinatorGroups.joinToString(", "), style = MaterialTheme.typography.bodyMedium)
+                            Text(
+                                "${stringResource(R.string.pollinator_groups)}:",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                pollinatorGroups.joinToString(", "),
+                                style = MaterialTheme.typography.bodyMedium
+                            )
                             Spacer(Modifier.height(16.dp))
                         }
 
+                        // Badge pianta diversa (maggiore biodiversità)
                         if (plant.isDiverse) {
-                            Text("🌱 ${stringResource(R.string.diverse_plants)}", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
+                            Text(
+                                "🌱 ${stringResource(R.string.diverse_plants)}",
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.SemiBold
+                            )
                             Spacer(Modifier.height(8.dp))
                         }
+
+                        // Warning pianta invasiva (se presente)
                         if (!plant.invasiveFlower.isNullOrBlank()) {
-                            Text("🚫 ${stringResource(R.string.invasive_plants)}: ${plant.invasiveFlower}", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.SemiBold)
+                            Text(
+                                "🚫 ${stringResource(R.string.invasive_plants)}: ${plant.invasiveFlower}",
+                                color = MaterialTheme.colorScheme.error,
+                                fontWeight = FontWeight.SemiBold
+                            )
                         }
                     }
 
+                    // Overlay modale per zoom immagine
                     if(showZoom) {
                         ZoomOverlayImage(
                             imageUrl = plant.imageUrl,

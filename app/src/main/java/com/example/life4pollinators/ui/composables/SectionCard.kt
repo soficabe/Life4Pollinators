@@ -29,6 +29,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+// Enum per definire le dimensioni disponibili della SectionCard.
 enum class SectionCardSize {
     Large, Small
 }
@@ -83,16 +84,19 @@ fun SectionCard(
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
+            // Immagine/icona della sezione
             Image(
                 painter = imageRes,
                 contentDescription = "Section Card Image",
-                contentScale = ContentScale.Crop, // o .Fit per non tagliare
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .requiredWidth(imageWidth)
                     .requiredHeight(imageHeight)
                     .clip(RoundedCornerShape(12.dp))
             )
             Spacer(Modifier.width(16.dp))
+
+            // Titolo della sezione
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleMedium.copy(
@@ -101,6 +105,8 @@ fun SectionCard(
                 ),
                 modifier = Modifier.weight(1f)
             )
+
+            // Freccia indicatore di navigazione
             Icon(
                 Icons.AutoMirrored.Outlined.KeyboardArrowRight,
                 contentDescription = "Arrow Right",

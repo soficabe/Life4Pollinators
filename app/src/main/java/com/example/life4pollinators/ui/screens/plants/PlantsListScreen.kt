@@ -30,6 +30,18 @@ import com.example.life4pollinators.ui.composables.BottomNavBar
 import com.example.life4pollinators.ui.composables.ErrorMessage
 import com.example.life4pollinators.ui.navigation.L4PRoute
 
+/**
+ * Schermata lista di tutte le piante disponibili.
+ *
+ * Visualizza una lista scrollabile di card pianta con:
+ * - Nome localizzato (IT/EN)
+ * - Immagine rappresentativa
+ * - Navigazione al dettaglio al tap
+ *
+ * @param state Stato contenente la lista delle piante e stato di caricamento
+ * @param isAuthenticated Indica se l'utente è autenticato (per bottom bar)
+ * @param navController Controller di navigazione per routing
+ */
 @Composable
 fun PlantsListScreen(
     state: PlantsListState,
@@ -40,8 +52,11 @@ fun PlantsListScreen(
         topBar = {
             AppBar(navController)
         },
+        // FAB per accedere alle informazioni generali sulle piante
         floatingActionButton = {
-            FloatingActionButton(onClick = { navController.navigate(L4PRoute.PlantsGeneralInfo) }) {
+            FloatingActionButton(
+                onClick = { navController.navigate(L4PRoute.PlantsGeneralInfo) }
+            ) {
                 Icon(Icons.Outlined.Info, contentDescription = "Info")
             }
         },
@@ -59,22 +74,27 @@ fun PlantsListScreen(
                 .padding(padding)
         ) {
             when {
+                // Stato di caricamento
                 state.isLoading -> {
                     CircularProgressIndicator(Modifier.align(Alignment.Center))
                 }
+
+                // Gestione errore
                 state.error != null -> {
                     ErrorMessage(errorResId = state.error)
                 }
+
+                // Visualizzazione lista piante
                 else -> {
                     LazyColumn(
-                        modifier = Modifier
-                            .padding(horizontal = 12.dp, vertical = 12.dp),
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 12.dp),
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         items(state.plants) { plant ->
                             PlantCard(
                                 plant = plant,
                                 onClick = {
+                                    // Navigazione type-safe al dettaglio
                                     navController.navigate(
                                         L4PRoute.PlantDetail(plantId = plant.id)
                                     )
@@ -88,6 +108,12 @@ fun PlantsListScreen(
     }
 }
 
+/**
+ * Card riutilizzabile per visualizzare una singola pianta nella lista.
+ *
+ * @param plant Entity della pianta da visualizzare
+ * @param onClick Callback eseguita al tap sulla card
+ */
 @Composable
 fun PlantCard(
     plant: Plant,
@@ -107,7 +133,9 @@ fun PlantCard(
                 .background(MaterialTheme.colorScheme.surfaceContainer)
                 .padding(16.dp)
         ) {
+            // Nome pianta localizzato
             val plantName = if (Locale.getDefault().language == "it") plant.nameIt else plant.nameEn
+
             Text(
                 plantName,
                 style = MaterialTheme.typography.titleLarge.copy(
@@ -115,7 +143,9 @@ fun PlantCard(
                 ),
                 modifier = Modifier.weight(1f)
             )
+
             Spacer(modifier = Modifier.width(16.dp))
+
             Box(
                 modifier = Modifier
                     .size(72.dp)

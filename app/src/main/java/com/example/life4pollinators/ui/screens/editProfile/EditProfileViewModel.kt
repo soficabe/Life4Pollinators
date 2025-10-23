@@ -296,7 +296,7 @@ class EditProfileViewModel(
                             _state.update {
                                 it.copy(
                                     isSaving = false,
-                                    errorMessageRes = R.string.network_error_connection  // ✅ Messaggio chiaro
+                                    errorMessageRes = R.string.network_error_connection
                                 )
                             }
                             return@launch
@@ -305,7 +305,7 @@ class EditProfileViewModel(
                             _state.update {
                                 it.copy(
                                     isSaving = false,
-                                    errorMessageRes = R.string.network_error_connection  // ✅ Messaggio chiaro
+                                    errorMessageRes = R.string.network_error_connection
                                 )
                             }
                             return@launch
@@ -373,13 +373,13 @@ class EditProfileViewModel(
                     }
                     is UpdateUserProfileResult.Error.NetworkError -> {
                         _state.update {
-                            it.copy(isSaving = false, errorMessageRes = R.string.network_error_connection)  // ✅ Messaggio chiaro
+                            it.copy(isSaving = false, errorMessageRes = R.string.network_error_connection)
                         }
                         return@launch
                     }
                     is UpdateUserProfileResult.Error.UnknownError -> {
                         _state.update {
-                            it.copy(isSaving = false, errorMessageRes = R.string.network_error_connection)  // ✅ Messaggio chiaro
+                            it.copy(isSaving = false, errorMessageRes = R.string.network_error_connection)
                         }
                         return@launch
                     }
