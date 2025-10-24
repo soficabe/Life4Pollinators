@@ -19,6 +19,26 @@ import com.example.life4pollinators.R
 /**
  * Stato della schermata di modifica profilo.
  * Contiene tutti i dati inseriti, stati di caricamento e messaggi di feedback.
+ *
+ * @property user Dati utente originali (prima delle modifiche)
+ * @property username Username modificato
+ * @property firstName Nome modificato
+ * @property lastName Cognome modificato
+ * @property email Email modificata
+ * @property image URL immagine profilo corrente
+ * @property newProfileImageUri URI della nuova immagine selezionata (locale)
+ * @property isUploadingImage True se è in corso l'upload dell'immagine
+ * @property isLoading True se sta caricando i dati utente
+ * @property isSaving True se sta salvando le modifiche
+ * @property errorMessageRes ID risorsa stringa di errore generico
+ * @property errorMessageArg Argomento per il messaggio di errore (opzionale)
+ * @property isSuccess True se il salvataggio è andato a buon fine
+ * @property emailConfirmationSentMessage ID risorsa stringa per conferma email
+ * @property emailConfirmationSentArg Nuovo indirizzo email per il messaggio di conferma
+ * @property usernameError ID risorsa stringa di errore per il campo username
+ * @property firstNameError ID risorsa stringa di errore per il campo nome
+ * @property lastNameError ID risorsa stringa di errore per il campo cognome
+ * @property emailError ID risorsa stringa di errore per il campo email
  */
 data class EditProfileState(
     val user: User? = null,
@@ -34,7 +54,7 @@ data class EditProfileState(
     val errorMessageRes: Int? = null,
     val errorMessageArg: String? = null,
     val isSuccess: Boolean = false,
-    val emailConfirmationSentMessage: String? = null,
+    val emailConfirmationSentMessage: Int? = null,
     val emailConfirmationSentArg: String? = null,
     val usernameError: Int? = null,
     val firstNameError: Int? = null,
@@ -77,6 +97,10 @@ interface EditProfileActions {
 /**
  * ViewModel per la schermata di editing profilo.
  * Gestisce il caricamento e la validazione dei dati, la logica di salvataggio e l'upload dell'immagine profilo.
+ *
+ * @property authRepository Repository per autenticazione e aggiornamento email
+ * @property userRepository Repository per operazioni CRUD sul profilo utente
+ * @property imageRepository Repository per upload immagini su storage
  */
 class EditProfileViewModel(
     private val authRepository: AuthRepository,
@@ -251,9 +275,19 @@ class EditProfileViewModel(
 
     /**
      * Salva tutti i dati modificati e aggiorna il profilo lato backend.
-     * Gestisce anche la validazione dei campi e la gestione degli errori.
-     * l'immagine viene caricata su Supabase SOLO dopo che la validazione e l'update
-     * dei dati testuali (username, firstName, lastName) hanno avuto successo.
+     *
+     * Processo:
+     * 1. Valida i campi (username, firstName, lastName, email)
+     * 2. Aggiorna l'email se modificata (tramite AuthRepository)
+     * 3. Aggiorna i dati testuali sul backend (username, firstName, lastName)
+     * 4. Se presente una nuova immagine, la carica su storage e aggiorna l'URL
+     * 5. Invalida la cache dell'immagine aggiungendo un timestamp all'URL
+     *
+     * Note:
+     * - L'immagine viene caricata SOLO dopo che la validazione e l'update dei dati testuali hanno avuto successo
+     * - In caso di cambio email, viene inviata una email di conferma all'utente (nel nuovo indirizzo email)
+     *
+     * @param context Context Android necessario per upload immagine
      */
     private fun saveUserProfile(context: Context) {
         viewModelScope.launch {
@@ -313,7 +347,7 @@ class EditProfileViewModel(
                     }
                 }
 
-                // Aggiorna PRIMA i dati testuali (username, firstName, lastName), senza immagine!
+                // Aggiorna PRIMA i dati testuali (username, firstName, lastName), senza immagine
                 val userUpdateResult = userRepository.updateUserProfile(
                     userId = userId,
                     username = currentState.username,
@@ -324,23 +358,26 @@ class EditProfileViewModel(
 
                 when (userUpdateResult) {
                     is UpdateUserProfileResult.Success -> {
-                        // SOLO se i dati sono ok, carica la foto se serve, (query param per invalidare la cache)
+                        // Se i dati sono validi, carica l'immagine (se presente) e invalida la cache aggiungendo timestamp
                         var imageUrl: String? = currentState.image
                         val newImageUri = currentState.newProfileImageUri
                         if (newImageUri != null) {
                             val uploadedUrl = imageRepository.uploadProfileImage(userId, newImageUri, context)
                             if (uploadedUrl != null) {
+                                // Invalida cache aggiungendo timestamp all'URL
+                                val imageUrlWithTimestamp = "$uploadedUrl?t=${System.currentTimeMillis()}"
+
                                 // Aggiorna il campo image nel backend
                                 val imageUpdateResult = userRepository.updateUserProfile(
                                     userId = userId,
                                     username = currentState.username,
                                     firstName = currentState.firstName,
                                     lastName = currentState.lastName,
-                                    image = "$uploadedUrl?t=${System.currentTimeMillis()}"
+                                    image = imageUrlWithTimestamp
                                 )
-                                // Forza cache busting aggiungendo timestamp all'URL
+
                                 if (imageUpdateResult is UpdateUserProfileResult.Success) {
-                                    imageUrl = "$uploadedUrl?t=${System.currentTimeMillis()}"
+                                    imageUrl = imageUrlWithTimestamp
                                 }
                             } else {
                                 _state.update { it.copy(isSaving = false, errorMessageRes = R.string.image_upload_error) }
@@ -390,7 +427,7 @@ class EditProfileViewModel(
                         it.copy(
                             isSaving = false,
                             isSuccess = true,
-                            emailConfirmationSentMessage = R.string.confirmation_email_sent.toString(),
+                            emailConfirmationSentMessage = R.string.confirmation_email_sent,
                             emailConfirmationSentArg = currentState.email
                         )
                     }

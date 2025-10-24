@@ -50,7 +50,7 @@ fun EditProfileScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
 
-    // Gestione dialog per scelta foto
+    // Flag per mostrare il dialog di selezione immagine (camera/galleria)
     var showImagePicker by rememberSaveable { mutableStateOf(false) }
 
     // Launcher per fotocamera
@@ -95,11 +95,12 @@ fun EditProfileScreen(
             }
         }
     }
+
     // Mostra snackbar per conferma cambio email
     LaunchedEffect(state.emailConfirmationSentMessage, state.emailConfirmationSentArg) {
         if (state.emailConfirmationSentMessage != null && state.emailConfirmationSentArg != null) {
             val msg = context.getString(
-                state.emailConfirmationSentMessage.toInt(),
+                state.emailConfirmationSentMessage,
                 state.emailConfirmationSentArg
             )
             snackbarHostState.showSnackbar(msg)
