@@ -53,7 +53,6 @@ import com.example.life4pollinators.utils.rememberGalleryLauncher
  * @param state Stato del form gestito dal ViewModel
  * @param actions Azioni disponibili per modificare lo stato
  * @param userId ID dell'utente autenticato
- * @param isAuthenticated Flag autenticazione (per bottom bar)
  * @param navController Controller di navigazione
  */
 @Composable
@@ -61,7 +60,6 @@ fun AddSightingScreen(
     state: AddSightingState,
     actions: AddSightingActions,
     userId: String,
-    isAuthenticated: Boolean,
     navController: NavHostController
 ) {
     val context = LocalContext.current
@@ -109,7 +107,6 @@ fun AddSightingScreen(
             topBar = { AppBar(navController) },
             bottomBar = {
                 BottomNavBar(
-                    isAuthenticated = isAuthenticated,
                     selectedTab = NavBarTab.AddSighting,
                     navController = navController
                 )

@@ -31,13 +31,39 @@ import com.example.life4pollinators.ui.composables.BottomNavBar
 import com.example.life4pollinators.ui.composables.ErrorMessage
 import com.example.life4pollinators.ui.navigation.L4PRoute
 
+/**
+ * Schermata per visualizzare tutte le specie (piante e insetti) avvistate dall'utente.
+ * Funge da collezione personale degli avvistamenti dell'utente (badge system).
+ *
+ * Caratteristiche:
+ * - Griglia 3x3 con specie circolari
+ * - Filtri per categoria (piante, api, farfalle, ecc.)
+ * - Blur su specie non ancora avvistate dall'utente
+ * - FAB per aggiungere nuovi avvistamenti
+ * - Gestione stati loading/error/success
+ *
+ * La schermata mostra tutte le specie del database, evidenziando visivamente
+ * quali sono già state avvistate dall'utente autenticato (sfocando le altre).
+ *
+ * @param state Stato corrente della schermata gestito dal ViewModel
+ * @param actions Interfaccia delle azioni disponibili (filtri, refresh)
+ * @param userId ID dell'utente autenticato
+ * @param navController Controller di navigazione Compose
+ */
 @Composable
 fun SightingsScreen(
     state: SightingsState,
     actions: SightingsActions,
-    isAuthenticated: Boolean,
+    userId: String,
     navController: NavHostController
 ) {
+    // Carica gli avvistamenti quando userId è disponibile
+    LaunchedEffect(userId) {
+        if (userId.isNotEmpty()) {
+            actions.loadUserSightings(userId)
+        }
+    }
+
     Scaffold(
         topBar = {
             AppBar(
@@ -51,7 +77,6 @@ fun SightingsScreen(
         },
         bottomBar = {
             BottomNavBar(
-                isAuthenticated = isAuthenticated,
                 selectedTab = NavBarTab.Sightings,
                 navController = navController
             )
@@ -62,7 +87,7 @@ fun SightingsScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            // Filter tabs
+            // Barra dei filtri orizzontale
             FilterChips(
                 selectedFilter = state.selectedFilter,
                 onFilterSelected = { actions.selectFilter(it) },
@@ -81,6 +106,7 @@ fun SightingsScreen(
                         ErrorMessage(errorResId = state.error)
                     }
                     else -> {
+                        // Griglia 3x3 delle piante o gruppo di insetti selezionato
                         LazyVerticalGrid(
                             columns = GridCells.Fixed(3),
                             contentPadding = PaddingValues(16.dp),
@@ -98,6 +124,16 @@ fun SightingsScreen(
     }
 }
 
+/**
+ * Barra di filtri orizzontale scorrevole per selezionare la categoria di specie da visualizzare.
+ *
+ * Mostra chip filtro per ogni categoria disponibile (piante, api, farfalle, ecc.).
+ * Il filtro selezionato è evidenziato visivamente.
+ *
+ * @param selectedFilter Filtro attualmente selezionato
+ * @param onFilterSelected Callback invocato quando l'utente seleziona un filtro
+ * @param modifier Modifier Compose opzionale
+ */
 @Composable
 fun FilterChips(
     selectedFilter: SpeciesFilter,
@@ -121,6 +157,18 @@ fun FilterChips(
     }
 }
 
+/**
+ * Composable che rappresenta una singola specie nella griglia.
+ *
+ * Caratteristiche:
+ * - Immagine circolare della specie
+ * - Blur automatico se non ancora avvistata
+ * - Placeholder con iniziali se manca l'immagine
+ * - Nome specie sotto l'immagine
+ *
+ * @param species Dati della specie da visualizzare
+ * @param modifier Modifier Compose opzionale
+ */
 @Composable
 fun SpeciesCircleItem(
     species: SpeciesItem,
@@ -141,6 +189,7 @@ fun SpeciesCircleItem(
             contentAlignment = Alignment.Center
         ) {
             if (species.imageUrl != null) {
+                // Immagine della specie
                 Image(
                     painter = rememberAsyncImagePainter(species.imageUrl),
                     contentDescription = species.name,
@@ -155,7 +204,7 @@ fun SpeciesCircleItem(
                     contentScale = ContentScale.Fit
                 )
             } else {
-                // Placeholder se non c'è immagine
+                // Placeholder con iniziali se non c'è immagine
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -173,6 +222,7 @@ fun SpeciesCircleItem(
 
         Spacer(Modifier.height(4.dp))
 
+        // Nome della specie
         Text(
             text = species.name,
             style = MaterialTheme.typography.bodySmall,

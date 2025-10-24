@@ -295,7 +295,6 @@ fun L4PNavGraph(
                 state = addSightingState,
                 actions = addSightingVM.actions,
                 userId = userId ?: "",
-                isAuthenticated = isAuthenticated,
                 navController = navController
             )
         }
@@ -307,7 +306,7 @@ fun L4PNavGraph(
             SightingsScreen(
                 state = sightingsState,
                 actions = sightingsVM.actions,
-                isAuthenticated = isAuthenticated,
+                userId = userId ?: "",
                 navController = navController
             )
         }

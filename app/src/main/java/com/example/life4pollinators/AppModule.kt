@@ -105,6 +105,6 @@ val appModule = module {
     viewModel { InsectDetailViewModel(get(), get()) }
     viewModel { QuizViewModel(get(), get(), get(), get()) }
     viewModel { AddSightingViewModel(get(), get(), get(), get()) }
-    viewModel { SightingsViewModel(get(), get(), get(), get()) }
+    viewModel { SightingsViewModel(get(), get(), get()) }
     viewModel { LeaderboardViewModel(get(), get(), get()) }
 }
