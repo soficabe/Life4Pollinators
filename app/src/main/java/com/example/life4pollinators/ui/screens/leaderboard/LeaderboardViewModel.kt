@@ -3,6 +3,7 @@ package com.example.life4pollinators.ui.screens.leaderboard
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.life4pollinators.R
 import com.example.life4pollinators.data.repositories.AuthRepository
 import com.example.life4pollinators.data.repositories.SightingsRepository
 import com.example.life4pollinators.data.repositories.UserRepository
@@ -12,7 +13,13 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /**
- * Dati di un singolo utente nella leaderboard
+ * Rappresenta un singolo utente nella classifica globale.
+ *
+ * @property userId ID univoco dell'utente
+ * @property username Username visualizzato nella leaderboard
+ * @property position Posizione in classifica (1 = primo posto)
+ * @property score Punteggio totale accumulato
+ * @property isCurrentUser True se è l'utente autenticato corrente
  */
 data class LeaderboardEntry(
     val userId: String,
@@ -23,25 +30,46 @@ data class LeaderboardEntry(
 )
 
 /**
- * Stato della schermata leaderboard
+ * Stato della schermata leaderboard.
+ *
+ * @property entries Lista ordinata di utenti in classifica
+ * @property isLoading True se sta caricando i dati
+ * @property error ID risorsa stringa di errore (null se nessun errore)
+ * @property currentUserId ID dell'utente autenticato corrente
  */
 data class LeaderboardState(
     val entries: List<LeaderboardEntry> = emptyList(),
     val isLoading: Boolean = false,
-    val error: String? = null,
+    val error: Int? = null,
     val currentUserId: String? = null
 )
 
 /**
- * Azioni disponibili nella schermata leaderboard
+ * Azioni disponibili nella schermata leaderboard.
  */
 interface LeaderboardActions {
+    // Carica la classifica globale dal backend
     fun loadLeaderboard()
+    // Ricarica la classifica
     fun refresh()
 }
 
 /**
- * ViewModel per la schermata leaderboard
+ * ViewModel per la schermata leaderboard globale.
+ *
+ * Responsabilità:
+ * - Caricare tutti gli utenti registrati
+ * - Calcolare i ranking basati su punteggi avvistamenti
+ * - Ordinare gli utenti per posizione e alfabeticamente
+ * - Evidenziare l'utente corrente
+ *
+ * Logica di ordinamento:
+ * 1. Utenti CON avvistamenti: ordinati per posizione, poi alfabeticamente dentro ogni posizione
+ * 2. Utenti SENZA avvistamenti: tutti in ultima posizione, ordinati alfabeticamente
+ *
+ * @property authRepository Repository per ottenere l'utente autenticato
+ * @property userRepository Repository per recupero lista utenti
+ * @property sightingsRepository Repository per calcolo ranking e punteggi
  */
 class LeaderboardViewModel(
     private val authRepository: AuthRepository,
@@ -76,16 +104,18 @@ class LeaderboardViewModel(
                         return@launch
                     }
 
-                    // Calcola i ranking degli utenti con sightings
+                    // Calcola i ranking di TUTTI gli utenti con almeno un avvistamento
+                    // Mappa: userId -> UserRanking (con posizione e punteggio)
                     val rankingsMap = sightingsRepository.calculateAllUserRankings()
 
-                    // Determina la posizione per utenti senza sightings
+                    // Determina la posizione per utenti senza avvistamenti (ultima posizione + 1)
                     val lastPosition = sightingsRepository.getPositionForUsersWithoutSightings()
 
                     // Crea le entry della leaderboard
                     val entries = mutableListOf<LeaderboardEntry>()
 
-                    // Utenti CON sightings: raggruppa per posizione e ordina alfabeticamente
+                    // === PARTE 1: Utenti CON avvistamenti ===
+                    // Raggruppa per posizione (per gestire parimerito) e ordina alfabeticamente
                     val usersWithSightings = allUsers.filter { rankingsMap.containsKey(it.id) }
 
                     val entriesByPosition = usersWithSightings
@@ -99,15 +129,18 @@ class LeaderboardViewModel(
                                 isCurrentUser = user.id == currentUserId
                             )
                         }
-                        .groupBy { it.position }
+                        .groupBy { it.position } // Raggruppa per posizione (gestisce parimerito)
 
-                    // Aggiungi in ordine di posizione, ordinando alfabeticamente dentro ogni gruppo
+                    // Aggiungi in ordine di posizione (1°, 2°, 3°, ...),
+                    // ordinando alfabeticamente dentro ogni gruppo di parimerito
                     entriesByPosition.keys.sorted().forEach { position ->
-                        val usersAtPosition = entriesByPosition[position]!!.sortedBy { it.username.lowercase() }
+                        val usersAtPosition = entriesByPosition[position]!!
+                            .sortedBy { it.username.lowercase() } // Ordine alfabetico case-insensitive
                         entries.addAll(usersAtPosition)
                     }
 
-                    // Utenti SENZA sightings: ordina alfabeticamente
+                    // === PARTE 2: Utenti SENZA avvistamenti ===
+                    // Tutti in ultima posizione, ordinati alfabeticamente
                     val usersWithoutSightings = allUsers
                         .filter { !rankingsMap.containsKey(it.id) }
                         .sortedBy { it.username.lowercase() }
@@ -137,7 +170,14 @@ class LeaderboardViewModel(
                     _state.update {
                         it.copy(
                             isLoading = false,
-                            error = e.message
+                            error = when {
+                                e.message?.contains("network", ignoreCase = true) == true ||
+                                        e.message?.contains("unable to resolve host", ignoreCase = true) == true ||
+                                        e.message?.contains("failed to connect", ignoreCase = true) == true -> {
+                                    R.string.network_error_connection
+                                }
+                                else -> R.string.leaderboard_error
+                            }
                         )
                     }
                 }
@@ -150,6 +190,7 @@ class LeaderboardViewModel(
     }
 
     init {
+        // Carica la leaderboard all'avvio
         actions.loadLeaderboard()
     }
 }
