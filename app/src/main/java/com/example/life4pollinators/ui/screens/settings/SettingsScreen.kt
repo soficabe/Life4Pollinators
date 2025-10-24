@@ -348,7 +348,9 @@ fun ThemeRadioOptionsDialog(
  * @param onConfirm Callback al click su "Salva"
  * @param onDismiss Callback per chiusura dialog
  * @param isLoading True se in caricamento (show loader)
- * @param errorMessage Id risorsa errore da mostrare (opzionale)
+ * @param errorMessage Id risorsa errore generico da mostrare (opzionale)
+ * @param newPasswordError Id risorsa errore campo nuova password (opzionale)
+ * @param confirmPasswordError Id risorsa errore campo conferma password (opzionale)
  */
 @Composable
 fun ChangePasswordDialog(

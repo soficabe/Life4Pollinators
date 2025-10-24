@@ -13,7 +13,7 @@ class Life4PollinatorsApplication : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        // Configura OSMDroid PRIMA di Koin
+        // Configura OSMDroid
         Configuration.getInstance().apply {
             userAgentValue = packageName
             osmdroidBasePath = cacheDir
