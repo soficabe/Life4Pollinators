@@ -16,7 +16,15 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /**
- * Statistiche dell'utente
+ * Statistiche dell'utente per la schermata profilo.
+ *
+ * @property totalSightings Numero totale di avvistamenti effettuati
+ * @property uniquePlants Numero di specie di piante diverse avvistate
+ * @property uniqueInsects Numero di specie di insetti diversi avvistati
+ * @property globalRank Posizione nella classifica globale (-1 se non disponibile)
+ * @property totalScore Punteggio totale accumulato
+ * @property totalPlants Numero totale di specie di piante nel database
+ * @property totalInsects Numero totale di specie di insetti nel database
  */
 data class UserStats(
     val totalSightings: Int = 0,
@@ -27,9 +35,11 @@ data class UserStats(
     val totalPlants: Int = 0,
     val totalInsects: Int = 0
 ) {
+    // Testo formattato per piante avvistate (es. "5/33")
     val plantsText: String
         get() = "$uniquePlants/$totalPlants"
 
+    // Testo formattato per insetti avvistati (es. "12/86")
     val insectsText: String
         get() = "$uniqueInsects/$totalInsects"
 }
@@ -38,7 +48,10 @@ data class UserStats(
  * Stato della schermata profilo.
  *
  * @property user Dati utente autenticato (null se non caricati)
+ * @property stats Statistiche dell'utente (avvistamenti, ranking, ecc.)
  * @property isRefreshing True se il profilo è in refresh/caricamento
+ * @property isLoadingStats True se le statistiche sono in caricamento
+ * @property errorLoadingProfile ID risorsa stringa di errore caricamento profilo
  */
 data class ProfileState(
     val user: User? = null,
@@ -52,14 +65,23 @@ data class ProfileState(
  * Azioni disponibili nella schermata profilo.
  */
 interface ProfileActions {
+    // Ricarica i dati utente dal backend
     fun refreshProfile()
+    // Ricarica le statistiche dell'utente (avvistamenti, ranking globale, ecc.)
     fun refreshStats()
+    // Pulisce il messaggio di errore
     fun clearError()
 }
 
 /**
  * ViewModel per la schermata profilo.
- * Si occupa di caricare le informazioni dell'utente autenticato.
+ * Si occupa di caricare le informazioni dell'utente autenticato e le relative statistiche.
+ *
+ * @property authRepository Repository per ottenere l'utente autenticato
+ * @property userRepository Repository per recupero dati profilo
+ * @property sightingsRepository Repository per statistiche avvistamenti
+ * @property plantsRepository Repository per conteggio piante totali
+ * @property insectsRepository Repository per conteggio insetti totali
  */
 class ProfileViewModel(
     private val authRepository: AuthRepository,

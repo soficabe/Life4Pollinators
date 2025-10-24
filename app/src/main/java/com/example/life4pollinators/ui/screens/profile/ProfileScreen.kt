@@ -77,16 +77,9 @@ fun ProfileScreen(
         ) {
             Spacer(Modifier.height(20.dp))
 
-            val profileImageUrl = state.user?.image?.let { img ->
-                if (img.contains("?t="))
-                    img
-                else
-                    "$img?t=${System.currentTimeMillis()}"
-            }
-
             // Avatar utente (con loader se necessario)
             ProfileIcon(
-                imageUrl = profileImageUrl,
+                imageUrl = state.user?.image,
                 isClickable = false,
                 showLoader = state.isRefreshing
             )
@@ -236,7 +229,7 @@ fun ProfileScreen(
 
 
 /**
- * Card per mostrare una statistica del profilo (ad esempio avvistamenti)
+ * Card per mostrare una statistica del profilo (ad esempio avvistamenti).
  *
  * @param value Valore numerico/stringa da mostrare
  * @param label Etichetta della statistica
