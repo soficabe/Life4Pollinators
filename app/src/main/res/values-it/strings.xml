@@ -119,8 +119,8 @@
     <string name="invasive_plants">Pianta invasiva</string>
 
     <!-- Quiz Start Screen -->
-    <string name="plants_quiz">Identificazione Piante</string>
-    <string name="insects_quiz">Identificazione Insetti</string>
+    <string name="plants_quiz">Quiz Piante</string>
+    <string name="insects_quiz">Quiz Insetti</string>
     <string name="quiz_start_title_plant">Scatta o carica una foto della pianta</string>
     <string name="quiz_start_title_insect">Scatta o carica una foto dell\'insetto</string>
     <string name="quiz_start_title_default">Scatta o carica una foto</string>

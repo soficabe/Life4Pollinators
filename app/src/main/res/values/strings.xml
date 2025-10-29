@@ -118,8 +118,8 @@
     <string name="invasive_plants">Invasive plant</string>
 
     <!-- Quiz Start Screen -->
-    <string name="plants_quiz">Plants Identification</string>
-    <string name="insects_quiz">Insects Identification</string>
+    <string name="plants_quiz">Plants Quiz</string>
+    <string name="insects_quiz">Insects Quiz</string>
     <string name="quiz_start_title_plant">Take a photo of the plant or upload it</string>
     <string name="quiz_start_title_insect">Take a photo of the insect or upload it</string>
     <string name="quiz_start_title_default">Take or upload a photo</string>
