@@ -21,7 +21,7 @@
 
     <!-- BottomNavBar Titles -->
     <string name="learn">Impara</string>
-    <string name="sightings">Avvista</string>
+    <string name="sightings">Avvistati</string>
     <string name="add_sighting">Aggiungi</string>
     <string name="user_profile">Profilo</string>
 
