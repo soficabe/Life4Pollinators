@@ -252,7 +252,7 @@ fun SignInScreen(
             // Bottone per login con Google
             OutlinedButton(
                 onClick = { googleAuthState.startFlow() },
-                content = { ProviderButtonContent(provider = Google) }
+                content = { ProviderButtonContent(provider = Google, text = stringResource(R.string.sign_in_with)) }
             )
 
             // Pulsante per continuare senza login

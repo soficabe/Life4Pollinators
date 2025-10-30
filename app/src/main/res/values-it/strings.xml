@@ -51,6 +51,8 @@
     <string name="sign_in_button">Accedi</string>
     <string name="dont_have_account">Non hai un account? Registrati</string>
     <string name="or">Oppure</string>
+    <string name="sign_in_with">Accedi con Google</string>
+
 
     <!-- SignIn Error Messages -->
     <string name="login_cancelled_by_user">Login annullato dall\'utente</string>
