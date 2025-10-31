@@ -195,7 +195,7 @@ fun LeaderboardEntryCard(entry: LeaderboardEntry) {
                                 fontWeight = FontWeight.Bold
                             ),
                             color = if (entry.isCurrentUser)
-                                MaterialTheme.colorScheme.onPrimary
+                                MaterialTheme.colorScheme.primary
                             else
                                 MaterialTheme.colorScheme.onSurface
                         )
